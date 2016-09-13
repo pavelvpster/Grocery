@@ -1,0 +1,37 @@
+<div xmlns:th="http://www.thymeleaf.org">
+    <table class="table table-striped table-hover">
+        <thead class="thead-default">
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item,row: ${items}">
+            <td><span th:text="${offset + row.index}"/></td>
+            <td th:text="${item.name}"></td>
+            <td></td>
+        </tr>
+        </tbody>
+    </table>
+    <nav aria-label="Page navigation">
+        <ul class="pager">
+
+            <li th:if="${current_page &gt; 1}">
+                <a th:onclick="'gotoPage(' + ${current_page - 1} + ');'">Previous</a>
+            </li>
+            <li th:unless="${current_page &gt; 1}" class="disabled">
+                <a>Previous</a>
+            </li>
+
+            <li th:if="${current_page &lt; page_count}">
+                <a th:onclick="'gotoPage(' + ${current_page + 1} + ');'">Next</a>
+            </li>
+            <li th:unless="${current_page &lt; page_count}" class="disabled">
+                <a>Next</a>
+            </li>
+
+        </ul>
+    </nav>
+</div>
