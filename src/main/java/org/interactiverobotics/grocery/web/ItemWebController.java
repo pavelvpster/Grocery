@@ -33,9 +33,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import javax.validation.Valid;
 
 /**
  * Item web controller.
@@ -53,11 +53,17 @@ public class ItemWebController {
         this.itemService = itemService;
     }
 
+    /**
+     * Returns index page.
+     */
     @RequestMapping("/")
     public String index() {
         return "item";
     }
 
+    /**
+     * Returns HTML block with list of Items.
+     */
     @RequestMapping("/list")
     public String getItems(@RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
                            @RequestParam(value = "size", defaultValue = "10") Integer pageSize, Model model) {
@@ -76,12 +82,18 @@ public class ItemWebController {
         return "item_list";
     }
 
+    /**
+     * Returns create Item form.
+     */
     @RequestMapping("/form")
     public String getCreateItemForm(Model model) {
         model.addAttribute("item", new Item());
         return "item_form";
     }
 
+    /**
+     * Creates Item.
+     */
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public String createItem(@Valid ItemForm form, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -91,6 +103,9 @@ public class ItemWebController {
         return "redirect:/item/";
     }
 
+    /**
+     * Returns update Item form (with current field values).
+     */
     @RequestMapping("/form/{id}")
     public String getUpdateItemForm(@PathVariable Long id, Model model) {
         final Item item = this.itemService.getItemById(id);
@@ -98,6 +113,9 @@ public class ItemWebController {
         return "item_form";
     }
 
+    /**
+     * Updates Item.
+     */
     @RequestMapping(value = "/{id}", method = RequestMethod.POST)
     public String updateItem(@PathVariable Long id, @Valid ItemForm form, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -107,6 +125,9 @@ public class ItemWebController {
         return "redirect:/item/";
     }
 
+    /**
+     * Deletes Item.
+     */
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public String deleteItem(@PathVariable Long id) {
         this.itemService.deleteItem(id);
