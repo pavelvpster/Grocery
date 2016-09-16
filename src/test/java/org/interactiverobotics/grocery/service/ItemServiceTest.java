@@ -31,7 +31,12 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -69,6 +74,41 @@ public class ItemServiceTest {
         final List<Item> items = itemService.getItems();
 
         assertEquals(existingItems, items);
+    }
+
+
+    public static class ItemPageAnswer implements Answer<Page<Item>> {
+
+        private final List<Item> items;
+
+        public ItemPageAnswer(final List<Item> items) {
+            this.items = items;
+        }
+
+        @Override
+        public Page<Item> answer(InvocationOnMock invocation) throws Throwable {
+            assertEquals(1, invocation.getArguments().length);
+            final Pageable pageable = invocation.getArgumentAt(0, Pageable.class);
+            return new PageImpl<>(items, pageable, items.size());
+        }
+    }
+
+
+    @Test
+    public void testGetItemsPage() {
+
+        final List<Item> existingItems = new ArrayList<>();
+        for (long i = 0; i < 100; i ++) {
+            existingItems.add(new Item(i, "test-item-" + i));
+        }
+
+        final ItemPageAnswer itemPageAnswer = new ItemPageAnswer(existingItems);
+        when(itemRepository.findAll(any(Pageable.class))).thenAnswer(itemPageAnswer);
+
+        final Page<Item> items = itemService.getItems(new PageRequest(0, 10));
+
+        assertEquals(existingItems.size(), items.getTotalElements());
+        assertEquals(10, items.getTotalPages());
     }
 
     @Test

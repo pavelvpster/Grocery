@@ -22,7 +22,6 @@ package org.interactiverobotics.grocery.web;
 
 import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.form.ItemForm;
-import org.interactiverobotics.grocery.repository.ItemRepository;
 import org.interactiverobotics.grocery.service.ItemService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -45,17 +44,12 @@ import java.util.List;
 @RequestMapping("/item")
 public class ItemWebController {
 
-    private final ItemRepository itemRepository;
-
     private final ItemService itemService;
 
     /**
      * Parametrized constructor.
      */
-    public ItemWebController(final ItemRepository itemRepository,
-                             final ItemService itemService) {
-
-        this.itemRepository = itemRepository;
+    public ItemWebController(final ItemService itemService) {
         this.itemService = itemService;
     }
 
@@ -69,7 +63,7 @@ public class ItemWebController {
                            @RequestParam(value = "size", defaultValue = "10") Integer pageSize, Model model) {
 
         final PageRequest pageRequest = new PageRequest(pageNumber - 1, pageSize);
-        final Page<Item> page = this.itemRepository.findAll(pageRequest);
+        final Page<Item> page = this.itemService.getItems(pageRequest);
 
         final List<Item> items = new ArrayList<>();
         page.forEach(item -> items.add(item));
