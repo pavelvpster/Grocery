@@ -10,9 +10,18 @@
 <section layout:fragment="content">
 
     <div class="container">
+
         <button type="button" class="btn btn-default" onclick="showCreateItemForm()">Add Item</button>
         <div id="item-form-container"/>
+
         <div id="item-list-container"/>
+
+        <nav aria-label="Page navigation">
+            <ul class="pager">
+                <li id="previous-page"><a onclick="gotoPreviousPage()">Previous</a></li>
+                <li id="next-page"><a onclick="gotoNextPage()">Next</a></li>
+            </ul>
+        </nav>
     </div>
 
 </section>

@@ -3,7 +3,10 @@
     <tr>
         <th>#</th>
         <th>Name</th>
-        <th></th>
+        <th>
+            <input type="hidden" id="total-pages" th:value="${totalPages}"/>
+            <input type="hidden" id="current-page" th:value="${currentPage}"/>
+        </th>
     </tr>
     </thead>
     <tbody>
@@ -12,28 +15,11 @@
         <td th:text="${item.name}"></td>
         <td>
             <span class="glyphicon glyphicon-pencil" aria-hidden="true"
-                  th:onclick="'showUpdateItemForm(' + ${item.id} + ');'"/>
+                  th:onclick="'showUpdateItemForm(' + ${item.id} + ')'"/>
             &nbsp;
             <span class="glyphicon glyphicon-trash" aria-hidden="true"
-                  th:onclick="'deleteItem(' + ${item.id} + ');'"/>
+                  th:onclick="'deleteItem(' + ${item.id} + ')'"/>
         </td>
     </tr>
     </tbody>
 </table>
-
-<nav aria-label="Page navigation" xmlns:th="http://www.thymeleaf.org">
-    <ul class="pager">
-        <li th:if="${current_page &gt; 1}">
-            <a th:onclick="'gotoPage(' + ${current_page - 1} + ');'">Previous</a>
-        </li>
-        <li th:unless="${current_page &gt; 1}" class="disabled">
-            <a>Previous</a>
-        </li>
-        <li th:if="${current_page &lt; page_count}">
-            <a th:onclick="'gotoPage(' + ${current_page + 1} + ');'">Next</a>
-        </li>
-        <li th:unless="${current_page &lt; page_count}" class="disabled">
-            <a>Next</a>
-        </li>
-    </ul>
-</nav>

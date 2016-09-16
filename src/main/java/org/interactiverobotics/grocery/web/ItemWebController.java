@@ -70,8 +70,8 @@ public class ItemWebController {
 
         model.addAttribute("offset", 1 + (pageNumber - 1) * pageSize);
         model.addAttribute("items", items);
-        model.addAttribute("page_count", page.getTotalPages());
-        model.addAttribute("current_page", pageNumber);
+        model.addAttribute("totalPages", page.getTotalPages());
+        model.addAttribute("currentPage", pageNumber);
 
         return "item_list";
     }
