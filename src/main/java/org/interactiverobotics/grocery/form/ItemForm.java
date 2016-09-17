@@ -20,11 +20,16 @@
 
 package org.interactiverobotics.grocery.form;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
 /**
  * Form to create/update Item.
  */
 public class ItemForm {
 
+    @NotNull
+    @Size(min = 1, max = 255)
     private String name;
 
     public ItemForm() {
