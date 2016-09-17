@@ -63,6 +63,14 @@ function showUpdateItemForm(id) {
     });
 }
 
+function validateItemForm() {
+    var name = $("#item-properties #name").val();
+    if (name == null || name.length < 1 || name.length > 255) {
+        $("#name-error").text("Name must be 1 to 255 characters.");
+        return false;
+    }
+}
+
 function deleteItem(id) {
     $.ajax({
         type: 'DELETE',
