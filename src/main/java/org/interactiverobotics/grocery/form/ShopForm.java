@@ -20,11 +20,16 @@
 
 package org.interactiverobotics.grocery.form;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
 /**
  * Form to create/update Shop.
  */
 public class ShopForm {
 
+    @NotNull
+    @Size(min = 1, max = 255)
     private String name;
 
     public ShopForm() {

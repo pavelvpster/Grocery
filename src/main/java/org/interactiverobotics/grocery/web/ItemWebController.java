@@ -23,6 +23,7 @@ package org.interactiverobotics.grocery.web;
 import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.form.ItemForm;
 import org.interactiverobotics.grocery.service.ItemService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
@@ -49,6 +50,7 @@ public class ItemWebController {
     /**
      * Parametrized constructor.
      */
+    @Autowired
     public ItemWebController(final ItemService itemService) {
         this.itemService = itemService;
     }

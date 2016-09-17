@@ -31,7 +31,12 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -68,6 +73,41 @@ public class ShopServiceTest {
         final List<Shop> shops = shopService.getShops();
 
         assertEquals(existingShops, shops);
+    }
+
+
+    public static class ShopPageAnswer implements Answer<Page<Shop>> {
+
+        private final List<Shop> shops;
+
+        public ShopPageAnswer(final List<Shop> shops) {
+            this.shops = shops;
+        }
+
+        @Override
+        public Page<Shop> answer(InvocationOnMock invocation) throws Throwable {
+            assertEquals(1, invocation.getArguments().length);
+            final Pageable pageable = invocation.getArgumentAt(0, Pageable.class);
+            return new PageImpl<>(shops, pageable, shops.size());
+        }
+    }
+
+
+    @Test
+    public void testGetShopsPage() {
+
+        final List<Shop> existingShops = new ArrayList<>();
+        for (long i = 0; i < 100; i ++) {
+            existingShops.add(new Shop(i, "test-shop-" + i));
+        }
+
+        final ShopPageAnswer shopPageAnswer = new ShopPageAnswer(existingShops);
+        when(shopRepository.findAll(any(Pageable.class))).thenAnswer(shopPageAnswer);
+
+        final Page<Shop> shops = shopService.getShops(new PageRequest(0, 10));
+
+        assertEquals(existingShops.size(), shops.getTotalElements());
+        assertEquals(10, shops.getTotalPages());
     }
 
     @Test

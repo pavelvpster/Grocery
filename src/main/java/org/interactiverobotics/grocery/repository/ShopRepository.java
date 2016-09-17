@@ -21,12 +21,12 @@
 package org.interactiverobotics.grocery.repository;
 
 import org.interactiverobotics.grocery.domain.Shop;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
  * Shop repository.
  */
-public interface ShopRepository extends CrudRepository<Shop, Long> {
+public interface ShopRepository extends PagingAndSortingRepository<Shop, Long> {
 
     Shop findOneByName(String name);
 }

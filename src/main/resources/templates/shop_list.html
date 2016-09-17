@@ -1,0 +1,25 @@
+<table class="table table-striped table-hover" xmlns:th="http://www.thymeleaf.org">
+    <thead class="thead-default">
+    <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>
+            <input type="hidden" id="total-pages" th:value="${totalPages}"/>
+            <input type="hidden" id="current-page" th:value="${currentPage}"/>
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="shop,row: ${shops}">
+        <td><span th:text="${offset + row.index}"/></td>
+        <td th:text="${shop.name}"></td>
+        <td>
+            <span class="glyphicon glyphicon-pencil" aria-hidden="true"
+                  th:onclick="'showUpdateShopForm(' + ${shop.id} + ')'"/>
+            &nbsp;
+            <span class="glyphicon glyphicon-trash" aria-hidden="true"
+                  th:onclick="'deleteShop(' + ${shop.id} + ')'"/>
+        </td>
+    </tr>
+    </tbody>
+</table>
