@@ -79,3 +79,9 @@ function deleteShop(id) {
         }
     });
 }
+
+function createVisit(shopId) {
+    $.post("/api/v1/visit/shop/" + shopId, {}, function(result) {
+        window.location = "/visit/";
+    });
+}

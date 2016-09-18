@@ -27,6 +27,8 @@ import org.interactiverobotics.grocery.exception.VisitNotFoundException;
 import org.interactiverobotics.grocery.repository.ShopRepository;
 import org.interactiverobotics.grocery.repository.VisitRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -62,6 +64,13 @@ public class VisitService {
         final List<Visit> visits = new ArrayList<>();
         this.visitRepository.findAll().forEach(visit -> visits.add(visit));
         return visits;
+    }
+
+    /**
+     * Returns page of Visit(s).
+     */
+    public Page<Visit> getVisits(Pageable pageable) {
+        return this.visitRepository.findAll(pageable);
     }
 
     /**
