@@ -30,10 +30,17 @@ import org.interactiverobotics.grocery.repository.ItemRepository;
 import org.interactiverobotics.grocery.repository.PurchaseRepository;
 import org.interactiverobotics.grocery.repository.VisitRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Purchase service.
@@ -58,6 +65,56 @@ public class PurchaseService {
         this.visitRepository = visitRepository;
         this.itemRepository = itemRepository;
         this.purchaseRepository = purchaseRepository;
+    }
+
+    /**
+     * Returns Purchase(s).
+     */
+    public List<Purchase> getPurchases(final Long visitId) {
+        final Visit visit = this.visitRepository.findOne(visitId);
+        if (visit == null) {
+            throw new VisitNotFoundException(visitId);
+        }
+        return getPurchases(visit);
+    }
+
+    /**
+     * Returns Purchase(s).
+     */
+    public List<Purchase> getPurchases(final Visit visit) {
+        return purchaseRepository.findAllByVisit(visit);
+    }
+
+    /**
+     * Returns page of Purchase(s).
+     */
+    public Page<Purchase> getPurchases(Pageable pageable, final Long visitId) {
+        final Visit visit = this.visitRepository.findOne(visitId);
+        if (visit == null) {
+            throw new VisitNotFoundException(visitId);
+        }
+        return getPurchases(pageable, visit);
+    }
+
+    /**
+     * Returns page of Purchase(s).
+     */
+    public Page<Purchase> getPurchases(Pageable pageable, final Visit visit) {
+        return this.purchaseRepository.findAllByVisit(pageable, visit);
+    }
+
+    public List<Item> getNotPurchasedItems(final Long visitId) {
+        final Visit visit = this.visitRepository.findOne(visitId);
+        if (visit == null) {
+            throw new VisitNotFoundException(visitId);
+        }
+        return getNotPurchasedItems(visit);
+    }
+
+    public List<Item> getNotPurchasedItems(final Visit visit) {
+        return StreamSupport.stream(this.itemRepository.findAll().spliterator(), false)
+                .filter(item -> this.purchaseRepository.findOneByVisitAndItem(visit, item) == null)
+                .collect(Collectors.toList());
     }
 
     /**

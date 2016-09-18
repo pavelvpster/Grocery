@@ -77,3 +77,7 @@ function deleteVisit(id) {
         }
     });
 }
+
+function gotoPurchases(visitId) {
+    window.location = "/purchase/" + visitId;
+}

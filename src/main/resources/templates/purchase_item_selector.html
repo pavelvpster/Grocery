@@ -1,0 +1,9 @@
+<div class="dropdown" xmlns:th="http://www.thymeleaf.org">
+    <button type="button" id="item-selector" class="btn btn-default dropdown-toggle"
+            data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Item to buy <span class="caret"/></button>
+    <ul class="dropdown-menu" aria-labelledby="item-selector">
+        <li th:each="item: ${items}">
+            <a th:onclick="'buyItem(' + ${item.id} + ')'" th:text="${item.name}"/>
+        </li>
+    </ul>
+</div>

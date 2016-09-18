@@ -10,7 +10,19 @@
 <section layout:fragment="content">
 
     <div class="container">
-        <p>Purchases...</p>
+
+        <input type="hidden" id="visit-id" th:value="${visitId}"/>
+
+        <div id="item-selector-container"/>
+
+        <div id="purchase-list-container"/>
+
+        <nav aria-label="Page navigation">
+            <ul class="pager">
+                <li id="previous-page"><a onclick="gotoPreviousPage()">Previous</a></li>
+                <li id="next-page"><a onclick="gotoNextPage()">Next</a></li>
+            </ul>
+        </nav>
     </div>
 
 </section>

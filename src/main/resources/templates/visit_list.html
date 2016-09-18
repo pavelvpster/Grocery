@@ -26,6 +26,10 @@
             &nbsp;
             <span class="glyphicon glyphicon-trash" aria-hidden="true"
                   th:onclick="'deleteVisit(' + ${visit.id} + ')'"/>
+            &nbsp;
+            &nbsp;
+            <span class="glyphicon glyphicon-asterisk" aria-hidden="true"
+                  th:onclick="'gotoPurchases(' + ${visit.id} + ')'"/>
         </td>
     </tr>
     </tbody>
