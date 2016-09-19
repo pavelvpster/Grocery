@@ -57,7 +57,7 @@ function showCreateItemForm() {
 }
 
 function showUpdateItemForm(id) {
-    $.get("/item/form/" + id, {}, function(result) {
+    $.get("/item/" + id + "/form", {}, function(result) {
         $("#item-form-container").html(result);
         $("#item-form").modal();
     });

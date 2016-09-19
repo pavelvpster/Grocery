@@ -105,7 +105,7 @@ public class ShopWebController {
     /**
      * Returns update Shop form (with current field values).
      */
-    @RequestMapping("/form/{id}")
+    @RequestMapping("/{id}/form")
     public String getUpdateShopForm(@PathVariable Long id, Model model) {
         final Shop shop = this.shopService.getShopById(id);
         model.addAttribute("shop", shop);

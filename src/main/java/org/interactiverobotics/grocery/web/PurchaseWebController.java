@@ -60,14 +60,14 @@ public class PurchaseWebController {
         return "purchase";
     }
 
-    @RequestMapping("/item_selector/{visitId}")
+    @RequestMapping("/{visitId}/item_selector")
     public String getNotPurchasedItems(@PathVariable Long visitId, Model model) {
         final List<Item> items = this.purchaseService.getNotPurchasedItems(visitId);
         model.addAttribute("items", items);
         return "purchase_item_selector";
     }
 
-    @RequestMapping("/list/{visitId}")
+    @RequestMapping("/{visitId}/list")
     public String getPurchases(@PathVariable Long visitId,
                                @RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
                                @RequestParam(value = "size", defaultValue = "10") Integer pageSize, Model model) {

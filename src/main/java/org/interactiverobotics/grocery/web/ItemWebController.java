@@ -108,7 +108,7 @@ public class ItemWebController {
     /**
      * Returns update Item form (with current field values).
      */
-    @RequestMapping("/form/{id}")
+    @RequestMapping("/{id}/form")
     public String getUpdateItemForm(@PathVariable Long id, Model model) {
         final Item item = this.itemService.getItemById(id);
         model.addAttribute("item", item);

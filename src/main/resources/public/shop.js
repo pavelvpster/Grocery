@@ -56,7 +56,7 @@ function showCreateShopForm() {
 }
 
 function showUpdateShopForm(id) {
-    $.get("/shop/form/" + id, {}, function(result) {
+    $.get("/shop/" + id + "/form", {}, function(result) {
         $("#shop-form-container").html(result);
         $("#shop-form").modal();
     });

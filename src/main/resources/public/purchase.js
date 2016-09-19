@@ -2,11 +2,11 @@ $(function() {
     $(".nav").find(".active").removeClass("active");
     $(".nav").find("#purchase").parent().addClass("active");
 
-    $.get("/purchase/item_selector/" + getVisitId(), {}, function(result) {
+    $.get("/purchase/" + getVisitId() + "/item_selector", {}, function(result) {
         $("#item-selector-container").html(result);
     });
 
-    $.get("/purchase/list/" + getVisitId(), {}, function(result) {
+    $.get("/purchase/" + getVisitId() + "/list", {}, function(result) {
         $("#purchase-list-container").html(result);
         updatePaginationControls();
     });
@@ -50,7 +50,7 @@ function gotoPage(page) {
     if (page < 1 || page > getTotalPages()) {
         return;
     }
-    $.get("/purchase/list/" + getVisitId() + "?page=" + page, {}, function(result) {
+    $.get("/purchase/" + getVisitId() + "/list?page=" + page, {}, function(result) {
         $("#purchase-list-container").html(result);
         updatePaginationControls();
     });
