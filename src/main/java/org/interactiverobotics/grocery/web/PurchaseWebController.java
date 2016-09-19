@@ -49,17 +49,26 @@ public class PurchaseWebController {
         this.purchaseService = purchaseService;
     }
 
+    /**
+     * Returns index page.
+     */
     @RequestMapping("/")
     public String index() {
         return "purchase_select_visit";
     }
 
+    /**
+     * Returns index page.
+     */
     @RequestMapping("/{visitId}")
     public String index(@PathVariable Long visitId, Model model) {
         model.addAttribute("visitId", visitId);
         return "purchase";
     }
 
+    /**
+     * Returns HTML block with selector of Item(s) not existing in Visit's Purchase(s).
+     */
     @RequestMapping("/{visitId}/item_selector")
     public String getNotPurchasedItems(@PathVariable Long visitId, Model model) {
         final List<Item> items = this.purchaseService.getNotPurchasedItems(visitId);
@@ -67,6 +76,9 @@ public class PurchaseWebController {
         return "purchase_item_selector";
     }
 
+    /**
+     * Returns HTML block with list of Purchase(s).
+     */
     @RequestMapping("/{visitId}/list")
     public String getPurchases(@PathVariable Long visitId,
                                @RequestParam(value = "page", defaultValue = "1") Integer pageNumber,

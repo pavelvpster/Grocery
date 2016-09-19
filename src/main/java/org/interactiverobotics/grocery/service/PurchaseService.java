@@ -103,6 +103,9 @@ public class PurchaseService {
         return this.purchaseRepository.findAllByVisit(pageable, visit);
     }
 
+    /**
+     * Returns Item(s) not existing in Visit's Purchase(s).
+     */
     public List<Item> getNotPurchasedItems(final Long visitId) {
         final Visit visit = this.visitRepository.findOne(visitId);
         if (visit == null) {
@@ -111,6 +114,9 @@ public class PurchaseService {
         return getNotPurchasedItems(visit);
     }
 
+    /**
+     * Returns Item(s) not existing in Visit's Purchase(s).
+     */
     public List<Item> getNotPurchasedItems(final Visit visit) {
         return StreamSupport.stream(this.itemRepository.findAll().spliterator(), false)
                 .filter(item -> this.purchaseRepository.findOneByVisitAndItem(visit, item) == null)
