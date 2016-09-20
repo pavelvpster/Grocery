@@ -117,6 +117,36 @@ public class PurchaseServiceTest {
         assertEquals(existingPurchases, purchases);
     }
 
+    @Test
+    public void testGetNotPurchasedItems1() throws Exception {
+
+        final List<Item> existingItems = Arrays.asList(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
+        when(itemRepository.findAll()).thenReturn(existingItems);
+
+        when(purchaseRepository.findOneByVisitAndItem(visit, existingItems.get(0)))
+                .thenReturn(new Purchase(visit, existingItems.get(0), 1L, null));
+
+        final List<Item> items = purchaseService.getNotPurchasedItems(visit.getId());
+
+        assertEquals(1, items.size());
+        assertEquals(existingItems.get(1), items.get(0));
+    }
+
+    @Test
+    public void testGetNotPurchasedItems2() throws Exception {
+
+        final List<Item> existingItems = Arrays.asList(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
+        when(itemRepository.findAll()).thenReturn(existingItems);
+
+        when(purchaseRepository.findOneByVisitAndItem(visit, existingItems.get(0)))
+                .thenReturn(new Purchase(visit, existingItems.get(0), 1L, null));
+
+        final List<Item> items = purchaseService.getNotPurchasedItems(visit);
+
+        assertEquals(1, items.size());
+        assertEquals(existingItems.get(1), items.get(0));
+    }
+
 
     public static class PurchasePageAnswer implements Answer<Page<Purchase>> {
 
