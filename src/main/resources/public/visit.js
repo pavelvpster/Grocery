@@ -2,7 +2,7 @@ $(function() {
     $(".nav").find(".active").removeClass("active");
     $(".nav").find("#visit").parent().addClass("active");
 
-    gotoDefaultPage();
+    initializePagination("/visit/list", "#visit-list-container");
 });
 
 function startVisit(id) {

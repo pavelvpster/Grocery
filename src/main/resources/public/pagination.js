@@ -1,7 +1,15 @@
+var listUrl = "";
+var listContainer = "";
+
+function initializePagination(_listUrl, _listContainer) {
+    listUrl = _listUrl;
+    listContainer = _listContainer;
+    gotoDefaultPage();
+}
+
 function gotoDefaultPage() {
-    var listUrl = $("#list-url").val();
     $.get(listUrl, {}, function(result) {
-        $("#list-container").html(result);
+        $(listContainer).html(result);
         updatePaginationControls();
     });
 }
@@ -40,9 +48,8 @@ function gotoPage(page) {
     if (page < 1 || page > getTotalPages()) {
         return;
     }
-    var listUrl = $("#list-url").val();
     $.get(listUrl + "?page=" + page, {}, function(result) {
-        $("#list-container").html(result);
+        $(listContainer).html(result);
         updatePaginationControls();
     });
 }

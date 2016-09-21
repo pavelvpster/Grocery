@@ -6,7 +6,7 @@ $(function() {
         $("#item-selector-container").html(result);
     });
 
-    gotoDefaultPage();
+    initializePagination("/purchase/" + getVisitId() + "/list", "#purchase-list-container");
 });
 
 function getVisitId() {

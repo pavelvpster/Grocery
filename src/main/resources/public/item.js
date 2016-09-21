@@ -3,7 +3,7 @@ $(function() {
     $(".nav").find(".active").removeClass("active");
     $(".nav").find("#item").parent().addClass("active");
 
-    gotoDefaultPage();
+    initializePagination("/item/list", "#item-list-container");
 });
 
 function showCreateItemForm() {

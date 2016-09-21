@@ -2,7 +2,7 @@ $(function() {
     $(".nav").find(".active").removeClass("active");
     $(".nav").find("#shop").parent().addClass("active");
 
-    gotoDefaultPage();
+    initializePagination("/shop/list", "#shop-list-container");
 });
 
 function showCreateShopForm() {
