@@ -15,8 +15,8 @@
     <tr th:each="visit,row: ${visits}">
         <td><span th:text="${offset + row.index}"/></td>
         <td th:text="${visit.shop.name}"></td>
-        <td th:text="${visit.started}"></td>
-        <td th:text="${visit.completed}"></td>
+        <td th:text="${visit.started != null ? #calendars.format(visit.started, 'dd.MM.yyyy hh:mm:ss') : ''}"></td>
+        <td th:text="${visit.completed != null ? #calendars.format(visit.completed, 'dd.MM.yyyy hh:mm:ss') : ''}"></td>
         <td>
             <span class="glyphicon glyphicon-play" aria-hidden="true"
                   th:onclick="'startVisit(' + ${visit.id} + ')'"/>
