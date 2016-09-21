@@ -3,6 +3,7 @@
       layout:decorator="layout">
 <head>
     <title>Items</title>
+    <script th:src="@{/pagination.js}"/>
     <script th:src="@{/item.js}"/>
 </head>
 <body>
@@ -12,16 +13,13 @@
     <div class="container">
 
         <button type="button" class="btn btn-default" onclick="showCreateItemForm()">Add Item</button>
+
         <div id="item-form-container"/>
 
-        <div id="item-list-container"/>
+        <input type="hidden" id="list-url" value="/item/list"/>
+        <div id="list-container"/>
+        <th:block th:include="pagination"/>
 
-        <nav aria-label="Page navigation">
-            <ul class="pager">
-                <li id="previous-page"><a onclick="gotoPreviousPage()">Previous</a></li>
-                <li id="next-page"><a onclick="gotoNextPage()">Next</a></li>
-            </ul>
-        </nav>
     </div>
 
 </section>

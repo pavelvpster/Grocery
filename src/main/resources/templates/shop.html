@@ -3,6 +3,7 @@
       layout:decorator="layout">
 <head>
     <title>Shops</title>
+    <script th:src="@{/pagination.js}"/>
     <script th:src="@{/shop.js}"/>
 </head>
 <body>
@@ -12,16 +13,13 @@
     <div class="container">
 
         <button type="button" class="btn btn-default" onclick="showCreateShopForm()">Add Shop</button>
+
         <div id="shop-form-container"/>
 
-        <div id="shop-list-container"/>
+        <input type="hidden" id="list-url" value="/shop/list"/>
+        <div id="list-container"/>
+        <th:block th:include="pagination"/>
 
-        <nav aria-label="Page navigation">
-            <ul class="pager">
-                <li id="previous-page"><a onclick="gotoPreviousPage()">Previous</a></li>
-                <li id="next-page"><a onclick="gotoNextPage()">Next</a></li>
-            </ul>
-        </nav>
     </div>
 
 </section>
