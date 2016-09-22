@@ -8,7 +8,7 @@ buildscript {
 }
 
 group 'org.interactiverobotics'
-version '1.0-RC1'
+version '1.0'
 
 apply plugin: 'java'
 apply plugin: 'application'
