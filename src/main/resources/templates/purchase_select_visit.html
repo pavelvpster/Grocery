@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorator="layout">
+<head>
+    <title>Purchases</title>
+    <script th:src="@{/purchase_select_visit.js}"/>
+</head>
+<body>
+
+<section layout:fragment="content">
+
+    <div class="container">
+        <div class="jumbotron">
+            <p>Please, select Visit to make Purchases...</p>
+            <p><a class="btn btn-primary" href="/visit/" role="button">Goto Visits</a></p>
+        </div>
+    </div>
+
+</section>
+
+</body>
+</html>

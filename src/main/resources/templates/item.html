@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorator="layout">
+<head>
+    <title>Items</title>
+    <script th:src="@{/pagination.js}"/>
+    <script th:src="@{/item.js}"/>
+</head>
+<body>
+
+<section layout:fragment="content">
+
+    <div class="container">
+
+        <button type="button" class="btn btn-default" onclick="showCreateItemForm()">Add Item</button>
+
+        <div id="item-form-container"/>
+
+        <div id="item-list-container"/>
+        <th:block th:include="pagination"/>
+
+    </div>
+
+</section>
+
+</body>
+</html>

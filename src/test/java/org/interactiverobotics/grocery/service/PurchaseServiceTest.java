@@ -41,8 +41,15 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -83,6 +90,113 @@ public class PurchaseServiceTest {
 
         when(visitRepository.findOne(visit.getId())).thenReturn(visit);
         when(itemRepository.findOne(item.getId())).thenReturn(item);
+    }
+
+
+    @Test
+    public void testGetPurchases1() throws Exception {
+
+        List<Purchase> existingPurchases = Arrays.asList(
+                new Purchase(1L, visit, item, 1L, null), new Purchase(2L, visit, item, 1L, null));
+        when(purchaseRepository.findAllByVisit(visit)).thenReturn(existingPurchases);
+
+        final List<Purchase> purchases = purchaseService.getPurchases(visit.getId());
+
+        assertEquals(existingPurchases, purchases);
+    }
+
+    @Test
+    public void testGetPurchases2() throws Exception {
+
+        List<Purchase> existingPurchases = Arrays.asList(
+                new Purchase(1L, visit, item, 1L, null), new Purchase(2L, visit, item, 1L, null));
+        when(purchaseRepository.findAllByVisit(visit)).thenReturn(existingPurchases);
+
+        final List<Purchase> purchases = purchaseService.getPurchases(visit);
+
+        assertEquals(existingPurchases, purchases);
+    }
+
+    @Test
+    public void testGetNotPurchasedItems1() throws Exception {
+
+        final List<Item> existingItems = Arrays.asList(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
+        when(itemRepository.findAll()).thenReturn(existingItems);
+
+        when(purchaseRepository.findOneByVisitAndItem(visit, existingItems.get(0)))
+                .thenReturn(new Purchase(visit, existingItems.get(0), 1L, null));
+
+        final List<Item> items = purchaseService.getNotPurchasedItems(visit.getId());
+
+        assertEquals(1, items.size());
+        assertEquals(existingItems.get(1), items.get(0));
+    }
+
+    @Test
+    public void testGetNotPurchasedItems2() throws Exception {
+
+        final List<Item> existingItems = Arrays.asList(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
+        when(itemRepository.findAll()).thenReturn(existingItems);
+
+        when(purchaseRepository.findOneByVisitAndItem(visit, existingItems.get(0)))
+                .thenReturn(new Purchase(visit, existingItems.get(0), 1L, null));
+
+        final List<Item> items = purchaseService.getNotPurchasedItems(visit);
+
+        assertEquals(1, items.size());
+        assertEquals(existingItems.get(1), items.get(0));
+    }
+
+
+    public static class PurchasePageAnswer implements Answer<Page<Purchase>> {
+
+        private final List<Purchase> purchases;
+
+        public PurchasePageAnswer(final List<Purchase> purchases) {
+            this.purchases = purchases;
+        }
+
+        @Override
+        public Page<Purchase> answer(InvocationOnMock invocation) throws Throwable {
+            assertEquals(2, invocation.getArguments().length);
+            final Pageable pageable = invocation.getArgumentAt(0, Pageable.class);
+            return new PageImpl<>(purchases, pageable, purchases.size());
+        }
+    }
+
+
+    @Test
+    public void testGetPurchasePage1() throws Exception {
+
+        final List<Purchase> existingPurchases = new ArrayList<>();
+        for (long i = 0; i < 100; i ++) {
+            existingPurchases.add(new Purchase(i, visit, item, 1L, null));
+        }
+
+        final PurchasePageAnswer purchasePageAnswer = new PurchasePageAnswer(existingPurchases);
+        when(purchaseRepository.findAllByVisit(any(Pageable.class), eq(visit))).thenAnswer(purchasePageAnswer);
+
+        final Page<Purchase> purchases = purchaseService.getPurchases(new PageRequest(0, 10), visit.getId());
+
+        assertEquals(existingPurchases.size(), purchases.getTotalElements());
+        assertEquals(10, purchases.getTotalPages());
+    }
+
+    @Test
+    public void testGetPurchasePage2() throws Exception {
+
+        final List<Purchase> existingPurchases = new ArrayList<>();
+        for (long i = 0; i < 100; i ++) {
+            existingPurchases.add(new Purchase(i, visit, item, 1L, null));
+        }
+
+        final PurchasePageAnswer purchasePageAnswer = new PurchasePageAnswer(existingPurchases);
+        when(purchaseRepository.findAllByVisit(any(Pageable.class), eq(visit))).thenAnswer(purchasePageAnswer);
+
+        final Page<Purchase> purchases = purchaseService.getPurchases(new PageRequest(0, 10), visit);
+
+        assertEquals(existingPurchases.size(), purchases.getTotalElements());
+        assertEquals(10, purchases.getTotalPages());
     }
 
 
