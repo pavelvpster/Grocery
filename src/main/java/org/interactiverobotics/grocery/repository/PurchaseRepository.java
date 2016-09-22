@@ -23,14 +23,20 @@ package org.interactiverobotics.grocery.repository;
 import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.domain.Purchase;
 import org.interactiverobotics.grocery.domain.Visit;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
-import java.util.Optional;
+import java.util.List;
 
 /**
  * Purchase repository.
  */
-public interface PurchaseRepository extends CrudRepository<Purchase, Long> {
+public interface PurchaseRepository extends PagingAndSortingRepository<Purchase, Long> {
+
+    List<Purchase> findAllByVisit(Visit visit);
+
+    Page<Purchase> findAllByVisit(Pageable pageable, Visit visit);
 
     Purchase findOneByVisitAndItem(Visit visit, Item item);
 }

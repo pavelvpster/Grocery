@@ -25,6 +25,8 @@ import org.interactiverobotics.grocery.exception.ShopNotFoundException;
 import org.interactiverobotics.grocery.form.ShopForm;
 import org.interactiverobotics.grocery.repository.ShopRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -51,6 +53,13 @@ public class ShopService {
         final List<Shop> shops = new ArrayList<>();
         this.shopRepository.findAll().forEach(shop -> shops.add(shop));
         return shops;
+    }
+
+    /**
+     * Returns page of Shop(s).
+     */
+    public Page<Shop> getShops(Pageable pageable) {
+        return this.shopRepository.findAll(pageable);
     }
 
     /**

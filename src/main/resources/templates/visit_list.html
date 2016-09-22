@@ -1,0 +1,36 @@
+<table class="table table-striped table-hover" xmlns:th="http://www.thymeleaf.org">
+    <thead class="thead-default">
+    <tr>
+        <th>#</th>
+        <th>Shop</th>
+        <th>Started</th>
+        <th>Completed</th>
+        <th>
+            <input type="hidden" id="total-pages" th:value="${totalPages}"/>
+            <input type="hidden" id="current-page" th:value="${currentPage}"/>
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="visit,row: ${visits}">
+        <td><span th:text="${offset + row.index}"/></td>
+        <td th:text="${visit.shop.name}"></td>
+        <td th:text="${visit.started != null ? #calendars.format(visit.started, 'dd.MM.yyyy hh:mm:ss') : ''}"></td>
+        <td th:text="${visit.completed != null ? #calendars.format(visit.completed, 'dd.MM.yyyy hh:mm:ss') : ''}"></td>
+        <td>
+            <span class="glyphicon glyphicon-play" aria-hidden="true"
+                  th:onclick="'startVisit(' + ${visit.id} + ')'"/>
+            &nbsp;
+            <span class="glyphicon glyphicon-stop" aria-hidden="true"
+                  th:onclick="'completeVisit(' + ${visit.id} + ')'"/>
+            &nbsp;
+            <span class="glyphicon glyphicon-trash" aria-hidden="true"
+                  th:onclick="'deleteVisit(' + ${visit.id} + ')'"/>
+            &nbsp;
+            &nbsp;
+            <span class="glyphicon glyphicon-asterisk" aria-hidden="true"
+                  th:onclick="'gotoPurchases(' + ${visit.id} + ')'"/>
+        </td>
+    </tr>
+    </tbody>
+</table>

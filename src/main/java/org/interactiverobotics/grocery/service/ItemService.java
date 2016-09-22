@@ -25,6 +25,8 @@ import org.interactiverobotics.grocery.exception.ItemNotFoundException;
 import org.interactiverobotics.grocery.form.ItemForm;
 import org.interactiverobotics.grocery.repository.ItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -51,6 +53,13 @@ public class ItemService {
         final List<Item> items = new ArrayList<>();
         this.itemRepository.findAll().forEach(item -> items.add(item));
         return items;
+    }
+
+    /**
+     * Returns page of Item(s).
+     */
+    public Page<Item> getItems(Pageable pageable) {
+        return this.itemRepository.findAll(pageable);
     }
 
     /**

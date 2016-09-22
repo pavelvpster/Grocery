@@ -22,14 +22,14 @@ package org.interactiverobotics.grocery.repository;
 
 import org.interactiverobotics.grocery.domain.Shop;
 import org.interactiverobotics.grocery.domain.Visit;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;
 
 /**
  * Visit repository.
  */
-public interface VisitRepository extends CrudRepository<Visit, Long> {
+public interface VisitRepository extends PagingAndSortingRepository<Visit, Long> {
 
     List<Visit> findAllByShop(Shop shop);
 }

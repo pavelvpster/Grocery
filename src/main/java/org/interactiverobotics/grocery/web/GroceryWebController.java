@@ -1,5 +1,5 @@
 /*
- * ItemForm.java
+ * GroceryWebController.java
  *
  * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
  *
@@ -18,32 +18,20 @@
  *
  */
 
-package org.interactiverobotics.grocery.form;
+package org.interactiverobotics.grocery.web;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
- * Form to create/update Item.
+ * Main web controller.
  */
-public class ItemForm {
+@Controller
+public class GroceryWebController {
 
-    @NotNull
-    @Size(min = 1, max = 255)
-    private String name;
-
-    public ItemForm() {
+    @RequestMapping("/")
+    public String index() {
+        return "index";
     }
 
-    public ItemForm(final String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 }

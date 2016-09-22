@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorator="layout">
+<head>
+    <title>Visits</title>
+    <script th:src="@{/pagination.js}"/>
+    <script th:src="@{/visit.js}"/>
+</head>
+<body>
+
+<section layout:fragment="content">
+
+    <div class="container">
+
+        <div id="visit-list-container"/>
+        <th:block th:include="pagination"/>
+
+    </div>
+
+</section>
+
+</body>
+</html>
