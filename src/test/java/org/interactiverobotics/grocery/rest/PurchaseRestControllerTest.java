@@ -35,16 +35,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -82,6 +88,44 @@ public class PurchaseRestControllerTest {
         visit = new Visit(1L, shop);
 
         item = new Item(1L, "test-item");
+    }
+
+
+    public static class PurchasePageAnswer implements Answer<Page<Purchase>> {
+
+        private final List<Purchase> purchases;
+
+        public PurchasePageAnswer(final List<Purchase> purchases) {
+            this.purchases = purchases;
+        }
+
+        @Override
+        public Page<Purchase> answer(InvocationOnMock invocation) throws Throwable {
+            assertEquals(2, invocation.getArguments().length);
+            final Pageable pageable = invocation.getArgumentAt(0, Pageable.class);
+            return new PageImpl<>(purchases, pageable, purchases.size());
+        }
+    }
+
+
+    @Test
+    public void testGetPurchasesPage() throws Exception {
+
+        final List<Purchase> existingPurchases = new ArrayList<>();
+        for (long i = 0; i < 100; i ++) {
+            existingPurchases.add(new Purchase(i, visit, item, 1L, null));
+        }
+
+        final PurchasePageAnswer purchasePageAnswer = new PurchasePageAnswer(existingPurchases);
+        when(purchaseService.getPurchases(anyObject(), eq(visit.getId()))).thenAnswer(purchasePageAnswer);
+
+        mvc.perform(get("/api/v1/purchase/" + visit.getId() + "/list?page=1&size=10")
+                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$.totalElements", is(existingPurchases.size())))
+                .andExpect(jsonPath("$.totalPages", is(10)))
+                .andExpect(jsonPath("$.size", is(10)));
     }
 
 

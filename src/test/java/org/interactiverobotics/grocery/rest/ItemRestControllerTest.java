@@ -24,6 +24,7 @@ import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.exception.ItemNotFoundException;
 import org.interactiverobotics.grocery.form.ItemForm;
 import org.interactiverobotics.grocery.service.ItemService;
+import org.interactiverobotics.grocery.service.ItemServiceTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
@@ -31,10 +32,14 @@ import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -82,6 +87,43 @@ public class ItemRestControllerTest {
                 .andExpect(jsonPath("$[0].name", is(existingItems.get(0).getName())))
                 .andExpect(jsonPath("$[1].id", is(existingItems.get(1).getId().intValue())))
                 .andExpect(jsonPath("$[1].name", is(existingItems.get(1).getName())));
+    }
+
+
+    public static class ItemPageAnswer implements Answer<Page<Item>> {
+
+        private final List<Item> items;
+
+        public ItemPageAnswer(final List<Item> items) {
+            this.items = items;
+        }
+
+        @Override
+        public Page<Item> answer(InvocationOnMock invocation) throws Throwable {
+            assertEquals(1, invocation.getArguments().length);
+            final Pageable pageable = invocation.getArgumentAt(0, Pageable.class);
+            return new PageImpl<>(items, pageable, items.size());
+        }
+    }
+
+
+    @Test
+    public void testGetItemsPage() throws Exception {
+
+        final List<Item> existingItems = new ArrayList<>();
+        for (long i = 0; i < 100; i ++) {
+            existingItems.add(new Item(i, "test-item-" + i));
+        }
+
+        final ItemServiceTest.ItemPageAnswer itemPageAnswer = new ItemServiceTest.ItemPageAnswer(existingItems);
+        when(itemService.getItems(any(Pageable.class))).thenAnswer(itemPageAnswer);
+
+        mvc.perform(get("/api/v1/item/list?page=1&size=10").accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$.totalElements", is(existingItems.size())))
+                .andExpect(jsonPath("$.totalPages", is(10)))
+                .andExpect(jsonPath("$.size", is(10)));
     }
 
     @Test

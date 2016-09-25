@@ -33,7 +33,12 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -79,6 +84,41 @@ public class VisitServiceTest {
         final List<Visit> visits = visitService.getVisits();
 
         assertEquals(existingVisits, visits);
+    }
+
+
+    public static class VisitPageAnswer implements Answer<Page<Visit>> {
+
+        private final List<Visit> visits;
+
+        public VisitPageAnswer(final List<Visit> visits) {
+            this.visits = visits;
+        }
+
+        @Override
+        public Page<Visit> answer(InvocationOnMock invocation) throws Throwable {
+            assertEquals(1, invocation.getArguments().length);
+            final Pageable pageable = invocation.getArgumentAt(0, Pageable.class);
+            return new PageImpl<>(visits, pageable, visits.size());
+        }
+    }
+
+
+    @Test
+    public void testGetVisitsPage() {
+
+        final List<Visit> existingVisits = new ArrayList<>();
+        for (long i = 0; i < 100; i ++) {
+            existingVisits.add(new Visit(i, shop));
+        }
+
+        final VisitPageAnswer visitPageAnswer = new VisitPageAnswer(existingVisits);
+        when(visitRepository.findAll(any(Pageable.class))).thenAnswer(visitPageAnswer);
+
+        final Page<Visit> visits = visitService.getVisits(new PageRequest(0, 10));
+
+        assertEquals(existingVisits.size(), visits.getTotalElements());
+        assertEquals(10, visits.getTotalPages());
     }
 
     @Test

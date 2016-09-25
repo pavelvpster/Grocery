@@ -35,10 +35,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -96,6 +100,43 @@ public class VisitRestControllerTest {
                 .andExpect(jsonPath("$[0].shop.id", is(existingVisits.get(0).getShop().getId().intValue())))
                 .andExpect(jsonPath("$[1].id", is(existingVisits.get(1).getId().intValue())))
                 .andExpect(jsonPath("$[1].shop.id", is(existingVisits.get(1).getShop().getId().intValue())));
+    }
+
+
+    public static class VisitPageAnswer implements Answer<Page<Visit>> {
+
+        private final List<Visit> visits;
+
+        public VisitPageAnswer(final List<Visit> visits) {
+            this.visits = visits;
+        }
+
+        @Override
+        public Page<Visit> answer(InvocationOnMock invocation) throws Throwable {
+            assertEquals(1, invocation.getArguments().length);
+            final Pageable pageable = invocation.getArgumentAt(0, Pageable.class);
+            return new PageImpl<>(visits, pageable, visits.size());
+        }
+    }
+
+
+    @Test
+    public void testGetVisitsPage() throws Exception {
+
+        final List<Visit> existingVisits = new ArrayList<>();
+        for (long i = 0; i < 100; i ++) {
+            existingVisits.add(new Visit(i, shop));
+        }
+
+        final VisitPageAnswer visitPageAnswer = new VisitPageAnswer(existingVisits);
+        when(visitService.getVisits(any(Pageable.class))).thenAnswer(visitPageAnswer);
+
+        mvc.perform(get("/api/v1/visit/list?page=1&size=10").accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$.totalElements", is(existingVisits.size())))
+                .andExpect(jsonPath("$.totalPages", is(10)))
+                .andExpect(jsonPath("$.size", is(10)));
     }
 
     @Test
