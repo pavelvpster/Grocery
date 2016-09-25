@@ -1,7 +1,10 @@
 # Grocery
 
-Grocery is a web application that allows user to track their purchases in
-different shops.
+Grocery is a web application that allows users to track their purchases made in different shops.
+
+## Documentation
+
+[Release Process](doc/release-process.md)
 
 ## Setup database
 
@@ -33,6 +36,18 @@ psql grocery < ./sql/grocery.sql
 
 ```
 ./gradlew clean build test
+```
+
+## Run
+
+```
+./gradlew run
+```
+
+or
+
+```
+java -jar grocery-<version>.jar
 ```
 
 ## License
