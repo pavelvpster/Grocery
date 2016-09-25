@@ -48,7 +48,7 @@ public class VisitRestController {
     }
 
     @ApiOperation(value = "Get all Visit(s)", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = {"", "/"}, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public List<Visit> getVisits() {
         return this.visitService.getVisits();
     }

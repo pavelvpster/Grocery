@@ -54,7 +54,7 @@ public class ShopRestController {
     }
 
     @ApiOperation(value = "Get all Shop(s)", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = {"", "/"}, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public List<Shop> getShops() {
         return this.shopService.getShops();
     }

@@ -54,7 +54,7 @@ public class ItemRestController {
     }
 
     @ApiOperation(value = "Get all Item(s)", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = {"", "/"}, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public List<Item> getItems() {
         return this.itemService.getItems();
     }
