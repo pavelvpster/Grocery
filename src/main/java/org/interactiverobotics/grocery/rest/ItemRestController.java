@@ -26,6 +26,8 @@ import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.form.ItemForm;
 import org.interactiverobotics.grocery.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -55,6 +57,15 @@ public class ItemRestController {
     @RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public List<Item> getItems() {
         return this.itemService.getItems();
+    }
+
+    @ApiOperation(value = "Get page of Items", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public Page<Item> getItemsPage(@RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
+                                   @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
+
+        final PageRequest pageRequest = new PageRequest(pageNumber - 1, pageSize);
+        return this.itemService.getItems(pageRequest);
     }
 
     @ApiOperation(value = "Get Item by Id", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
