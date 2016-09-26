@@ -23,11 +23,13 @@ package org.interactiverobotics.grocery.rest;
 import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.form.ItemForm;
 import org.interactiverobotics.grocery.repository.ItemRepository;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,6 +57,12 @@ public class ItemRestControllerIntegrationTest {
     private ItemRepository itemRepository;
 
 
+    @Before
+    public void setUp() throws Exception {
+        itemRepository.deleteAll();
+    }
+
+
     @Test
     public void testGetItems() {
 
@@ -69,6 +77,28 @@ public class ItemRestControllerIntegrationTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
         assertEquals(existingItems, Arrays.asList(response.getBody()));
+    }
+
+    @Test
+    public void testGetItemsPage() {
+
+        final List<Item> existingItems = new ArrayList<>();
+        for (long i = 0; i < 100; i ++) {
+            existingItems.add(itemRepository.save(new Item("test-item-" + i)));
+        }
+
+        final ParameterizedTypeReference<PageResponse<Item>> responseType =
+                new ParameterizedTypeReference<PageResponse<Item>>() {};
+        final ResponseEntity<PageResponse<Item>> response = restTemplate.exchange("/api/v1/item/list?page=1&size=10",
+                HttpMethod.GET, null, responseType);
+
+        itemRepository.delete(existingItems);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.hasBody());
+        assertEquals(existingItems.size(), response.getBody().getTotalElements());
+        assertEquals(10, response.getBody().getTotalPages());
+        assertEquals(10, response.getBody().getSize());
     }
 
     @Test

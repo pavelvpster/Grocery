@@ -35,11 +35,15 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -79,6 +83,8 @@ public class PurchaseRestControllerIntegrationTest {
     @Before
     public void setUp() throws Exception {
 
+        purchaseRepository.deleteAll();
+
         shop = shopRepository.save(new Shop("test-shop"));
 
         visit = visitRepository.save(new Visit(shop));
@@ -96,6 +102,28 @@ public class PurchaseRestControllerIntegrationTest {
         shopRepository.delete(shop);
     }
 
+
+    @Test
+    public void testGetPurchasesPage() {
+
+        final List<Purchase> existingPurchases = new ArrayList<>();
+        for (long i = 0; i < 100; i ++) {
+            existingPurchases.add(purchaseRepository.save(new Purchase(visit, item, 1L, null)));
+        }
+
+        final ParameterizedTypeReference<PageResponse<Purchase>> responseType =
+                new ParameterizedTypeReference<PageResponse<Purchase>>() {};
+        final ResponseEntity<PageResponse<Purchase>> response = restTemplate.exchange("/api/v1/purchase/"
+                        + visit.getId() + "/list?page=1&size=10", HttpMethod.GET, null, responseType);
+
+        purchaseRepository.delete(existingPurchases);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.hasBody());
+        assertEquals(existingPurchases.size(), response.getBody().getTotalElements());
+        assertEquals(10, response.getBody().getTotalPages());
+        assertEquals(10, response.getBody().getSize());
+    }
 
     @Test
     public void testBuyItem() {
