@@ -26,6 +26,8 @@ import org.interactiverobotics.grocery.domain.Shop;
 import org.interactiverobotics.grocery.form.ShopForm;
 import org.interactiverobotics.grocery.service.ShopService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -52,9 +54,18 @@ public class ShopRestController {
     }
 
     @ApiOperation(value = "Get all Shop(s)", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = {"", "/"}, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public List<Shop> getShops() {
         return this.shopService.getShops();
+    }
+
+    @ApiOperation(value = "Get page of Shops", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public Page<Shop> getShopsPage(@RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
+                                   @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
+
+        final PageRequest pageRequest = new PageRequest(pageNumber - 1, pageSize);
+        return this.shopService.getShops(pageRequest);
     }
 
     @ApiOperation(value = "Get Shop by Id", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)

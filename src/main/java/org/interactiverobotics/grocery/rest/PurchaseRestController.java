@@ -25,6 +25,8 @@ import io.swagger.annotations.ApiOperation;
 import org.interactiverobotics.grocery.domain.Purchase;
 import org.interactiverobotics.grocery.service.PurchaseService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,6 +49,16 @@ public class PurchaseRestController {
     @Autowired
     public PurchaseRestController(final PurchaseService purchaseService) {
         this.purchaseService = purchaseService;
+    }
+
+    @ApiOperation(value = "Get page of Purchases", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/{visitId}/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public Page<Purchase> getPurchasesPage(@PathVariable Long visitId,
+                                           @RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
+                                           @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
+
+        final PageRequest pageRequest = new PageRequest(pageNumber - 1, pageSize);
+        return this.purchaseService.getPurchases(pageRequest, visitId);
     }
 
     @ApiOperation(value = "Buy Item in Visit", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)

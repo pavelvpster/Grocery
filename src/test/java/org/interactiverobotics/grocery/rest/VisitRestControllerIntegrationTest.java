@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -65,6 +66,7 @@ public class VisitRestControllerIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
+        visitRepository.deleteAll();
         shop = shopRepository.save(new Shop("test-shop"));
     }
 
@@ -88,6 +90,28 @@ public class VisitRestControllerIntegrationTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
         assertEquals(existingVisits, Arrays.asList(response.getBody()));
+    }
+
+    @Test
+    public void testGetVisitsPage() {
+
+        final List<Visit> existingVisits = new ArrayList<>();
+        for (long i = 0; i < 100; i ++) {
+            existingVisits.add(visitRepository.save(new Visit(shop)));
+        }
+
+        final ParameterizedTypeReference<PageResponse<Visit>> responseType =
+                new ParameterizedTypeReference<PageResponse<Visit>>() {};
+        final ResponseEntity<PageResponse<Visit>> response = restTemplate.exchange("/api/v1/visit/list?page=1&size=10",
+                HttpMethod.GET, null, responseType);
+
+        visitRepository.delete(existingVisits);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.hasBody());
+        assertEquals(existingVisits.size(), response.getBody().getTotalElements());
+        assertEquals(10, response.getBody().getTotalPages());
+        assertEquals(10, response.getBody().getSize());
     }
 
     @Test
