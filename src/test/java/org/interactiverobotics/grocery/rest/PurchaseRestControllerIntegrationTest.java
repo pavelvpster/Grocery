@@ -43,6 +43,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -102,6 +103,27 @@ public class PurchaseRestControllerIntegrationTest {
         shopRepository.delete(shop);
     }
 
+
+    @Test
+    public void testGetNotPurchasedItems() {
+
+        final List<Item> existingItems = new ArrayList<>();
+        itemRepository.save(Arrays.asList(new Item("test-item-1"), new Item("test-item-2")))
+                .forEach(item -> existingItems.add(item));
+
+        final Purchase purchase = purchaseRepository.save(new Purchase(visit, existingItems.get(0), 1L, null));
+
+        final ResponseEntity<Item[]> response = restTemplate.getForEntity("/api/v1/purchase/" + visit.getId()
+                + "/not_purchased_items", Item[].class);
+
+        purchaseRepository.delete(purchase);
+
+        itemRepository.delete(existingItems);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.hasBody());
+        assertTrue(Arrays.asList(response.getBody()).contains(existingItems.get(1)));
+    }
 
     @Test
     public void testGetPurchasesPage() {

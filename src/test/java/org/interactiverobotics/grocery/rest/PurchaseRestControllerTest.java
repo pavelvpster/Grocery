@@ -44,9 +44,11 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
@@ -88,6 +90,24 @@ public class PurchaseRestControllerTest {
         visit = new Visit(1L, shop);
 
         item = new Item(1L, "test-item");
+    }
+
+
+    @Test
+    public void testGetNotPurchasedItems() throws Exception {
+
+        final List<Item> notPurchasedItems = Arrays.asList(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
+        when(purchaseService.getNotPurchasedItems(visit.getId())).thenReturn(notPurchasedItems);
+
+        mvc.perform(get("/api/v1/purchase/" + visit.getId() + "/not_purchased_items")
+                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id", is(notPurchasedItems.get(0).getId().intValue())))
+                .andExpect(jsonPath("$[0].name", is(notPurchasedItems.get(0).getName())))
+                .andExpect(jsonPath("$[1].id", is(notPurchasedItems.get(1).getId().intValue())))
+                .andExpect(jsonPath("$[1].name", is(notPurchasedItems.get(1).getName())));
     }
 
 
