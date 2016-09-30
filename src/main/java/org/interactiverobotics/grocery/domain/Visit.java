@@ -27,21 +27,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.Date;
 import java.util.List;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 /**
  * Visit domain class.
@@ -67,6 +53,10 @@ public class Visit {
     @Column
     @Temporal(TemporalType.TIMESTAMP)
     private Date completed;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shopping_list_id")
+    private ShoppingList shoppingList;
 
     @Transient
     @OneToMany(mappedBy = "visit", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
@@ -114,6 +104,14 @@ public class Visit {
 
     public void setCompleted(Date completed) {
         this.completed = completed;
+    }
+
+    public ShoppingList getShoppingList() {
+        return shoppingList;
+    }
+
+    public void setShoppingList(ShoppingList shoppingList) {
+        this.shoppingList = shoppingList;
     }
 
     public List<Purchase> getPurchases() {
