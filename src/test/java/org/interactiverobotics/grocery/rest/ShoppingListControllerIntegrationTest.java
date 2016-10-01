@@ -1,6 +1,7 @@
 package org.interactiverobotics.grocery.rest;
 
 import org.interactiverobotics.grocery.domain.ShoppingList;
+import org.interactiverobotics.grocery.form.ShoppingListForm;
 import org.interactiverobotics.grocery.repository.ShoppingListRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -8,6 +9,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -17,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -46,7 +50,7 @@ public class ShoppingListControllerIntegrationTest {
 
         final List<ShoppingList> existingShoppingLists = new ArrayList<>();
         shoppingListRepository.save(Arrays.asList(
-                new ShoppingList("shopping-list-1"), new ShoppingList("shopping-list-2")))
+                new ShoppingList("test-shopping-list-1"), new ShoppingList("test-shopping-list-2")))
                 .forEach(shoppingList -> existingShoppingLists.add(shoppingList));
 
         final ResponseEntity<ShoppingList[]> response = restTemplate.getForEntity("/api/v1/shopping_list/",
@@ -57,6 +61,144 @@ public class ShoppingListControllerIntegrationTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
         assertEquals(existingShoppingLists, Arrays.asList(response.getBody()));
+    }
+
+    @Test
+    public void testGetShoppingListsPage() {
+
+        final List<ShoppingList> existingShoppingLists = new ArrayList<>();
+        for (long i = 0; i < 100; i ++) {
+            existingShoppingLists.add(shoppingListRepository.save(new ShoppingList("test-shopping-list-" + i)));
+        }
+
+        final ParameterizedTypeReference<PageResponse<ShoppingList>> responseType =
+                new ParameterizedTypeReference<PageResponse<ShoppingList>>() {};
+        final ResponseEntity<PageResponse<ShoppingList>> response =
+                restTemplate.exchange("/api/v1/shopping_list/list?page=1&size=10", HttpMethod.GET, null, responseType);
+
+        shoppingListRepository.delete(existingShoppingLists);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.hasBody());
+        assertEquals(existingShoppingLists.size(), response.getBody().getTotalElements());
+        assertEquals(10, response.getBody().getTotalPages());
+        assertEquals(10, response.getBody().getSize());
+    }
+
+    @Test
+    public void testGetShoppingListById() {
+
+        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList("test-shopping-list"));
+
+        final ResponseEntity<ShoppingList> response = restTemplate
+                .getForEntity("/api/v1/shopping_list/" + existingShoppingList.getId(), ShoppingList.class);
+
+        shoppingListRepository.delete(existingShoppingList);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.hasBody());
+        assertEquals(existingShoppingList, response.getBody());
+    }
+
+    @Test
+    public void testGetNotExistingShoppingListById() {
+
+        final ResponseEntity<ShoppingList> response = restTemplate
+                .getForEntity("/api/v1/shopping_list/" + new Long(999L), ShoppingList.class);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
+
+    @Test
+    public void testGetShoppingListByName() {
+
+        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList("test-shopping-list"));
+
+        final ResponseEntity<ShoppingList> response = restTemplate
+                .getForEntity("/api/v1/shopping_list/search?name=" + existingShoppingList.getName(),
+                        ShoppingList.class);
+
+        shoppingListRepository.delete(existingShoppingList);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.hasBody());
+        assertEquals(existingShoppingList, response.getBody());
+    }
+
+    @Test
+    public void testGetNotExistingShoppingListByName() {
+
+        final ResponseEntity<ShoppingList> response = restTemplate
+                .getForEntity("/api/v1/shopping_list/search?name=test", ShoppingList.class);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
+
+    @Test
+    public void testCreateShoppingList() {
+
+        final ShoppingListForm form = new ShoppingListForm();
+        form.setName("test-shopping-list");
+
+        final ResponseEntity<ShoppingList> response = restTemplate
+                .postForEntity("/api/v1/shopping_list/", form, ShoppingList.class);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.hasBody());
+
+        shoppingListRepository.delete(response.getBody());
+
+        assertEquals(form.getName(), response.getBody().getName());
+    }
+
+    @Test
+    public void testUpdateShoppingList() {
+
+        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList("test-shopping-list"));
+
+        final ShoppingListForm form = new ShoppingListForm();
+        form.setName("updated-test-shopping-list");
+
+        final ResponseEntity<ShoppingList> response = restTemplate
+                .postForEntity("/api/v1/shopping_list/" + existingShoppingList.getId(), form, ShoppingList.class);
+
+        shoppingListRepository.delete(existingShoppingList);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.hasBody());
+        assertEquals(existingShoppingList.getId(), response.getBody().getId());
+        assertEquals(form.getName(), response.getBody().getName());
+    }
+
+    @Test
+    public void testUpdateNotExistingShoppingList() {
+
+        final ShoppingListForm form = new ShoppingListForm();
+        form.setName("updated-test-shopping-list");
+
+        final ResponseEntity<ShoppingList> response = restTemplate
+                .postForEntity("/api/v1/shopping_list/" + new Long(999L), form, ShoppingList.class);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
+
+    @Test
+    public void testDeleteShoppingList() {
+
+        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList("test-shopping-list"));
+
+        restTemplate.delete("/api/v1/shopping_list/" + existingShoppingList.getId());
+
+        assertNull(shoppingListRepository.findOne(existingShoppingList.getId()));
+    }
+
+    @Test
+    public void testDeleteNotExistingShoppingList() {
+
+        final ResponseEntity<?> response = restTemplate
+                .exchange("/api/v1/shopping_list/" + new Long(999L), HttpMethod.DELETE, null, Object.class);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
 }
