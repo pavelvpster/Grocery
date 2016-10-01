@@ -7,4 +7,6 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  * ShoppingList repository.
  */
 public interface ShoppingListRepository extends PagingAndSortingRepository<ShoppingList, Long> {
+
+    ShoppingList findOneByName(String name);
 }
