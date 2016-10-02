@@ -1,5 +1,5 @@
 /*
- * ShoppingListItemRepository.java
+ * ShoppingListItemNotFoundException.java
  *
  * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
  *
@@ -18,17 +18,15 @@
  *
  */
 
-package org.interactiverobotics.grocery.repository;
-
-import org.interactiverobotics.grocery.domain.Item;
-import org.interactiverobotics.grocery.domain.ShoppingList;
-import org.interactiverobotics.grocery.domain.ShoppingListItem;
-import org.springframework.data.repository.PagingAndSortingRepository;
+package org.interactiverobotics.grocery.exception;
 
 /**
- * ShoppingListItem repository.
+ * ShoppingListItem not found.
  */
-public interface ShoppingListItemRepository extends PagingAndSortingRepository<ShoppingListItem, Long> {
+public class ShoppingListItemNotFoundException extends RuntimeException {
 
-    ShoppingListItem findOneByShoppingListAndItem(ShoppingList shoppingList, Item item);
+    public ShoppingListItemNotFoundException(final Long id) {
+        super("Shopping list item #" + id + " not found!");
+    }
+
 }

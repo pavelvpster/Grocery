@@ -53,14 +53,16 @@ public class ShoppingListItem {
     public ShoppingListItem() {
     }
 
-    public ShoppingListItem(final ShoppingList shoppingList, final Long quantity) {
+    public ShoppingListItem(final ShoppingList shoppingList, final Item item, final Long quantity) {
         this.shoppingList = shoppingList;
+        this.item = item;
         this.quantity = quantity;
     }
 
-    public ShoppingListItem(final Long id, final ShoppingList shoppingList, final Long quantity) {
+    public ShoppingListItem(final Long id, final ShoppingList shoppingList, final Item item, final Long quantity) {
         this.id = id;
         this.shoppingList = shoppingList;
+        this.item = item;
         this.quantity = quantity;
     }
 
