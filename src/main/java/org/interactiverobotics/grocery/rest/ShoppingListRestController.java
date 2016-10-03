@@ -23,7 +23,9 @@ package org.interactiverobotics.grocery.rest;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.interactiverobotics.grocery.domain.ShoppingList;
+import org.interactiverobotics.grocery.domain.ShoppingListItem;
 import org.interactiverobotics.grocery.form.ShoppingListForm;
+import org.interactiverobotics.grocery.service.ShoppingListItemService;
 import org.interactiverobotics.grocery.service.ShoppingListService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -43,9 +45,14 @@ public class ShoppingListRestController {
 
     private final ShoppingListService shoppingListService;
 
+    private final ShoppingListItemService shoppingListItemService;
+
     @Autowired
-    public ShoppingListRestController(final ShoppingListService shoppingListService) {
+    public ShoppingListRestController(final ShoppingListService shoppingListService,
+                                      final ShoppingListItemService shoppingListItemService) {
+
         this.shoppingListService = shoppingListService;
+        this.shoppingListItemService = shoppingListItemService;
     }
 
     @ApiOperation(value = "Get all ShoppingList(s)", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -91,6 +98,29 @@ public class ShoppingListRestController {
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public void deleteShoppingList(@PathVariable Long id) {
         this.shoppingListService.deleteShoppingList(id);
+    }
+
+    @ApiOperation(value = "Add Item to ShoppingList", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/{id}/add/{itemId}", method = RequestMethod.POST,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ShoppingListItem addItem(@PathVariable Long id, @PathVariable Long itemId,
+                                    @RequestParam(value = "quantity") Long quantity) {
+        return this.shoppingListItemService.addItem(id, itemId, quantity);
+    }
+
+    @ApiOperation(value = "Remove Item from ShoppingList", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/{id}/remove/{itemId}", method = RequestMethod.POST,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public void removeItem(@PathVariable Long id, @PathVariable Long itemId) {
+        this.shoppingListItemService.removeItem(id, itemId);
+    }
+
+    @ApiOperation(value = "Set quantity for Item in ShoppingList", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/{id}/{itemId}", method = RequestMethod.POST,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ShoppingListItem setItemQuantity(@PathVariable Long id, @PathVariable Long itemId,
+                                @RequestParam(value = "quantity") Long quantity) {
+        return this.shoppingListItemService.setQuantity(id, itemId, quantity);
     }
 
 }
