@@ -26,6 +26,8 @@ import org.interactiverobotics.grocery.exception.ShopNotFoundException;
 import org.interactiverobotics.grocery.exception.VisitNotFoundException;
 import org.interactiverobotics.grocery.repository.ShopRepository;
 import org.interactiverobotics.grocery.repository.VisitRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +43,8 @@ import java.util.Optional;
  */
 @Service
 public class VisitService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(VisitService.class);
 
     private final VisitRepository visitRepository;
 
@@ -63,6 +67,7 @@ public class VisitService {
     public List<Visit> getVisits() {
         final List<Visit> visits = new ArrayList<>();
         this.visitRepository.findAll().forEach(visit -> visits.add(visit));
+        LOG.debug("{} Visit(s) found", visits.size());
         return visits;
     }
 
@@ -70,15 +75,19 @@ public class VisitService {
      * Returns page of Visit(s).
      */
     public Page<Visit> getVisits(Pageable pageable) {
-        return this.visitRepository.findAll(pageable);
+        final Page<Visit> visits = this.visitRepository.findAll(pageable);
+        LOG.debug("{} Visit(s) found for {}", visits.getNumberOfElements(), pageable);
+        return visits;
     }
 
     /**
      * Returns Visit by Id.
      */
     public Visit getVisitById(final Long visitId) {
-        return Optional.ofNullable(this.visitRepository.findOne(visitId))
+        final Visit visit = Optional.ofNullable(this.visitRepository.findOne(visitId))
                 .orElseThrow(() -> new VisitNotFoundException(visitId));
+        LOG.debug("Visit found by Id #{}", visitId);
+        return visit;
     }
 
     /**
@@ -103,6 +112,7 @@ public class VisitService {
     public List<Visit> getVisitsByShop(final Shop shop) {
         final List<Visit> visits = new ArrayList<>();
         this.visitRepository.findAllByShop(shop).forEach(visit -> visits.add(visit));
+        LOG.debug("{} Visit(s) found for Shop: {}", visits.size(), shop);
         return visits;
     }
 
@@ -126,7 +136,9 @@ public class VisitService {
      * Creates Visit.
      */
     public Visit createVisit(final Shop shop) {
-        return this.visitRepository.save(new Visit(shop));
+        final Visit visit = this.visitRepository.save(new Visit(shop));
+        LOG.info("Visit created: {}", visit);
+        return visit;
     }
 
     /**
@@ -136,7 +148,9 @@ public class VisitService {
         final Visit visit = Optional.ofNullable(this.visitRepository.findOne(visitId))
                 .orElseThrow(() -> new VisitNotFoundException(visitId));
         visit.setStarted(new Date());
-        return this.visitRepository.save(visit);
+        final Visit updatedVisit = this.visitRepository.save(visit);
+        LOG.info("Visit started: {}", updatedVisit);
+        return updatedVisit;
     }
 
     /**
@@ -150,7 +164,9 @@ public class VisitService {
             visit.setStarted(now);
         }
         visit.setCompleted(now);
-        return this.visitRepository.save(visit);
+        final Visit updatedVisit = this.visitRepository.save(visit);
+        LOG.info("Visit completed: {}", updatedVisit);
+        return updatedVisit;
     }
 
     /**
@@ -160,6 +176,7 @@ public class VisitService {
         final Visit visit = Optional.ofNullable(this.visitRepository.findOne(visitId))
                 .orElseThrow(() -> new VisitNotFoundException(visitId));
         this.visitRepository.delete(visit);
+        LOG.info("Visit deleted: {}", visit);
     }
 
 }
