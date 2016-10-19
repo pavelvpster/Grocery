@@ -112,7 +112,7 @@ public class VisitService {
     public List<Visit> getVisitsByShop(final Shop shop) {
         final List<Visit> visits = new ArrayList<>();
         this.visitRepository.findAllByShop(shop).forEach(visit -> visits.add(visit));
-        LOG.debug("{} Visit(s) found for Shop: {}", visits.size(), shop);
+        LOG.debug("{} Visit(s) found for Shop {}", visits.size(), shop);
         return visits;
     }
 
