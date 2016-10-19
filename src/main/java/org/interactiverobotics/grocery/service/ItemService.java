@@ -24,6 +24,8 @@ import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.exception.ItemNotFoundException;
 import org.interactiverobotics.grocery.form.ItemForm;
 import org.interactiverobotics.grocery.repository.ItemRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +41,8 @@ import java.util.Optional;
 @Service
 public class ItemService {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ItemService.class);
+
     private final ItemRepository itemRepository;
 
     @Autowired
@@ -52,6 +56,7 @@ public class ItemService {
     public List<Item> getItems() {
         final List<Item> items = new ArrayList<>();
         this.itemRepository.findAll().forEach(item -> items.add(item));
+        LOG.debug("{} Item(s) found", items.size());
         return items;
     }
 
@@ -59,30 +64,38 @@ public class ItemService {
      * Returns page of Item(s).
      */
     public Page<Item> getItems(Pageable pageable) {
-        return this.itemRepository.findAll(pageable);
+        final Page<Item> items = this.itemRepository.findAll(pageable);
+        LOG.debug("{} Item(s) found for {}", items.getNumberOfElements(), pageable);
+        return items;
     }
 
     /**
      * Returns Item by Id.
      */
     public Item getItemById(final Long itemId) {
-        return Optional.ofNullable(this.itemRepository.findOne(itemId))
+        final Item item = Optional.ofNullable(this.itemRepository.findOne(itemId))
                 .orElseThrow(() -> new ItemNotFoundException(itemId));
+        LOG.debug("Item found by Id #{}", itemId);
+        return item;
     }
 
     /**
      * Returns Item by Name.
      */
     public Item getItemByName(final String name) {
-        return Optional.ofNullable(this.itemRepository.findOneByName(name))
+        final Item item = Optional.ofNullable(this.itemRepository.findOneByName(name))
                 .orElseThrow(() -> new ItemNotFoundException(-1L));
+        LOG.debug("Item found by Name '{}'", name);
+        return item;
     }
 
     /**
      * Creates Item.
      */
     public Item createItem(final ItemForm form) {
-        return this.itemRepository.save(new Item(form.getName()));
+        final Item item = this.itemRepository.save(new Item(form.getName()));
+        LOG.info("Item created: {}", item);
+        return item;
     }
 
     /**
@@ -92,7 +105,9 @@ public class ItemService {
         final Item item = Optional.ofNullable(this.itemRepository.findOne(itemId))
                 .orElseThrow(() -> new ItemNotFoundException(itemId));
         item.setName(form.getName());
-        return this.itemRepository.save(item);
+        final Item updatedItem = this.itemRepository.save(item);
+        LOG.info("Item updated: {}", updatedItem);
+        return updatedItem;
     }
 
     /**
@@ -102,6 +117,7 @@ public class ItemService {
         final Item item = Optional.ofNullable(this.itemRepository.findOne(itemId))
                 .orElseThrow(() -> new ItemNotFoundException(itemId));
         this.itemRepository.delete(item);
+        LOG.info("Item deleted: {}", item);
     }
 
 }

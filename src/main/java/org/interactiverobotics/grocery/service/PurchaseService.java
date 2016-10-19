@@ -29,6 +29,8 @@ import org.interactiverobotics.grocery.exception.VisitNotFoundException;
 import org.interactiverobotics.grocery.repository.ItemRepository;
 import org.interactiverobotics.grocery.repository.PurchaseRepository;
 import org.interactiverobotics.grocery.repository.VisitRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,6 +49,8 @@ import java.util.stream.StreamSupport;
  */
 @Service
 public class PurchaseService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(PurchaseService.class);
 
     private final VisitRepository visitRepository;
 
@@ -82,7 +86,9 @@ public class PurchaseService {
      * Returns Purchase(s).
      */
     public List<Purchase> getPurchases(final Visit visit) {
-        return purchaseRepository.findAllByVisit(visit);
+        final List<Purchase> purchases = purchaseRepository.findAllByVisit(visit);
+        LOG.debug("{} Purchase(s) found for Visit {}", purchases.size(), visit);
+        return purchases;
     }
 
     /**
@@ -100,7 +106,9 @@ public class PurchaseService {
      * Returns page of Purchase(s).
      */
     public Page<Purchase> getPurchases(Pageable pageable, final Visit visit) {
-        return this.purchaseRepository.findAllByVisit(pageable, visit);
+        final Page<Purchase> purchases = this.purchaseRepository.findAllByVisit(pageable, visit);
+        LOG.debug("{} Purchase(s) found for Visit {} and {}", purchases.getNumberOfElements(), visit, pageable);
+        return purchases;
     }
 
     /**
@@ -118,9 +126,11 @@ public class PurchaseService {
      * Returns Item(s) not existing in Visit's Purchase(s).
      */
     public List<Item> getNotPurchasedItems(final Visit visit) {
-        return StreamSupport.stream(this.itemRepository.findAll().spliterator(), false)
+        final List<Item> items = StreamSupport.stream(this.itemRepository.findAll().spliterator(), false)
                 .filter(item -> this.purchaseRepository.findOneByVisitAndItem(visit, item) == null)
                 .collect(Collectors.toList());
+        LOG.debug("{} not purchased Item(s) found for Visit {}", items.size(), visit);
+        return items;
     }
 
     /**
@@ -178,7 +188,9 @@ public class PurchaseService {
             }
         }
 
-        return this.purchaseRepository.save(purchase);
+        final Purchase updatedPurchase = this.purchaseRepository.save(purchase);
+        LOG.info("Purchase updated: {}", updatedPurchase);
+        return updatedPurchase;
     }
 
     /**
@@ -218,10 +230,13 @@ public class PurchaseService {
         purchase.setQuantity(newQuantity);
 
         if (newQuantity > 0) {
-            return this.purchaseRepository.save(purchase);
+            final Purchase updatedPurchase = this.purchaseRepository.save(purchase);
+            LOG.info("Purchase updated: {}", updatedPurchase);
+            return updatedPurchase;
         } else {
             // Delete empty purchase
             this.purchaseRepository.delete(purchase);
+            LOG.info("Purchase deleted: {}", purchase);
             return null;
         }
     }
@@ -261,7 +276,9 @@ public class PurchaseService {
 
         purchase.setPrice(price);
 
-        return this.purchaseRepository.save(purchase);
+        final Purchase updatedPurchase = this.purchaseRepository.save(purchase);
+        LOG.info("Purchase updated: {}", updatedPurchase);
+        return updatedPurchase;
     }
 
 }
