@@ -37,3 +37,7 @@ function deleteShoppingList(id) {
         }
     });
 }
+
+function gotoShoppingListItems(shoppingListId) {
+    window.location = "/shopping_list_item/" + shoppingListId;
+}

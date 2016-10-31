@@ -19,6 +19,10 @@
             &nbsp;
             <span class="glyphicon glyphicon-trash" aria-hidden="true"
                   th:onclick="'deleteShoppingList(' + ${shoppingList.id} + ')'"/>
+            &nbsp;
+            &nbsp;
+            <span class="glyphicon glyphicon-asterisk" aria-hidden="true"
+                  th:onclick="'gotoShoppingListItems(' + ${shoppingList.id} + ')'"/>
         </td>
     </tr>
     </tbody>
