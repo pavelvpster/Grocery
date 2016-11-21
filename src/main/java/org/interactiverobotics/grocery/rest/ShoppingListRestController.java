@@ -37,6 +37,7 @@ import java.util.List;
 
 /**
  * ShoppingList REST controller.
+ * todo: separate ShoppingList and ShoppingListItem logic; create ShoppingListItem REST controller
  */
 @Api(value = "ShoppingList", description = "Shopping list management endpoint")
 @RestController
@@ -112,7 +113,7 @@ public class ShoppingListRestController {
     @RequestMapping(value = "/{id}/remove/{itemId}", method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public void removeItem(@PathVariable Long id, @PathVariable Long itemId) {
-        this.shoppingListItemService.removeItem(id, itemId);
+        this.shoppingListItemService.deleteItem(id, itemId);
     }
 
     @ApiOperation(value = "Set quantity for Item in ShoppingList", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)

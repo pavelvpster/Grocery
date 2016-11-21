@@ -378,13 +378,13 @@ public class ShoppingListRestControllerTest {
                 .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk());
 
-        verify(shoppingListItemService).removeItem(eq(shoppingListId), eq(itemId));
+        verify(shoppingListItemService).deleteItem(eq(shoppingListId), eq(itemId));
     }
 
     @Test(expected = Exception.class)
     public void testRemoveItemForWrongParams() throws Exception {
 
-        doThrow(new Exception()).when(shoppingListItemService).removeItem(anyLong(), anyLong());
+        doThrow(new Exception()).when(shoppingListItemService).deleteItem(anyLong(), anyLong());
 
         mvc.perform(post("/api/v1/shopping_list/" + new Long(999L) + "/add/" + new Long(999L))
                 .param("quantity", "-1")

@@ -23,12 +23,20 @@ package org.interactiverobotics.grocery.repository;
 import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.domain.ShoppingList;
 import org.interactiverobotics.grocery.domain.ShoppingListItem;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.PagingAndSortingRepository;
+
+import java.util.List;
 
 /**
  * ShoppingListItem repository.
  */
 public interface ShoppingListItemRepository extends PagingAndSortingRepository<ShoppingListItem, Long> {
+
+    List<ShoppingListItem> findAllByShoppingList(ShoppingList shoppingList);
+
+    Page<ShoppingListItem> findAllByShoppingList(Pageable pageable, ShoppingList shoppingList);
 
     ShoppingListItem findOneByShoppingListAndItem(ShoppingList shoppingList, Item item);
 }

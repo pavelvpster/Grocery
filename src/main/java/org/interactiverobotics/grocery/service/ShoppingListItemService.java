@@ -30,12 +30,18 @@ import org.interactiverobotics.grocery.repository.ItemRepository;
 import org.interactiverobotics.grocery.repository.ShoppingListItemRepository;
 import org.interactiverobotics.grocery.repository.ShoppingListRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * ShoppingListItem service.
+ * todo: refactor API: use ShoppingListItem Id instead of ShoppingList Id and Item Id where possible
  */
 @Service
 public class ShoppingListItemService {
@@ -54,18 +60,75 @@ public class ShoppingListItemService {
         this.shoppingListItemRepository = shoppingListItemRepository;
     }
 
-    public ShoppingListItem addItem(final Long shoppingListId, final Long itemId, final Long quantity) {
-        final ShoppingList shoppingList = this.shoppingListRepository.findOne(shoppingListId);
-        if (shoppingList == null) {
-            throw new ShoppingListNotFoundException(shoppingListId);
-        }
-        final Item item = this.itemRepository.findOne(itemId);
-        if (item == null) {
-            throw new ItemNotFoundException(itemId);
-        }
-        return addItem(shoppingList, item, quantity);
+    /**
+     * Returns ShoppingListItem(s).
+     */
+    public List<ShoppingListItem> getShoppingListItems(final Long shoppingListId) {
+        return getShoppingListItems(Optional.ofNullable(this.shoppingListRepository.findOne(shoppingListId))
+                .orElseThrow(() -> new ShoppingListNotFoundException(shoppingListId)));
     }
 
+    /**
+     * Returns ShoppingListItem(s).
+     */
+    public List<ShoppingListItem> getShoppingListItems(final ShoppingList shoppingList) {
+        return this.shoppingListItemRepository.findAllByShoppingList(shoppingList);
+    }
+
+    /**
+     * Returns page of ShoppingListItem(s).
+     */
+    public Page<ShoppingListItem> getShoppingListItems(Pageable pageable, final Long shoppingListId) {
+        return getShoppingListItems(pageable, Optional.ofNullable(this.shoppingListRepository.findOne(shoppingListId))
+                .orElseThrow(() -> new ShoppingListNotFoundException(shoppingListId)));
+    }
+
+    /**
+     * Returns page of ShoppingListItem(s).
+     */
+    public Page<ShoppingListItem> getShoppingListItems(Pageable pageable, final ShoppingList shoppingList) {
+        return this.shoppingListItemRepository.findAllByShoppingList(pageable, shoppingList);
+    }
+
+    /**
+     * Returns ShoppingListItem by Id.
+     */
+    public ShoppingListItem getShoppingListItemById(final Long shoppingListItemId) {
+        return Optional.ofNullable(this.shoppingListItemRepository.findOne(shoppingListItemId))
+                .orElseThrow(() -> new ShoppingListItemNotFoundException(shoppingListItemId));
+    }
+
+    /**
+     * Returns Item(s) not existing in ShoppingList's Item(s).
+     */
+    public List<Item> getNotAddedItems(final Long shoppingListId) {
+        return getNotAddedItems(Optional.ofNullable(this.shoppingListRepository.findOne(shoppingListId))
+                .orElseThrow(() -> new ShoppingListNotFoundException(shoppingListId)));
+    }
+
+    /**
+     * Returns Item(s) not existing in ShoppingList's Item(s).
+     */
+    public List<Item> getNotAddedItems(final ShoppingList shoppingList) {
+        return StreamSupport.stream(this.itemRepository.findAll().spliterator(), false)
+                .filter(item ->
+                        this.shoppingListItemRepository.findOneByShoppingListAndItem(shoppingList, item) == null)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Add Item to ShoppingList.
+     */
+    public ShoppingListItem addItem(final Long shoppingListId, final Long itemId, final Long quantity) {
+        return addItem(Optional.ofNullable(this.shoppingListRepository.findOne(shoppingListId))
+                .orElseThrow(() -> new ShoppingListNotFoundException(shoppingListId)),
+                        Optional.ofNullable(this.itemRepository.findOne(itemId))
+                                .orElseThrow(() -> new ItemNotFoundException(itemId)), quantity);
+    }
+
+    /**
+     * Add Item to ShoppingList.
+     */
     public ShoppingListItem addItem(final ShoppingList shoppingList, final Item item, final Long quantity) {
 
         // Quantity must be > 0
@@ -76,46 +139,71 @@ public class ShoppingListItemService {
         return this.shoppingListItemRepository.save(new ShoppingListItem(shoppingList, item, quantity));
     }
 
-    public void removeItem(final Long shoppingListId, final Long itemId) {
-        final ShoppingList shoppingList = this.shoppingListRepository.findOne(shoppingListId);
-        if (shoppingList == null) {
-            throw new ShoppingListNotFoundException(shoppingListId);
-        }
-        final Item item = this.itemRepository.findOne(itemId);
-        if (item == null) {
-            throw new ItemNotFoundException(itemId);
-        }
-        removeItem(shoppingList, item);
+    /**
+     * Deletes Item from ShoppingList.
+     */
+    public void deleteItem(final Long shoppingListId, final Long itemId) {
+        deleteItem(Optional.ofNullable(this.shoppingListRepository.findOne(shoppingListId))
+                .orElseThrow(() -> new ShoppingListNotFoundException(shoppingListId)),
+                        Optional.ofNullable(this.itemRepository.findOne(itemId))
+                                .orElseThrow(() -> new ItemNotFoundException(itemId)));
     }
 
-    public void removeItem(final ShoppingList shoppingList, final Item item) {
-        removeItem(Optional.ofNullable(this.shoppingListItemRepository
+    /**
+     * Deletes Item from ShoppingList.
+     */
+    public ShoppingListItem deleteItem(final ShoppingList shoppingList, final Item item) {
+        return deleteItem(Optional.ofNullable(this.shoppingListItemRepository
                 .findOneByShoppingListAndItem(shoppingList, item))
                 .orElseThrow(() -> new ShoppingListItemNotFoundException(-1L)));
     }
 
-    public void removeItem(final ShoppingListItem shoppingListItem) {
+    /**
+     * Deletes Item from ShoppingList.
+     */
+    public ShoppingListItem deleteItem(final Long shoppingListItemId) {
+        return deleteItem(Optional.ofNullable(this.shoppingListItemRepository.findOne(shoppingListItemId))
+                .orElseThrow(() -> new ShoppingListItemNotFoundException(shoppingListItemId)));
+    }
+
+    /**
+     * Deletes Item from ShoppingList.
+     */
+    public ShoppingListItem deleteItem(final ShoppingListItem shoppingListItem) {
         this.shoppingListItemRepository.delete(shoppingListItem);
+        return shoppingListItem;
     }
 
+    /**
+     * Updates Item's (assigned to ShoppingList) Quantity.
+     */
     public ShoppingListItem setQuantity(final Long shoppingListId, final Long itemId, final Long quantity) {
-        final ShoppingList shoppingList = this.shoppingListRepository.findOne(shoppingListId);
-        if (shoppingList == null) {
-            throw new ShoppingListNotFoundException(shoppingListId);
-        }
-        final Item item = this.itemRepository.findOne(itemId);
-        if (item == null) {
-            throw new ItemNotFoundException(itemId);
-        }
-        return setQuantity(shoppingList, item, quantity);
+        return setQuantity(Optional.ofNullable(this.shoppingListRepository.findOne(shoppingListId))
+                .orElseThrow(() -> new ShoppingListNotFoundException(shoppingListId)),
+                        Optional.ofNullable(this.itemRepository.findOne(itemId))
+                                .orElseThrow(() -> new ItemNotFoundException(itemId)), quantity);
     }
 
+    /**
+     * Updates Item's (assigned to ShoppingList) Quantity.
+     */
     public ShoppingListItem setQuantity(final ShoppingList shoppingList, final Item item, final Long quantity) {
         return setQuantity(Optional.ofNullable(this.shoppingListItemRepository
                 .findOneByShoppingListAndItem(shoppingList, item))
                 .orElseThrow(() -> new ShoppingListItemNotFoundException(-1L)), quantity);
     }
 
+    /**
+     * Updates Item's (assigned to ShoppingList) Quantity.
+     */
+    public ShoppingListItem setQuantity(final Long shoppingListItemId, final Long quantity) {
+        return setQuantity(Optional.ofNullable(this.shoppingListItemRepository.findOne(shoppingListItemId))
+                .orElseThrow(() -> new ShoppingListItemNotFoundException(shoppingListItemId)), quantity);
+    }
+
+    /**
+     * Updates Item's (assigned to ShoppingList) Quantity.
+     */
     public ShoppingListItem setQuantity(final ShoppingListItem shoppingListItem, final Long quantity) {
 
         // Quantity must be > 0

@@ -164,7 +164,7 @@ public class ShoppingListItemServiceTest {
         when(shoppingListItemRepository.findOneByShoppingListAndItem(shoppingList, item))
                 .thenReturn(existingShoppingListItem);
 
-        shoppingListItemService.removeItem(shoppingList.getId(), item.getId());
+        shoppingListItemService.deleteItem(shoppingList.getId(), item.getId());
 
         verify(shoppingListItemRepository).delete(existingShoppingListItem);
     }
@@ -176,19 +176,19 @@ public class ShoppingListItemServiceTest {
         when(shoppingListItemRepository.findOneByShoppingListAndItem(shoppingList, item))
                 .thenReturn(existingShoppingListItem);
 
-        shoppingListItemService.removeItem(shoppingList, item);
+        shoppingListItemService.deleteItem(shoppingList, item);
 
         verify(shoppingListItemRepository).delete(existingShoppingListItem);
     }
 
     @Test(expected = ShoppingListNotFoundException.class)
     public void testRemoveItemForWrongShoppingListId() throws Exception {
-        shoppingListItemService.removeItem(999L, item.getId());
+        shoppingListItemService.deleteItem(999L, item.getId());
     }
 
     @Test(expected = ItemNotFoundException.class)
     public void testRemoveItemForWrongItemId() throws Exception {
-        shoppingListItemService.removeItem(shoppingList.getId(), 999L);
+        shoppingListItemService.deleteItem(shoppingList.getId(), 999L);
     }
 
     @Test
