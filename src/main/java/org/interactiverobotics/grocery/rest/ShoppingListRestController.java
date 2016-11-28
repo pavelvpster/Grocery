@@ -23,9 +23,7 @@ package org.interactiverobotics.grocery.rest;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.interactiverobotics.grocery.domain.ShoppingList;
-import org.interactiverobotics.grocery.domain.ShoppingListItem;
 import org.interactiverobotics.grocery.form.ShoppingListForm;
-import org.interactiverobotics.grocery.service.ShoppingListItemService;
 import org.interactiverobotics.grocery.service.ShoppingListService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -37,7 +35,6 @@ import java.util.List;
 
 /**
  * ShoppingList REST controller.
- * todo: separate ShoppingList and ShoppingListItem logic; create ShoppingListItem REST controller
  */
 @Api(value = "ShoppingList", description = "Shopping list management endpoint")
 @RestController
@@ -46,14 +43,9 @@ public class ShoppingListRestController {
 
     private final ShoppingListService shoppingListService;
 
-    private final ShoppingListItemService shoppingListItemService;
-
     @Autowired
-    public ShoppingListRestController(final ShoppingListService shoppingListService,
-                                      final ShoppingListItemService shoppingListItemService) {
-
+    public ShoppingListRestController(final ShoppingListService shoppingListService) {
         this.shoppingListService = shoppingListService;
-        this.shoppingListItemService = shoppingListItemService;
     }
 
     @ApiOperation(value = "Get all ShoppingList(s)", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -64,8 +56,9 @@ public class ShoppingListRestController {
 
     @ApiOperation(value = "Get page of ShoppingLists", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @RequestMapping(value = "/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public Page<ShoppingList> getShoppingListsPage(@RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
-                                                   @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
+    public Page<ShoppingList> getShoppingListsPage(
+            @RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
+            @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
 
         final PageRequest pageRequest = new PageRequest(pageNumber - 1, pageSize);
         return this.shoppingListService.getShoppingLists(pageRequest);
@@ -99,29 +92,6 @@ public class ShoppingListRestController {
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public void deleteShoppingList(@PathVariable Long id) {
         this.shoppingListService.deleteShoppingList(id);
-    }
-
-    @ApiOperation(value = "Add Item to ShoppingList", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/{id}/add/{itemId}", method = RequestMethod.POST,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ShoppingListItem addItem(@PathVariable Long id, @PathVariable Long itemId,
-                                    @RequestParam(value = "quantity") Long quantity) {
-        return this.shoppingListItemService.addItem(id, itemId, quantity);
-    }
-
-    @ApiOperation(value = "Remove Item from ShoppingList", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/{id}/remove/{itemId}", method = RequestMethod.POST,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public void removeItem(@PathVariable Long id, @PathVariable Long itemId) {
-        this.shoppingListItemService.deleteItem(id, itemId);
-    }
-
-    @ApiOperation(value = "Set quantity for Item in ShoppingList", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/{id}/{itemId}", method = RequestMethod.POST,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ShoppingListItem setItemQuantity(@PathVariable Long id, @PathVariable Long itemId,
-                                @RequestParam(value = "quantity") Long quantity) {
-        return this.shoppingListItemService.setQuantity(id, itemId, quantity);
     }
 
 }

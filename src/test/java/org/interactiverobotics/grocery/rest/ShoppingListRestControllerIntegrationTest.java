@@ -20,12 +20,8 @@
 
 package org.interactiverobotics.grocery.rest;
 
-import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.domain.ShoppingList;
-import org.interactiverobotics.grocery.domain.ShoppingListItem;
 import org.interactiverobotics.grocery.form.ShoppingListForm;
-import org.interactiverobotics.grocery.repository.ItemRepository;
-import org.interactiverobotics.grocery.repository.ShoppingListItemRepository;
 import org.interactiverobotics.grocery.repository.ShoppingListRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,12 +57,6 @@ public class ShoppingListRestControllerIntegrationTest {
 
     @Autowired
     private ShoppingListRepository shoppingListRepository;
-
-    @Autowired
-    private ItemRepository itemRepository;
-
-    @Autowired
-    private ShoppingListItemRepository shoppingListItemRepository;
 
 
     @Before
@@ -227,186 +217,6 @@ public class ShoppingListRestControllerIntegrationTest {
 
         final ResponseEntity<?> response = restTemplate
                 .exchange("/api/v1/shopping_list/" + new Long(999L), HttpMethod.DELETE, null, Object.class);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-    }
-
-    @Test
-    public void testAddItem() {
-
-        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList("test-shopping-list"));
-        final Item existingItem = itemRepository.save(new Item("test-item"));
-
-        final ResponseEntity<ShoppingListItem> response = restTemplate.postForEntity("/api/v1/shopping_list/"
-                + existingShoppingList.getId() + "/add/" + existingItem.getId() + "?quantity=1", null,
-                ShoppingListItem.class);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.hasBody());
-
-        shoppingListItemRepository.delete(response.getBody());
-        itemRepository.delete(existingItem);
-        shoppingListRepository.delete(existingShoppingList);
-
-        assertEquals(existingShoppingList, response.getBody().getShoppingList());
-        assertEquals(existingItem, response.getBody().getItem());
-        assertEquals(new Long(1L), response.getBody().getQuantity());
-    }
-
-    @Test
-    public void testAddItemForWrongShoppingListId() {
-
-        final Item existingItem = itemRepository.save(new Item("test-item"));
-
-        final ResponseEntity<ShoppingListItem> response = restTemplate.postForEntity("/api/v1/shopping_list/"
-                + new Long(999L) + "/add/" + existingItem.getId() + "?quantity=1", null,
-                ShoppingListItem.class);
-
-        itemRepository.delete(existingItem);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-    }
-
-    @Test
-    public void testAddItemForWrongItemId() {
-
-        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList("test-shopping-list"));
-
-        final ResponseEntity<ShoppingListItem> response = restTemplate.postForEntity("/api/v1/shopping_list/"
-                + existingShoppingList.getId() + "/add/" + new Long(999L) + "?quantity=1", null,
-                ShoppingListItem.class);
-
-        shoppingListRepository.delete(existingShoppingList);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-    }
-
-    @Test
-    public void testAddItemForWrongQuantity() {
-
-        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList("test-shopping-list"));
-        final Item existingItem = itemRepository.save(new Item("test-item"));
-
-        final ResponseEntity<ShoppingListItem> response = restTemplate.postForEntity("/api/v1/shopping_list/"
-                + existingShoppingList.getId() + "/add/" + existingItem.getId() + "?quantity=0", null,
-                ShoppingListItem.class);
-
-        itemRepository.delete(existingItem);
-        shoppingListRepository.delete(existingShoppingList);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-    }
-
-    @Test
-    public void testRemoveItem() {
-
-        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList("test-shopping-list"));
-        final Item existingItem = itemRepository.save(new Item("test-item"));
-        final ShoppingListItem existingShoppingListItem = shoppingListItemRepository
-                .save(new ShoppingListItem(existingShoppingList, existingItem, 1L));
-
-        final ResponseEntity<?> response = restTemplate.postForEntity("/api/v1/shopping_list/"
-                        + existingShoppingList.getId() + "/remove/" + existingItem.getId(), null, Object.class);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNull(shoppingListItemRepository.findOne(existingShoppingListItem.getId()));
-
-        itemRepository.delete(existingItem);
-        shoppingListRepository.delete(existingShoppingList);
-    }
-
-    @Test
-    public void testRemoveItemForWrongShoppingListId() {
-
-        final Item existingItem = itemRepository.save(new Item("test-item"));
-
-        final ResponseEntity<?> response = restTemplate.postForEntity("/api/v1/shopping_list/"
-                        + new Long(999L) + "/remove/" + existingItem.getId(), null, Object.class);
-
-        itemRepository.delete(existingItem);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-    }
-
-    @Test
-    public void testRemoveItemForWrongItemId() {
-
-        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList("test-shopping-list"));
-
-        final ResponseEntity<?> response = restTemplate.postForEntity("/api/v1/shopping_list/"
-                        + existingShoppingList.getId() + "/remove/" + new Long(999L), null, Object.class);
-
-        shoppingListRepository.delete(existingShoppingList);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-    }
-
-    @Test
-    public void testSetItemQuantity() {
-
-        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList("test-shopping-list"));
-        final Item existingItem = itemRepository.save(new Item("test-item"));
-        final ShoppingListItem existingShoppingListItem = shoppingListItemRepository
-                .save(new ShoppingListItem(existingShoppingList, existingItem, 1L));
-
-        final ResponseEntity<ShoppingListItem> response = restTemplate.postForEntity("/api/v1/shopping_list/"
-                + existingShoppingList.getId() + "/" + existingItem.getId() + "?quantity=2", null,
-                ShoppingListItem.class);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.hasBody());
-
-        shoppingListItemRepository.delete(existingShoppingListItem);
-        itemRepository.delete(existingItem);
-        shoppingListRepository.delete(existingShoppingList);
-
-        assertEquals(existingShoppingList, response.getBody().getShoppingList());
-        assertEquals(existingItem, response.getBody().getItem());
-        assertEquals(new Long(2L), response.getBody().getQuantity());
-    }
-
-    @Test
-    public void testSetItemQuantityForWrongShoppingListId() {
-
-        final Item existingItem = itemRepository.save(new Item("test-item"));
-
-        final ResponseEntity<ShoppingListItem> response = restTemplate.postForEntity("/api/v1/shopping_list/"
-                        + new Long(999L) + "/" + existingItem.getId() + "?quantity=2", null, ShoppingListItem.class);
-
-        itemRepository.delete(existingItem);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-    }
-
-    @Test
-    public void testSetItemQuantityForWrongItemId() {
-
-        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList("test-shopping-list"));
-
-        final ResponseEntity<ShoppingListItem> response = restTemplate.postForEntity("/api/v1/shopping_list/"
-                + existingShoppingList.getId() + "/" + new Long(999L) + "?quantity=2", null,
-                ShoppingListItem.class);
-
-        shoppingListRepository.delete(existingShoppingList);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-    }
-
-    @Test
-    public void testSetItemQuantityForWrongQuantity() {
-
-        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList("test-shopping-list"));
-        final Item existingItem = itemRepository.save(new Item("test-item"));
-        final ShoppingListItem existingShoppingListItem = shoppingListItemRepository
-                .save(new ShoppingListItem(existingShoppingList, existingItem, 1L));
-
-        final ResponseEntity<ShoppingListItem> response = restTemplate.postForEntity("/api/v1/shopping_list/"
-                + existingShoppingList.getId() + "/" + existingItem.getId() + "?quantity=0", null,
-                ShoppingListItem.class);
-
-        shoppingListItemRepository.delete(existingShoppingListItem);
-        itemRepository.delete(existingItem);
-        shoppingListRepository.delete(existingShoppingList);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }

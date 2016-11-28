@@ -113,11 +113,10 @@ public class ShoppingListItemWebController {
     public String createShoppingListItem(@PathVariable Long shoppingListId,
                                          @Valid ShoppingListItemCreateForm form, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "redirect:/shopping_list";
+            return "redirect:/shopping_list_item/" + shoppingListId;
         }
-        //todo: update ShoppingListItemService API
-        final ShoppingListItem shoppingListItem = this.shoppingListItemService.addItem(
-                shoppingListId, form.getItem(), form.getQuantity());
+        final ShoppingListItem shoppingListItem =
+                this.shoppingListItemService.createShoppingListItem(shoppingListId, form);
         return "redirect:/shopping_list_item/" + shoppingListItem.getShoppingList().getId();
     }
 
@@ -139,9 +138,10 @@ public class ShoppingListItemWebController {
                                          @Valid ShoppingListItemUpdateForm form,
                                          BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "redirect:/shopping_list";
+            return "redirect:/shopping_list_item/" +
+                    this.shoppingListItemService.getShoppingListItemById(id).getShoppingList().getId();
         }
-        final ShoppingListItem shoppingListItem = this.shoppingListItemService.setQuantity(id, form.getQuantity());
+        final ShoppingListItem shoppingListItem = this.shoppingListItemService.updateShoppingListItem(id, form);
         return "redirect:/shopping_list_item/" + shoppingListItem.getShoppingList().getId();
     }
 
@@ -152,7 +152,7 @@ public class ShoppingListItemWebController {
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     @ResponseBody
     public void deleteShoppingListItem(@PathVariable Long id) {
-        this.shoppingListItemService.deleteItem(id);
+        this.shoppingListItemService.deleteShoppingListItem(id);
     }
 
 }
