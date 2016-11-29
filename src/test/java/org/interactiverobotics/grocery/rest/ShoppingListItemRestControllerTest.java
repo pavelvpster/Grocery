@@ -127,13 +127,13 @@ public class ShoppingListItemRestControllerTest {
         @Override
         public ShoppingListItem answer(InvocationOnMock invocation) throws Throwable {
 
-            assertEquals(2, invocation.getArguments().length);
+            assertEquals(1, invocation.getArguments().length);
 
-            final Long shoppingListId = invocation.getArgumentAt(0, Long.class);
-            assertEquals(shoppingList.getId(), shoppingListId);
-
-            final ShoppingListItemCreateForm form = invocation.getArgumentAt(1, ShoppingListItemCreateForm.class);
+            final ShoppingListItemCreateForm form = invocation.getArgumentAt(0, ShoppingListItemCreateForm.class);
             assertNotNull(form);
+
+            final Long shoppingListId = form.getShoppingList();
+            assertEquals(shoppingList.getId(), shoppingListId);
 
             final Long itemId = form.getItem();
             assertEquals(item.getId(), itemId);
@@ -160,13 +160,13 @@ public class ShoppingListItemRestControllerTest {
         final CreateShoppingListItemAnswer createShoppingListItemAnswer =
                 new CreateShoppingListItemAnswer(existingShoppingList, existingItem);
 
-        when(shoppingListItemService
-                .createShoppingListItem(eq(existingShoppingList.getId()), any(ShoppingListItemCreateForm.class)))
+        when(shoppingListItemService.createShoppingListItem(any(ShoppingListItemCreateForm.class)))
                 .thenAnswer(createShoppingListItemAnswer);
 
-        mvc.perform(post("/api/v1/shopping_list_item/shopping_list/" + existingShoppingList.getId())
+        mvc.perform(post("/api/v1/shopping_list_item/")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content("{\"item\":" + existingItem.getId() + ",\"quantity\":1}")
+                .content("{\"shoppingList\":" + existingShoppingList.getId() + ",\"item\":" + existingItem.getId()
+                        + ",\"quantity\":1}")
                 .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -182,11 +182,11 @@ public class ShoppingListItemRestControllerTest {
     @Test(expected = Exception.class)
     public void testCreateShoppingListItemForWrongParams() throws Exception {
 
-        when(shoppingListItemService.createShoppingListItem(anyLong(), anyObject())).thenThrow(new Exception());
+        when(shoppingListItemService.createShoppingListItem(anyObject())).thenThrow(new Exception());
 
-        mvc.perform(post("/api/v1/shopping_list_item/shopping_list/" + new Long(999L))
+        mvc.perform(post("/api/v1/shopping_list_item/")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content("{\"item\":999,\"quantity\":-1}")
+                .content("{\"shoppingList\":999,\"item\":999,\"quantity\":-1}")
                 .accept(MediaType.APPLICATION_JSON_UTF8));
     }
 

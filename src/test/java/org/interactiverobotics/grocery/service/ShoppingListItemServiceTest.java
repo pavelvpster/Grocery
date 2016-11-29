@@ -223,7 +223,7 @@ public class ShoppingListItemServiceTest {
         final Long quantity = 1L;
 
         final ShoppingListItem shoppingListItem = shoppingListItemService
-                .createShoppingListItem(shoppingList.getId(), new ShoppingListItemCreateForm(item.getId(), quantity));
+                .createShoppingListItem(new ShoppingListItemCreateForm(shoppingList.getId(), item.getId(), quantity));
 
         // Check that Service returns what was saved
         final ShoppingListItem savedShoppingListItem = saveAndReturnShoppingListItemAnswer.getShoppingListItem();
@@ -237,20 +237,17 @@ public class ShoppingListItemServiceTest {
 
     @Test(expected = ShoppingListNotFoundException.class)
     public void testCreateShoppingListItemForWrongShoppingListId() throws Exception {
-        shoppingListItemService.createShoppingListItem(999L,
-                new ShoppingListItemCreateForm(item.getId(), 1L));
+        shoppingListItemService.createShoppingListItem(new ShoppingListItemCreateForm(999L, item.getId(), 1L));
     }
 
     @Test(expected = ItemNotFoundException.class)
     public void testCreateShoppingListItemForWrongItemId() throws Exception {
-        shoppingListItemService.createShoppingListItem(shoppingList.getId(),
-                new ShoppingListItemCreateForm(999L, 1L));
+        shoppingListItemService.createShoppingListItem(new ShoppingListItemCreateForm(shoppingList.getId(),999L, 1L));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateShoppingListItemForWrongQuantity() throws Exception {
-        shoppingListItemService.createShoppingListItem(shoppingList.getId(),
-                new ShoppingListItemCreateForm(item.getId(), 0L));
+        shoppingListItemService.createShoppingListItem(new ShoppingListItemCreateForm(shoppingList.getId(), item.getId(), 0L));
     }
 
     @Test

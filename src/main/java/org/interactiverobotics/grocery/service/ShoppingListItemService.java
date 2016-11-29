@@ -113,10 +113,11 @@ public class ShoppingListItemService {
     /**
      * Creates ShoppingListItem.
      */
-    public ShoppingListItem createShoppingListItem(final Long shoppingListId, final ShoppingListItemCreateForm form) {
+    public ShoppingListItem createShoppingListItem(final ShoppingListItemCreateForm form) {
 
-        final ShoppingList shoppingList = Optional.ofNullable(this.shoppingListRepository.findOne(shoppingListId))
-                .orElseThrow(() -> new ShoppingListNotFoundException(shoppingListId));
+        final ShoppingList shoppingList =
+                Optional.ofNullable(this.shoppingListRepository.findOne(form.getShoppingList()))
+                        .orElseThrow(() -> new ShoppingListNotFoundException(form.getShoppingList()));
 
         final Item item = Optional.ofNullable(this.itemRepository.findOne(form.getItem()))
                 .orElseThrow(() -> new ItemNotFoundException(form.getItem()));

@@ -77,11 +77,11 @@ public class ShoppingListItemRestControllerIntegrationTest {
         final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList("test-shopping-list"));
         final Item existingItem = itemRepository.save(new Item("test-item"));
 
-        final ShoppingListItemCreateForm form = new ShoppingListItemCreateForm(existingItem.getId(), 1L);
+        final ShoppingListItemCreateForm form =
+                new ShoppingListItemCreateForm(existingShoppingList.getId(), existingItem.getId(), 1L);
 
         final ResponseEntity<ShoppingListItem> response = restTemplate
-                .postForEntity("/api/v1/shopping_list_item/shopping_list/" + existingShoppingList.getId(), form,
-                ShoppingListItem.class);
+                .postForEntity("/api/v1/shopping_list_item/", form, ShoppingListItem.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -100,11 +100,11 @@ public class ShoppingListItemRestControllerIntegrationTest {
 
         final Item existingItem = itemRepository.save(new Item("test-item"));
 
-        final ShoppingListItemCreateForm form = new ShoppingListItemCreateForm(existingItem.getId(), 1L);
+        final ShoppingListItemCreateForm form =
+                new ShoppingListItemCreateForm(999L, existingItem.getId(), 1L);
 
         final ResponseEntity<ShoppingListItem> response = restTemplate
-                .postForEntity("/api/v1/shopping_list_item/shopping_list/" + new Long(999L), form,
-                ShoppingListItem.class);
+                .postForEntity("/api/v1/shopping_list_item/", form, ShoppingListItem.class);
 
         itemRepository.delete(existingItem);
 
@@ -116,11 +116,11 @@ public class ShoppingListItemRestControllerIntegrationTest {
 
         final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList("test-shopping-list"));
 
-        final ShoppingListItemCreateForm form = new ShoppingListItemCreateForm(999L, 1L);
+        final ShoppingListItemCreateForm form =
+                new ShoppingListItemCreateForm(existingShoppingList.getId(), 999L, 1L);
 
         final ResponseEntity<ShoppingListItem> response = restTemplate
-                .postForEntity("/api/v1/shopping_list_item/shopping_list/" + existingShoppingList.getId(), form,
-                ShoppingListItem.class);
+                .postForEntity("/api/v1/shopping_list_item/", form, ShoppingListItem.class);
 
         shoppingListRepository.delete(existingShoppingList);
 
@@ -133,11 +133,11 @@ public class ShoppingListItemRestControllerIntegrationTest {
         final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList("test-shopping-list"));
         final Item existingItem = itemRepository.save(new Item("test-item"));
 
-        final ShoppingListItemCreateForm form = new ShoppingListItemCreateForm(existingItem.getId(), 0L);
+        final ShoppingListItemCreateForm form =
+                new ShoppingListItemCreateForm(existingShoppingList.getId(), existingItem.getId(), 0L);
 
         final ResponseEntity<ShoppingListItem> response = restTemplate
-                .postForEntity("/api/v1/shopping_list_item/shopping_list/" + existingShoppingList.getId(), form,
-                ShoppingListItem.class);
+                .postForEntity("/api/v1/shopping_list_item/", form, ShoppingListItem.class);
 
         itemRepository.delete(existingItem);
         shoppingListRepository.delete(existingShoppingList);

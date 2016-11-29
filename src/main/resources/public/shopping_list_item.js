@@ -11,7 +11,7 @@ function getShoppingListId() {
 }
 
 function showCreateShoppingListItemForm() {
-    $.get("/shopping_list_item/form/shopping_list/" + getShoppingListId(), {}, function(result) {
+    $.get("/shopping_list_item/form?shoppingList=" + getShoppingListId(), {}, function(result) {
         $("#shopping-list-item-form-container").html(result);
         $("#shopping-list-item-form").modal();
     });

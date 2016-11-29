@@ -54,13 +54,13 @@ public class ShoppingListItemWebController {
         this.shoppingListItemService = shoppingListItemService;
     }
 
-    /**
-     * Returns index page.
-     */
-    @RequestMapping({"", "/"})
-    public String index() {
-        return "shopping_list_item_select_shopping_list";
-    }
+//    /**
+//     * Returns index page.
+//     */
+//    @RequestMapping({"", "/"})
+//    public String index() {
+//        return "shopping_list_item_select_shopping_list";
+//    }
 
     /**
      * Returns index page.
@@ -98,8 +98,9 @@ public class ShoppingListItemWebController {
     /**
      * Returns create ShoppingListItem form.
      */
-    @RequestMapping("/form/shopping_list/{shoppingListId}")
-    public String getCreateShoppingListItemForm(@PathVariable Long shoppingListId, Model model) {
+    @RequestMapping("/form")
+    public String getCreateShoppingListItemForm(@RequestParam(value = "shoppingList") Long shoppingListId,
+                                                Model model) {
         model.addAttribute("shoppingListId", shoppingListId);
         final List<Item> items = this.shoppingListItemService.getNotAddedItems(shoppingListId);
         model.addAttribute("items", items);
@@ -109,14 +110,12 @@ public class ShoppingListItemWebController {
     /**
      * Creates ShoppingListItem.
      */
-    @RequestMapping(value = "/shopping_list/{shoppingListId}", method = RequestMethod.POST)
-    public String createShoppingListItem(@PathVariable Long shoppingListId,
-                                         @Valid ShoppingListItemCreateForm form, BindingResult bindingResult) {
+    @RequestMapping(value = "/", method = RequestMethod.POST)
+    public String createShoppingListItem(@Valid ShoppingListItemCreateForm form, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "redirect:/shopping_list_item/" + shoppingListId;
+            return "redirect:/shopping_list/";
         }
-        final ShoppingListItem shoppingListItem =
-                this.shoppingListItemService.createShoppingListItem(shoppingListId, form);
+        final ShoppingListItem shoppingListItem = this.shoppingListItemService.createShoppingListItem(form);
         return "redirect:/shopping_list_item/" + shoppingListItem.getShoppingList().getId();
     }
 

@@ -29,6 +29,8 @@ import javax.validation.constraints.NotNull;
 public class ShoppingListItemCreateForm {
 
     @NotNull
+    private Long shoppingList;
+    @NotNull
     private Long item;
     @NotNull
     @Min(1)
@@ -37,9 +39,18 @@ public class ShoppingListItemCreateForm {
     public ShoppingListItemCreateForm() {
     }
 
-    public ShoppingListItemCreateForm(final Long item, final Long quantity) {
+    public ShoppingListItemCreateForm(final Long shoppingList, final Long item, final Long quantity) {
+        this.shoppingList = shoppingList;
         this.item = item;
         this.quantity = quantity;
+    }
+
+    public Long getShoppingList() {
+        return shoppingList;
+    }
+
+    public void setShoppingList(final Long shoppingList) {
+        this.shoppingList = shoppingList;
     }
 
     public Long getItem() {

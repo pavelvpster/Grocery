@@ -69,11 +69,9 @@ public class ShoppingListItemRestController {
     }
 
     @ApiOperation(value = "Create ShoppingListItem", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/shopping_list/{shoppingListId}", method = RequestMethod.POST,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ShoppingListItem createShoppingListItem(@PathVariable Long shoppingListId,
-                                                   @RequestBody ShoppingListItemCreateForm form) {
-        return this.shoppingListItemService.createShoppingListItem(shoppingListId, form);
+    @RequestMapping(value = "/", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ShoppingListItem createShoppingListItem(@RequestBody ShoppingListItemCreateForm form) {
+        return this.shoppingListItemService.createShoppingListItem(form);
     }
 
     @ApiOperation(value = "Update ShoppingListItem", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
