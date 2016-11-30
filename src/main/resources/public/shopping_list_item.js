@@ -40,6 +40,15 @@ function validateShoppingListItemCreateForm() {
         $("#quantity-error").text("Quantity must be > 0!");
         return false;
     }
+    return true;
+}
+
+function submitShoppingListItemCreateForm() {
+    if (!validateShoppingListItemCreateForm) {
+        return false;
+    }
+    submitForm();
+    return false;
 }
 
 function validateShoppingListItemUpdateForm() {
@@ -53,12 +62,36 @@ function validateShoppingListItemUpdateForm() {
         $("#quantity-error").text("Quantity must be > 0!");
         return false;
     }
+    return true;
+}
+
+function submitShoppingListItemUpdateForm() {
+    if (!validateShoppingListItemUpdateForm()) {
+        return false;
+    }
+    submitForm();
+    return false;
+}
+
+function submitForm() {
+    $.ajax({
+        type: 'POST',
+        url: $("#shopping-list-item-properties").attr("action"),
+        data: JSON.stringify($("#shopping-list-item-properties").serializeObject()),
+        contentType: "application/json",
+        success: function(result) {
+            window.location = "/shopping_list_item/" + getShoppingListId();
+        },
+        fail: function(result) {
+            alert("Error create/update shopping list item!");
+        }
+    });
 }
 
 function deleteShoppingListItem(id) {
     $.ajax({
         type: 'DELETE',
-        url: "/shopping_list_item/" + id,
+        url: "api/v1/shopping_list_item/" + id,
         success: function(result) {
             window.location = "/shopping_list_item/" + getShoppingListId();
         }

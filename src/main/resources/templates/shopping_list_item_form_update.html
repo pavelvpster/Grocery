@@ -6,10 +6,9 @@
                 <h2 class="modal-title">Shopping List Item</h2>
             </div>
             <div class="modal-body">
-                <form id="shopping-list-item-properties" th:object="${shoppingListItem}"
-                      th:action="'/shopping_list_item/' + *{id}"
-                      method="post" enctype="multipart/form-data"
-                      onsubmit="return validateShoppingListItemUpdateForm()">
+                <form id="shopping-list-item-properties"
+                      th:object="${shoppingListItem}" th:action="'/api/v1/shopping_list_item/' + *{id}"
+                      onsubmit="return submitShoppingListItemUpdateForm()">
                     <div class="form-group">
                         <label for="quantity">Quantity:</label>
                         <input type="text" id="quantity" name="quantity" class="form-control" th:field="*{quantity}"/>

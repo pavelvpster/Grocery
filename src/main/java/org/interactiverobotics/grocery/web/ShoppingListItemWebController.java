@@ -22,18 +22,14 @@ package org.interactiverobotics.grocery.web;
 
 import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.domain.ShoppingListItem;
-import org.interactiverobotics.grocery.form.ShoppingListItemCreateForm;
-import org.interactiverobotics.grocery.form.ShoppingListItemUpdateForm;
 import org.interactiverobotics.grocery.service.ShoppingListItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -108,18 +104,6 @@ public class ShoppingListItemWebController {
     }
 
     /**
-     * Creates ShoppingListItem.
-     */
-    @RequestMapping(value = "/", method = RequestMethod.POST)
-    public String createShoppingListItem(@Valid ShoppingListItemCreateForm form, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return "redirect:/shopping_list/";
-        }
-        final ShoppingListItem shoppingListItem = this.shoppingListItemService.createShoppingListItem(form);
-        return "redirect:/shopping_list_item/" + shoppingListItem.getShoppingList().getId();
-    }
-
-    /**
      * Returns update ShoppingListItem form (with current field values).
      */
     @RequestMapping("/{id}/form")
@@ -127,31 +111,6 @@ public class ShoppingListItemWebController {
         final ShoppingListItem shoppingListItem = this.shoppingListItemService.getShoppingListItemById(id);
         model.addAttribute("shoppingListItem", shoppingListItem);
         return "shopping_list_item_form_update";
-    }
-
-    /**
-     * Updates ShoppingListItem.
-     */
-    @RequestMapping(value = "/{id}", method = RequestMethod.POST)
-    public String updateShoppingListItem(@PathVariable Long id,
-                                         @Valid ShoppingListItemUpdateForm form,
-                                         BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return "redirect:/shopping_list_item/" +
-                    this.shoppingListItemService.getShoppingListItemById(id).getShoppingList().getId();
-        }
-        final ShoppingListItem shoppingListItem = this.shoppingListItemService.updateShoppingListItem(id, form);
-        return "redirect:/shopping_list_item/" + shoppingListItem.getShoppingList().getId();
-    }
-
-    /**
-     * Deletes ShoppingListItem.
-     * todo: ensure that there are no redirects from DELETE methods
-     */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    @ResponseBody
-    public void deleteShoppingListItem(@PathVariable Long id) {
-        this.shoppingListItemService.deleteShoppingListItem(id);
     }
 
 }
