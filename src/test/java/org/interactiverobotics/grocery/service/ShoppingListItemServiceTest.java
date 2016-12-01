@@ -20,11 +20,11 @@
 
 package org.interactiverobotics.grocery.service;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.junit.Assert.assertEquals;
 
 import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.domain.ShoppingList;
@@ -76,6 +76,9 @@ public class ShoppingListItemServiceTest {
     private Item item;
 
 
+    /**
+     * Initializes test.
+     */
     @Before
     public void setUp() throws Exception {
 
@@ -247,7 +250,8 @@ public class ShoppingListItemServiceTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateShoppingListItemForWrongQuantity() throws Exception {
-        shoppingListItemService.createShoppingListItem(new ShoppingListItemCreateForm(shoppingList.getId(), item.getId(), 0L));
+        shoppingListItemService.createShoppingListItem(
+                new ShoppingListItemCreateForm(shoppingList.getId(), item.getId(), 0L));
     }
 
     @Test

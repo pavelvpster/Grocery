@@ -20,11 +20,11 @@
 
 package org.interactiverobotics.grocery.service;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.junit.Assert.assertEquals;
 
 import org.interactiverobotics.grocery.domain.ShoppingList;
 import org.interactiverobotics.grocery.exception.ShoppingListNotFoundException;

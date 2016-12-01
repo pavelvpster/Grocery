@@ -39,6 +39,9 @@ public class ShoppingListItemCreateForm {
     public ShoppingListItemCreateForm() {
     }
 
+    /**
+     * Parametrized constructor.
+     */
     public ShoppingListItemCreateForm(final Long shoppingList, final Long item, final Long quantity) {
         this.shoppingList = shoppingList;
         this.item = item;

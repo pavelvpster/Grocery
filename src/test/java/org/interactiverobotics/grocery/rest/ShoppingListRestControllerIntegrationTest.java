@@ -20,6 +20,10 @@
 
 package org.interactiverobotics.grocery.rest;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import org.interactiverobotics.grocery.domain.ShoppingList;
 import org.interactiverobotics.grocery.form.ShoppingListForm;
 import org.interactiverobotics.grocery.repository.ShoppingListRepository;
@@ -38,10 +42,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * ShoppingList REST controller integration test.

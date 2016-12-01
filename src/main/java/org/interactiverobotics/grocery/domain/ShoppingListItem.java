@@ -24,7 +24,17 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 
 /**
  * ShoppingListItem domain class.
@@ -53,12 +63,18 @@ public class ShoppingListItem {
     public ShoppingListItem() {
     }
 
+    /**
+     * Parametrized constructor.
+     */
     public ShoppingListItem(final ShoppingList shoppingList, final Item item, final Long quantity) {
         this.shoppingList = shoppingList;
         this.item = item;
         this.quantity = quantity;
     }
 
+    /**
+     * Parametrized constructor.
+     */
     public ShoppingListItem(final Long id, final ShoppingList shoppingList, final Item item, final Long quantity) {
         this.id = id;
         this.shoppingList = shoppingList;

@@ -55,6 +55,9 @@ public class ShoppingListItemService {
     private final ItemRepository itemRepository;
     private final ShoppingListItemRepository shoppingListItemRepository;
 
+    /**
+     * Parametrized constructor.
+     */
     @Autowired
     public ShoppingListItemService(final ShoppingListRepository shoppingListRepository,
                                    final ItemRepository itemRepository,
