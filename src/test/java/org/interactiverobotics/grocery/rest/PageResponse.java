@@ -28,7 +28,7 @@ import java.util.List;
 
 /**
  * Page response.
- * It represents response of endpoint with pagination because Page<T> is an interface and cannot be used.
+ * It represents response of endpoint with pagination because Page is an interface and cannot be used.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PageResponse<T> {
@@ -39,12 +39,14 @@ public class PageResponse<T> {
     private final int size;
 
 
+    /**
+     * Parametrized constructor.
+     */
     @JsonCreator
     public PageResponse(@JsonProperty("content") List<T> content,
                         @JsonProperty("totalElements") long totalElements,
                         @JsonProperty("totalPages") int totalPages,
                         @JsonProperty("size") int size) {
-
         this.content = content;
         this.totalElements = totalElements;
         this.totalPages = totalPages;

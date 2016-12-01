@@ -63,7 +63,6 @@ public class ShopRestController {
     @RequestMapping(value = "/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Page<Shop> getShopsPage(@RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
                                    @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
-
         final PageRequest pageRequest = new PageRequest(pageNumber - 1, pageSize);
         return this.shopService.getShops(pageRequest);
     }

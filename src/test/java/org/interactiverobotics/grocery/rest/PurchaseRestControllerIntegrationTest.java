@@ -20,6 +20,10 @@
 
 package org.interactiverobotics.grocery.rest;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.domain.Purchase;
 import org.interactiverobotics.grocery.domain.Shop;
@@ -45,10 +49,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Purchase REST controller integration test.
@@ -81,6 +81,9 @@ public class PurchaseRestControllerIntegrationTest {
     private Item item;
 
 
+    /**
+     * Initializes test.
+     */
     @Before
     public void setUp() throws Exception {
 
@@ -93,6 +96,9 @@ public class PurchaseRestControllerIntegrationTest {
         item = itemRepository.save(new Item("test-item"));
     }
 
+    /**
+     * Finalises test.
+     */
     @After
     public void tearDown() throws Exception {
 
