@@ -50,13 +50,13 @@ public class ShoppingListItemWebController {
         this.shoppingListItemService = shoppingListItemService;
     }
 
-//    /**
-//     * Returns index page.
-//     */
-//    @RequestMapping({"", "/"})
-//    public String index() {
-//        return "shopping_list_item_select_shopping_list";
-//    }
+    /**
+     * Returns index page.
+     */
+    @RequestMapping("/")
+    public String index() {
+        return "shopping_list_item_select_shopping_list";
+    }
 
     /**
      * Returns index page.
