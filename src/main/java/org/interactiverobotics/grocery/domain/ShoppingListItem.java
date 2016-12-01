@@ -1,5 +1,5 @@
 /*
- * Visit.java
+ * ShoppingListItem.java
  *
  * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
  *
@@ -20,14 +20,10 @@
 
 package org.interactiverobotics.grocery.domain;
 
-import com.fasterxml.jackson.annotation.JsonFilter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import java.util.Date;
-import java.util.List;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -36,57 +32,54 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 
 /**
- * Visit domain class.
+ * ShoppingListItem domain class.
  */
 @Entity
-@Table(schema = "grocery", name = "visits")
-@JsonFilter("jpaFilter")
-public class Visit {
+@Table(schema = "grocery", name = "shopping_list_items")
+public class ShoppingListItem {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "visit_id_seq")
-    @SequenceGenerator(name = "visit_id_seq", sequenceName = "visit_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "shopping_list_item_id_seq")
+    @SequenceGenerator(name = "shopping_list_item_id_seq", sequenceName = "shopping_list_item_id_seq",
+            allocationSize = 1)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shop_id")
-    private Shop shop;
-
-    @Column
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date started;
-
-    @Column
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date completed;
-
-    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shopping_list_id")
     private ShoppingList shoppingList;
 
-    @Transient
-    @OneToMany(mappedBy = "visit", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    private List<Purchase> purchases;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "item_id")
+    private Item item;
 
-    public Visit() {
+    @Column
+    private Long quantity;
+
+    public ShoppingListItem() {
     }
 
-    public Visit(final Shop shop) {
-        this.shop = shop;
+    /**
+     * Parametrized constructor.
+     */
+    public ShoppingListItem(final ShoppingList shoppingList, final Item item, final Long quantity) {
+        this.shoppingList = shoppingList;
+        this.item = item;
+        this.quantity = quantity;
     }
 
-    public Visit(final Long id, final Shop shop) {
+    /**
+     * Parametrized constructor.
+     */
+    public ShoppingListItem(final Long id, final ShoppingList shoppingList, final Item item, final Long quantity) {
         this.id = id;
-        this.shop = shop;
+        this.shoppingList = shoppingList;
+        this.item = item;
+        this.quantity = quantity;
     }
 
     public Long getId() {
@@ -97,30 +90,6 @@ public class Visit {
         this.id = id;
     }
 
-    public Shop getShop() {
-        return shop;
-    }
-
-    public void setShop(Shop shop) {
-        this.shop = shop;
-    }
-
-    public Date getStarted() {
-        return started;
-    }
-
-    public void setStarted(Date started) {
-        this.started = started;
-    }
-
-    public Date getCompleted() {
-        return completed;
-    }
-
-    public void setCompleted(Date completed) {
-        this.completed = completed;
-    }
-
     public ShoppingList getShoppingList() {
         return shoppingList;
     }
@@ -129,12 +98,20 @@ public class Visit {
         this.shoppingList = shoppingList;
     }
 
-    public List<Purchase> getPurchases() {
-        return purchases;
+    public Item getItem() {
+        return item;
     }
 
-    public void setPurchases(List<Purchase> purchases) {
-        this.purchases = purchases;
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public Long getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Long quantity) {
+        this.quantity = quantity;
     }
 
     @Override

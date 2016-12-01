@@ -235,8 +235,6 @@ public class ShopRestControllerTest {
     public void testUpdateShop() throws Exception {
 
         final Shop existingShop = new Shop(1L, "test-shop");
-        when(shopService.getShopByName(existingShop.getName())).thenReturn(existingShop);
-
         final UpdateShopAnswer updateShopAnswer = new UpdateShopAnswer(existingShop);
         when(shopService.updateShop(eq(existingShop.getId()), any(ShopForm.class))).then(updateShopAnswer);
 

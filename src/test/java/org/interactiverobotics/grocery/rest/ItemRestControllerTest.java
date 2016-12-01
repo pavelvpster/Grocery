@@ -236,8 +236,6 @@ public class ItemRestControllerTest {
     public void testUpdateItem() throws Exception {
 
         final Item existingItem = new Item(1L, "test-item");
-        when(itemService.getItemByName(existingItem.getName())).thenReturn(existingItem);
-
         final UpdateItemAnswer updateItemAnswer = new UpdateItemAnswer(existingItem);
         when(itemService.updateItem(eq(existingItem.getId()), any(ItemForm.class))).then(updateItemAnswer);
 

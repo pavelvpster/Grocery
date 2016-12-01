@@ -129,6 +129,7 @@ public class ItemWebController {
 
     /**
      * Deletes Item.
+     * todo: ensure that there are no redirects from DELETE methods
      */
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public String deleteItem(@PathVariable Long id) {

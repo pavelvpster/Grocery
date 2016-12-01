@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorator="layout">
+<head>
+    <title>Shopping Lists</title>
+    <script th:src="@{/common.js}"/>
+    <script th:src="@{/pagination.js}"/>
+    <script th:src="@{/shopping_list_item.js}"/>
+</head>
+<body>
+
+<section layout:fragment="content">
+
+    <div class="container">
+
+        <input type="hidden" id="shopping-list-id" th:value="${shoppingListId}"/>
+
+        <button type="button" class="btn btn-default" onclick="showCreateShoppingListItemForm()">Add Item</button>
+
+        <div id="shopping-list-item-form-container"/>
+
+        <div id="shopping-list-item-list-container"/>
+        <th:block th:include="pagination"/>
+
+    </div>
+
+</section>
+
+</body>
+</html>
