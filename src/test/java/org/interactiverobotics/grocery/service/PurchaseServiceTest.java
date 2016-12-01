@@ -20,6 +20,8 @@
 
 package org.interactiverobotics.grocery.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
@@ -35,7 +37,8 @@ import org.interactiverobotics.grocery.exception.VisitNotFoundException;
 import org.interactiverobotics.grocery.repository.ItemRepository;
 import org.interactiverobotics.grocery.repository.PurchaseRepository;
 import org.interactiverobotics.grocery.repository.VisitRepository;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
@@ -50,8 +53,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.junit.Assert.*;
 
 /**
  * Purchase service test.
@@ -77,6 +78,9 @@ public class PurchaseServiceTest {
     private Item item;
 
 
+    /**
+     * Initializes test.
+     */
     @Before
     public void setUp() throws Exception {
 

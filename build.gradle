@@ -14,6 +14,7 @@ apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'spring-boot'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'checkstyle'
 apply plugin: 'jacoco'
 
 sourceCompatibility = 1.8
@@ -38,6 +39,11 @@ dependencies {
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test'
+}
+
+checkstyle {
+    configFile = new File(rootDir, '/codechecks/checkstyle.xml')
+    toolVersion = '7.1.1'
 }
 
 test {

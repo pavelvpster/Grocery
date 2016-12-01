@@ -20,6 +20,13 @@
 
 package org.interactiverobotics.grocery.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.interactiverobotics.grocery.domain.Shop;
 import org.interactiverobotics.grocery.domain.Visit;
 import org.interactiverobotics.grocery.exception.ShopNotFoundException;
@@ -43,12 +50,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 /**
  * Visit service test.
  */
@@ -66,6 +67,9 @@ public class VisitServiceTest {
     private Shop shop;
 
 
+    /**
+     * Initializes test.
+     */
     @Before
     public void setUp() throws Exception {
 

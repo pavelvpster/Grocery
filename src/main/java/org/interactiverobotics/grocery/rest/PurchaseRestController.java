@@ -66,7 +66,6 @@ public class PurchaseRestController {
     public Page<Purchase> getPurchasesPage(@PathVariable Long visitId,
                                            @RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
                                            @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
-
         final PageRequest pageRequest = new PageRequest(pageNumber - 1, pageSize);
         return this.purchaseService.getPurchases(pageRequest, visitId);
     }
