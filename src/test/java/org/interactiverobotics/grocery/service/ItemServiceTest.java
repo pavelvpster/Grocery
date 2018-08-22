@@ -42,8 +42,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -91,7 +91,7 @@ public class ItemServiceTest {
             return new PageImpl<>(existingItems, pageable, existingItems.size());
         });
 
-        final Page<Item> items = itemService.getItems(new PageRequest(0, 10));
+        final Page<Item> items = itemService.getItems(PageRequest.of(0, 10));
 
         assertEquals(existingItems.size(), items.getTotalElements());
         assertEquals(10, items.getTotalPages());

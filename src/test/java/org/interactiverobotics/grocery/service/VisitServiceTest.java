@@ -46,8 +46,8 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -105,7 +105,7 @@ public class VisitServiceTest {
             return new PageImpl<>(existingVisits, pageable, existingVisits.size());
         });
 
-        final Page<Visit> visits = visitService.getVisits(new PageRequest(0, 10));
+        final Page<Visit> visits = visitService.getVisits(PageRequest.of(0, 10));
 
         assertEquals(existingVisits.size(), visits.getTotalElements());
         assertEquals(10, visits.getTotalPages());

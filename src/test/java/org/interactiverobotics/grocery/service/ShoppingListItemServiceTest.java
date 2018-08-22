@@ -49,8 +49,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -130,7 +130,7 @@ public class ShoppingListItemServiceTest {
                 });
 
         final Page<ShoppingListItem> shoppingListItems =
-                shoppingListItemService.getShoppingListItems(new PageRequest(0, 10), shoppingList.getId());
+                shoppingListItemService.getShoppingListItems(PageRequest.of(0, 10), shoppingList.getId());
 
         assertEquals(existingShoppingListItems.size(), shoppingListItems.getTotalElements());
         assertEquals(10, shoppingListItems.getTotalPages());
@@ -139,7 +139,7 @@ public class ShoppingListItemServiceTest {
     @Test(expected = ShoppingListNotFoundException.class)
     public void testGetShoppingListItemsPageForWrongShoppingListId() {
 
-        shoppingListItemService.getShoppingListItems(new PageRequest(0, 10), new Long(999L));
+        shoppingListItemService.getShoppingListItems(PageRequest.of(0, 10), new Long(999L));
     }
 
     @Test

@@ -20,24 +20,6 @@
 
 package org.interactiverobotics.grocery.rest;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.domain.ShoppingList;
 import org.interactiverobotics.grocery.domain.ShoppingListItem;
@@ -58,6 +40,23 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * ShoppingListItem REST controller test.
@@ -186,7 +185,8 @@ public class ShoppingListItemRestControllerTest {
     @Test(expected = Exception.class)
     public void testCreateShoppingListItemForWrongParams() throws Exception {
 
-        when(shoppingListItemService.createShoppingListItem(anyObject())).thenThrow(new Exception());
+        when(shoppingListItemService.createShoppingListItem(any(ShoppingListItemCreateForm.class)))
+                .thenThrow(new Exception());
 
         mvc.perform(post("/api/v1/shopping_list_item/")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -254,7 +254,8 @@ public class ShoppingListItemRestControllerTest {
     @Test(expected = Exception.class)
     public void testUpdateShoppingListItemForWrongParams() throws Exception {
 
-        when(shoppingListItemService.updateShoppingListItem(anyLong(), anyObject())).thenThrow(new Exception());
+        when(shoppingListItemService.updateShoppingListItem(anyLong(), any(ShoppingListItemUpdateForm.class)))
+                .thenThrow(new Exception());
 
         mvc.perform(post("/api/v1/shopping_list_item/" + new Long(999L))
                 .contentType(MediaType.APPLICATION_JSON_UTF8)

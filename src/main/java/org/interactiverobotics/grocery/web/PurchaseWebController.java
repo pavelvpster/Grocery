@@ -1,7 +1,7 @@
 /*
  * PurchaseWebController.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,8 +84,7 @@ public class PurchaseWebController {
                                @RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
                                @RequestParam(value = "size", defaultValue = "10") Integer pageSize, Model model) {
 
-        final PageRequest pageRequest = new PageRequest(pageNumber - 1, pageSize);
-        final Page<Purchase> page = this.purchaseService.getPurchases(pageRequest, visitId);
+        final Page<Purchase> page = this.purchaseService.getPurchases(PageRequest.of(pageNumber - 1, pageSize), visitId);
 
         final List<Purchase> purchases = new ArrayList<>();
         page.forEach(purchase -> purchases.add(purchase));
@@ -97,5 +96,4 @@ public class PurchaseWebController {
 
         return "purchase_list";
     }
-
 }

@@ -1,7 +1,7 @@
 /*
  * ShoppingListItemRestController.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,8 +68,7 @@ public class ShoppingListItemRestController {
             @PathVariable Long shoppingListId,
             @RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
             @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
-        final PageRequest pageRequest = new PageRequest(pageNumber - 1, pageSize);
-        return this.shoppingListItemService.getShoppingListItems(pageRequest, shoppingListId);
+        return this.shoppingListItemService.getShoppingListItems(PageRequest.of(pageNumber - 1, pageSize), shoppingListId);
     }
 
     @ApiOperation(value = "Create ShoppingListItem", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -90,5 +89,4 @@ public class ShoppingListItemRestController {
     public void deleteShoppingListItem(@PathVariable Long id) {
         this.shoppingListItemService.deleteShoppingListItem(id);
     }
-
 }

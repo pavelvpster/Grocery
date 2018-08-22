@@ -1,7 +1,7 @@
 /*
  * VisitRestController.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,8 +61,7 @@ public class VisitRestController {
     @RequestMapping(value = "/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Page<Visit> getVisitsPage(@RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
                                      @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
-        final PageRequest pageRequest = new PageRequest(pageNumber - 1, pageSize);
-        return this.visitService.getVisits(pageRequest);
+        return this.visitService.getVisits(PageRequest.of(pageNumber - 1, pageSize));
     }
 
     @ApiOperation(value = "Get Visit by Id", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -104,5 +103,4 @@ public class VisitRestController {
     public void deleteVisit(@PathVariable Long id) {
         this.visitService.deleteVisit(id);
     }
-
 }
