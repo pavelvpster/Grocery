@@ -1,7 +1,7 @@
 /*
  * ShopRestController.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,8 +63,7 @@ public class ShopRestController {
     @RequestMapping(value = "/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Page<Shop> getShopsPage(@RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
                                    @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
-        final PageRequest pageRequest = new PageRequest(pageNumber - 1, pageSize);
-        return this.shopService.getShops(pageRequest);
+        return this.shopService.getShops(PageRequest.of(pageNumber - 1, pageSize));
     }
 
     @ApiOperation(value = "Get Shop by Id", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -96,5 +95,4 @@ public class ShopRestController {
     public void deleteShop(@PathVariable Long id) {
         this.shopService.deleteShop(id);
     }
-
 }

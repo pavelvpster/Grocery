@@ -50,8 +50,8 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -181,7 +181,7 @@ public class PurchaseServiceTest {
         final PurchasePageAnswer purchasePageAnswer = new PurchasePageAnswer(existingPurchases);
         when(purchaseRepository.findAllByVisit(any(Pageable.class), eq(visit))).thenAnswer(purchasePageAnswer);
 
-        final Page<Purchase> purchases = purchaseService.getPurchases(new PageRequest(0, 10), visit.getId());
+        final Page<Purchase> purchases = purchaseService.getPurchases(PageRequest.of(0, 10), visit.getId());
 
         assertEquals(existingPurchases.size(), purchases.getTotalElements());
         assertEquals(10, purchases.getTotalPages());
@@ -198,7 +198,7 @@ public class PurchaseServiceTest {
         final PurchasePageAnswer purchasePageAnswer = new PurchasePageAnswer(existingPurchases);
         when(purchaseRepository.findAllByVisit(any(Pageable.class), eq(visit))).thenAnswer(purchasePageAnswer);
 
-        final Page<Purchase> purchases = purchaseService.getPurchases(new PageRequest(0, 10), visit);
+        final Page<Purchase> purchases = purchaseService.getPurchases(PageRequest.of(0, 10), visit);
 
         assertEquals(existingPurchases.size(), purchases.getTotalElements());
         assertEquals(10, purchases.getTotalPages());

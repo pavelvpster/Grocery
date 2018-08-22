@@ -1,7 +1,7 @@
 /*
  * ItemWebController.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,9 +34,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.Valid;
 
 /**
  * Item web controller.
@@ -70,8 +70,7 @@ public class ItemWebController {
     public String getItems(@RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
                            @RequestParam(value = "size", defaultValue = "10") Integer pageSize, Model model) {
 
-        final PageRequest pageRequest = new PageRequest(pageNumber - 1, pageSize);
-        final Page<Item> page = this.itemService.getItems(pageRequest);
+        final Page<Item> page = this.itemService.getItems(PageRequest.of(pageNumber - 1, pageSize));
 
         final List<Item> items = new ArrayList<>();
         page.forEach(item -> items.add(item));
@@ -136,5 +135,4 @@ public class ItemWebController {
         this.itemService.deleteItem(id);
         return "redirect:/item/";
     }
-
 }

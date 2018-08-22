@@ -1,7 +1,7 @@
 /*
  * VisitWebController.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,8 +62,7 @@ public class VisitWebController {
     public String getVisits(@RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
                             @RequestParam(value = "size", defaultValue = "10") Integer pageSize, Model model) {
 
-        final PageRequest pageRequest = new PageRequest(pageNumber - 1, pageSize);
-        final Page<Visit> page = this.visitService.getVisits(pageRequest);
+        final Page<Visit> page = this.visitService.getVisits(PageRequest.of(pageNumber - 1, pageSize));
 
         final List<Visit> visits = new ArrayList<>();
         page.forEach(visit -> visits.add(visit));
@@ -75,5 +74,4 @@ public class VisitWebController {
 
         return "visit_list";
     }
-
 }
