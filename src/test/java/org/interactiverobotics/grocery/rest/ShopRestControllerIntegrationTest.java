@@ -1,7 +1,7 @@
 /*
  * ShopRestControllerIntegrationTest.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,12 +69,12 @@ public class ShopRestControllerIntegrationTest {
     public void testGetShops() {
 
         final List<Shop> existingShops = new ArrayList<>();
-        shopRepository.save(Arrays.asList(new Shop("test-shop-1"), new Shop("test-shop-2")))
+        shopRepository.saveAll(Arrays.asList(new Shop("test-shop-1"), new Shop("test-shop-2")))
                 .forEach(shop -> existingShops.add(shop));
 
         final ResponseEntity<Shop[]> response = restTemplate.getForEntity("/api/v1/shop/", Shop[].class);
 
-        shopRepository.delete(existingShops);
+        shopRepository.deleteAll(existingShops);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -94,7 +94,7 @@ public class ShopRestControllerIntegrationTest {
         final ResponseEntity<PageResponse<Shop>> response = restTemplate.exchange("/api/v1/shop/list?page=1&size=10",
                 HttpMethod.GET, null, responseType);
 
-        shopRepository.delete(existingShops);
+        shopRepository.deleteAll(existingShops);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -203,7 +203,7 @@ public class ShopRestControllerIntegrationTest {
 
         restTemplate.delete("/api/v1/shop/" + existingShop.getId());
 
-        assertNull(shopRepository.findOne(existingShop.getId()));
+        assertNull(shopRepository.findById(existingShop.getId()));
     }
 
     @Test
@@ -214,5 +214,4 @@ public class ShopRestControllerIntegrationTest {
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
-
 }

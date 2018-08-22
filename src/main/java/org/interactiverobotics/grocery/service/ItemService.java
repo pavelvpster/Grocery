@@ -1,7 +1,7 @@
 /*
  * ItemService.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ public class ItemService {
      */
     public List<Item> getItems() {
         final List<Item> items = new ArrayList<>();
-        this.itemRepository.findAll().forEach(item -> items.add(item));
+        itemRepository.findAll().forEach(item -> items.add(item));
         LOG.debug("{} Item(s) found", items.size());
         return items;
     }
@@ -64,7 +64,7 @@ public class ItemService {
      * Returns page of Item(s).
      */
     public Page<Item> getItems(Pageable pageable) {
-        final Page<Item> items = this.itemRepository.findAll(pageable);
+        final Page<Item> items = itemRepository.findAll(pageable);
         LOG.debug("{} Item(s) found for {}", items.getNumberOfElements(), pageable);
         return items;
     }
@@ -73,7 +73,7 @@ public class ItemService {
      * Returns Item by Id.
      */
     public Item getItemById(final Long itemId) {
-        final Item item = Optional.ofNullable(this.itemRepository.findOne(itemId))
+        final Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException(itemId));
         LOG.debug("Item found by Id #{}", itemId);
         return item;
@@ -83,7 +83,7 @@ public class ItemService {
      * Returns Item by Name.
      */
     public Item getItemByName(final String name) {
-        final Item item = Optional.ofNullable(this.itemRepository.findOneByName(name))
+        final Item item = Optional.ofNullable(itemRepository.findOneByName(name))
                 .orElseThrow(() -> new ItemNotFoundException(-1L));
         LOG.debug("Item found by Name '{}'", name);
         return item;
@@ -93,7 +93,7 @@ public class ItemService {
      * Creates Item.
      */
     public Item createItem(final ItemForm form) {
-        final Item item = this.itemRepository.save(new Item(form.getName()));
+        final Item item = itemRepository.save(new Item(form.getName()));
         LOG.info("Item created: {}", item);
         return item;
     }
@@ -102,10 +102,10 @@ public class ItemService {
      * Updates Item.
      */
     public Item updateItem(final Long itemId, final ItemForm form) {
-        final Item item = Optional.ofNullable(this.itemRepository.findOne(itemId))
+        final Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException(itemId));
         item.setName(form.getName());
-        final Item updatedItem = this.itemRepository.save(item);
+        final Item updatedItem = itemRepository.save(item);
         LOG.info("Item updated: {}", updatedItem);
         return updatedItem;
     }
@@ -114,10 +114,9 @@ public class ItemService {
      * Deletes Item.
      */
     public void deleteItem(final Long itemId) {
-        final Item item = Optional.ofNullable(this.itemRepository.findOne(itemId))
+        final Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException(itemId));
-        this.itemRepository.delete(item);
+        itemRepository.delete(item);
         LOG.info("Item deleted: {}", item);
     }
-
 }

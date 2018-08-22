@@ -1,7 +1,7 @@
 /*
  * ShoppingListRestControllerIntegrationTest.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,14 +69,14 @@ public class ShoppingListRestControllerIntegrationTest {
     public void testGetShoppingLists() {
 
         final List<ShoppingList> existingShoppingLists = new ArrayList<>();
-        shoppingListRepository.save(Arrays.asList(
+        shoppingListRepository.saveAll(Arrays.asList(
                 new ShoppingList("test-shopping-list-1"), new ShoppingList("test-shopping-list-2")))
                 .forEach(shoppingList -> existingShoppingLists.add(shoppingList));
 
         final ResponseEntity<ShoppingList[]> response = restTemplate.getForEntity("/api/v1/shopping_list/",
                 ShoppingList[].class);
 
-        shoppingListRepository.delete(existingShoppingLists);
+        shoppingListRepository.deleteAll(existingShoppingLists);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -96,7 +96,7 @@ public class ShoppingListRestControllerIntegrationTest {
         final ResponseEntity<PageResponse<ShoppingList>> response =
                 restTemplate.exchange("/api/v1/shopping_list/list?page=1&size=10", HttpMethod.GET, null, responseType);
 
-        shoppingListRepository.delete(existingShoppingLists);
+        shoppingListRepository.deleteAll(existingShoppingLists);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -209,7 +209,7 @@ public class ShoppingListRestControllerIntegrationTest {
 
         restTemplate.delete("/api/v1/shopping_list/" + existingShoppingList.getId());
 
-        assertNull(shoppingListRepository.findOne(existingShoppingList.getId()));
+        assertNull(shoppingListRepository.findById(existingShoppingList.getId()));
     }
 
     @Test
@@ -220,5 +220,4 @@ public class ShoppingListRestControllerIntegrationTest {
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
-
 }

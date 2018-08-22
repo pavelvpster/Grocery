@@ -1,7 +1,7 @@
 /*
  * ShopRestControllerTest.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,27 @@
 
 package org.interactiverobotics.grocery.rest;
 
+import org.interactiverobotics.grocery.domain.Shop;
+import org.interactiverobotics.grocery.exception.ShopNotFoundException;
+import org.interactiverobotics.grocery.form.ShopForm;
+import org.interactiverobotics.grocery.service.ShopService;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
@@ -34,28 +55,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import org.interactiverobotics.grocery.domain.Shop;
-import org.interactiverobotics.grocery.exception.ShopNotFoundException;
-import org.interactiverobotics.grocery.form.ShopForm;
-import org.interactiverobotics.grocery.service.ShopService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Shop REST controller test.
@@ -88,24 +87,6 @@ public class ShopRestControllerTest {
                 .andExpect(jsonPath("$[1].name", is(existingShops.get(1).getName())));
     }
 
-
-    public static class ShopPageAnswer implements Answer<Page<Shop>> {
-
-        private final List<Shop> shops;
-
-        public ShopPageAnswer(final List<Shop> shops) {
-            this.shops = shops;
-        }
-
-        @Override
-        public Page<Shop> answer(InvocationOnMock invocation) throws Throwable {
-            assertEquals(1, invocation.getArguments().length);
-            final Pageable pageable = invocation.getArgumentAt(0, Pageable.class);
-            return new PageImpl<>(shops, pageable, shops.size());
-        }
-    }
-
-
     @Test
     public void testGetShopsPage() throws Exception {
 
@@ -114,8 +95,11 @@ public class ShopRestControllerTest {
             existingShops.add(new Shop(i, "test-shop-" + i));
         }
 
-        final ShopPageAnswer shopPageAnswer = new ShopPageAnswer(existingShops);
-        when(shopService.getShops(any(Pageable.class))).thenAnswer(shopPageAnswer);
+        when(shopService.getShops(any(Pageable.class))).thenAnswer(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            final Pageable pageable = invocation.getArgument(0);
+            return new PageImpl<>(existingShops, pageable, existingShops.size());
+        });
 
         mvc.perform(get("/api/v1/shop/list?page=1&size=10").accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
@@ -179,7 +163,7 @@ public class ShopRestControllerTest {
         @Override
         public Shop answer(InvocationOnMock invocation) throws Throwable {
             assertEquals(1, invocation.getArguments().length);
-            final ShopForm form = invocation.getArgumentAt(0, ShopForm.class);
+            final ShopForm form = invocation.getArgument(0);
             shop = new Shop(1L, form.getName());
             return shop;
         }
@@ -220,10 +204,10 @@ public class ShopRestControllerTest {
 
             assertEquals(2, invocation.getArguments().length);
 
-            final Long id = invocation.getArgumentAt(0, Long.class);
+            final Long id = invocation.getArgument(0);
             assertEquals(shop.getId(), id);
 
-            final ShopForm form = invocation.getArgumentAt(1, ShopForm.class);
+            final ShopForm form = invocation.getArgument(1);
             shop.setName(form.getName());
 
             return shop;
@@ -276,5 +260,4 @@ public class ShopRestControllerTest {
 
         mvc.perform(delete("/api/v1/shop/" + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
     }
-
 }

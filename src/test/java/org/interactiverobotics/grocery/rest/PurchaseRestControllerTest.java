@@ -1,7 +1,7 @@
 /*
  * PurchaseRestControllerTest.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,19 +20,6 @@
 
 package org.interactiverobotics.grocery.rest;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import org.interactiverobotics.grocery.configuration.JsonConfiguration;
 import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.domain.Purchase;
@@ -48,7 +35,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -59,6 +45,18 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Purchase REST controller test.
@@ -113,24 +111,6 @@ public class PurchaseRestControllerTest {
                 .andExpect(jsonPath("$[1].name", is(notPurchasedItems.get(1).getName())));
     }
 
-
-    public static class PurchasePageAnswer implements Answer<Page<Purchase>> {
-
-        private final List<Purchase> purchases;
-
-        public PurchasePageAnswer(final List<Purchase> purchases) {
-            this.purchases = purchases;
-        }
-
-        @Override
-        public Page<Purchase> answer(InvocationOnMock invocation) throws Throwable {
-            assertEquals(2, invocation.getArguments().length);
-            final Pageable pageable = invocation.getArgumentAt(0, Pageable.class);
-            return new PageImpl<>(purchases, pageable, purchases.size());
-        }
-    }
-
-
     @Test
     public void testGetPurchasesPage() throws Exception {
 
@@ -139,8 +119,11 @@ public class PurchaseRestControllerTest {
             existingPurchases.add(new Purchase(i, visit, item, 1L, null));
         }
 
-        final PurchasePageAnswer purchasePageAnswer = new PurchasePageAnswer(existingPurchases);
-        when(purchaseService.getPurchases(anyObject(), eq(visit.getId()))).thenAnswer(purchasePageAnswer);
+        when(purchaseService.getPurchases(any(Pageable.class), eq(visit.getId()))).thenAnswer(invocation -> {
+            assertEquals(2, invocation.getArguments().length);
+            final Pageable pageable = invocation.getArgument(0);
+            return new PageImpl<>(existingPurchases, pageable, existingPurchases.size());
+        });
 
         mvc.perform(get("/api/v1/purchase/" + visit.getId() + "/list?page=1&size=10")
                 .accept(MediaType.APPLICATION_JSON_UTF8))
@@ -174,15 +157,15 @@ public class PurchaseRestControllerTest {
 
             assertEquals(4, invocation.getArguments().length);
 
-            final Long visitId = invocation.getArgumentAt(0, Long.class);
+            final Long visitId = invocation.getArgument(0);
             assertEquals(visit.getId(), visitId);
 
-            final Long itemId = invocation.getArgumentAt(1, Long.class);
+            final Long itemId = invocation.getArgument(1);
             assertEquals(item.getId(), itemId);
 
-            final Long quantity = invocation.getArgumentAt(2, Long.class);
+            final Long quantity = invocation.getArgument(2);
 
-            final BigDecimal price = invocation.getArgumentAt(3, BigDecimal.class);
+            final BigDecimal price = invocation.getArgument(3);
 
             purchase = new Purchase();
             purchase.setId(1L);
@@ -200,7 +183,7 @@ public class PurchaseRestControllerTest {
     public void testBuyItem() throws Exception {
 
         final BuyItemAnswer buyItemAnswer = new BuyItemAnswer(visit, item);
-        when(purchaseService.buyItem(eq(visit.getId()), eq(item.getId()), anyLong(), anyObject()))
+        when(purchaseService.buyItem(eq(visit.getId()), eq(item.getId()), any(Long.class), any()))
                 .thenAnswer(buyItemAnswer);
 
         mvc.perform(post("/api/v1/purchase/" + visit.getId() + "/buy/" + item.getId())
@@ -216,7 +199,7 @@ public class PurchaseRestControllerTest {
     @Test(expected = Exception.class)
     public void testBuyItemForWrongParams() throws Exception {
 
-        when(purchaseService.buyItem(anyLong(), anyLong(), anyLong(), anyObject())).thenThrow(new Exception());
+        when(purchaseService.buyItem(any(Long.class), any(Long.class), any(Long.class), any(BigDecimal.class))).thenThrow(new Exception());
 
         mvc.perform(post("/api/v1/purchase/" + new Long(999L) + "/buy/" + new Long(999L))
                 .param("quantity", "-1")
@@ -227,7 +210,7 @@ public class PurchaseRestControllerTest {
     public void testBuyItemSetPrice() throws Exception {
 
         final BuyItemAnswer buyItemAnswer = new BuyItemAnswer(visit, item);
-        when(purchaseService.buyItem(eq(visit.getId()), eq(item.getId()), anyLong(), anyObject()))
+        when(purchaseService.buyItem(eq(visit.getId()), eq(item.getId()), any(Long.class), any(BigDecimal.class)))
                 .thenAnswer(buyItemAnswer);
 
         mvc.perform(post("/api/v1/purchase/" + visit.getId() + "/buy/" + item.getId())
@@ -262,13 +245,13 @@ public class PurchaseRestControllerTest {
 
             assertEquals(3, invocation.getArguments().length);
 
-            final Long visitId = invocation.getArgumentAt(0, Long.class);
+            final Long visitId = invocation.getArgument(0);
             assertEquals(visit.getId(), visitId);
 
-            final Long itemId = invocation.getArgumentAt(1, Long.class);
+            final Long itemId = invocation.getArgument(1);
             assertEquals(item.getId(), itemId);
 
-            final Long quantity = invocation.getArgumentAt(2, Long.class);
+            final Long quantity = invocation.getArgument(2);
 
             purchase = new Purchase();
             purchase.setId(1L);
@@ -285,7 +268,7 @@ public class PurchaseRestControllerTest {
     public void testReturnItem() throws Exception {
 
         final ReturnItemAnswer returnItemAnswer = new ReturnItemAnswer(visit, item);
-        when(purchaseService.returnItem(eq(visit.getId()), eq(item.getId()), anyLong()))
+        when(purchaseService.returnItem(eq(visit.getId()), eq(item.getId()), any(Long.class)))
                 .thenAnswer(returnItemAnswer);
 
         mvc.perform(post("/api/v1/purchase/" + visit.getId() + "/return/" + item.getId())
@@ -301,7 +284,7 @@ public class PurchaseRestControllerTest {
     @Test(expected = Exception.class)
     public void testReturnItemForWrongParams() throws Exception {
 
-        when(purchaseService.returnItem(anyLong(), anyLong(), anyLong())).thenThrow(new Exception());
+        when(purchaseService.returnItem(any(Long.class), any(Long.class), any(Long.class))).thenThrow(new Exception());
 
         mvc.perform(post("/api/v1/purchase/" + new Long(999L) + "/return/" + new Long(999L))
                 .param("quantity", "-1")
@@ -326,13 +309,13 @@ public class PurchaseRestControllerTest {
 
             assertEquals(3, invocation.getArguments().length);
 
-            final Long visitId = invocation.getArgumentAt(0, Long.class);
+            final Long visitId = invocation.getArgument(0);
             assertEquals(purchase.getVisit().getId(), visitId);
 
-            final Long itemId = invocation.getArgumentAt(1, Long.class);
+            final Long itemId = invocation.getArgument(1);
             assertEquals(purchase.getItem().getId(), itemId);
 
-            final BigDecimal price = invocation.getArgumentAt(2, BigDecimal.class);
+            final BigDecimal price = invocation.getArgument(2);
             purchase.setPrice(price);
 
             return purchase;
@@ -345,7 +328,7 @@ public class PurchaseRestControllerTest {
 
         final Purchase existingPurchase = new Purchase(1L, visit, item, 1L, BigDecimal.valueOf(10L));
         final UpdatePriceAnswer updatePriceAnswer = new UpdatePriceAnswer(existingPurchase);
-        when(purchaseService.updatePrice(eq(visit.getId()), eq(item.getId()), anyObject()))
+        when(purchaseService.updatePrice(eq(visit.getId()), eq(item.getId()), any(BigDecimal.class)))
                 .thenAnswer(updatePriceAnswer);
 
         mvc.perform(post("/api/v1/purchase/" + visit.getId() + "/price/" + item.getId())
@@ -361,11 +344,10 @@ public class PurchaseRestControllerTest {
     @Test(expected = Exception.class)
     public void testUpdatePriceForWrongParams() throws Exception {
 
-        when(purchaseService.updatePrice(anyLong(), anyLong(), anyObject())).thenThrow(new Exception());
+        when(purchaseService.updatePrice(any(Long.class), any(Long.class), any(BigDecimal.class))).thenThrow(new Exception());
 
         mvc.perform(post("/api/v1/purchase/" + new Long(999L) + "/price/" + new Long(999L))
                 .param("price", "-1")
                 .accept(MediaType.APPLICATION_JSON_UTF8));
     }
-
 }

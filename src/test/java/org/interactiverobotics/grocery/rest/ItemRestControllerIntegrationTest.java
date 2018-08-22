@@ -1,7 +1,7 @@
 /*
  * ItemRestControllerIntegrationTest.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,6 +42,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Item REST controller integration test.
@@ -69,12 +70,12 @@ public class ItemRestControllerIntegrationTest {
     public void testGetItems() {
 
         final List<Item> existingItems = new ArrayList<>();
-        itemRepository.save(Arrays.asList(new Item("test-item-1"), new Item("test-item-2")))
+        itemRepository.saveAll(Arrays.asList(new Item("test-item-1"), new Item("test-item-2")))
                 .forEach(item -> existingItems.add(item));
 
         final ResponseEntity<Item[]> response = restTemplate.getForEntity("/api/v1/item/", Item[].class);
 
-        itemRepository.delete(existingItems);
+        itemRepository.deleteAll(existingItems);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -94,7 +95,7 @@ public class ItemRestControllerIntegrationTest {
         final ResponseEntity<PageResponse<Item>> response = restTemplate.exchange("/api/v1/item/list?page=1&size=10",
                 HttpMethod.GET, null, responseType);
 
-        itemRepository.delete(existingItems);
+        itemRepository.deleteAll(existingItems);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -203,7 +204,7 @@ public class ItemRestControllerIntegrationTest {
 
         restTemplate.delete("/api/v1/item/" + existingItem.getId());
 
-        assertNull(itemRepository.findOne(existingItem.getId()));
+        assertNull(itemRepository.findById(existingItem.getId()));
     }
 
     @Test
@@ -214,5 +215,4 @@ public class ItemRestControllerIntegrationTest {
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
-
 }

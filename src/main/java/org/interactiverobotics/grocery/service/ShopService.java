@@ -1,7 +1,7 @@
 /*
  * ShopService.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ public class ShopService {
      */
     public List<Shop> getShops() {
         final List<Shop> shops = new ArrayList<>();
-        this.shopRepository.findAll().forEach(shop -> shops.add(shop));
+        shopRepository.findAll().forEach(shop -> shops.add(shop));
         LOG.debug("{} Shop(s) found", shops.size());
         return shops;
     }
@@ -64,7 +64,7 @@ public class ShopService {
      * Returns page of Shop(s).
      */
     public Page<Shop> getShops(Pageable pageable) {
-        final Page<Shop> shops = this.shopRepository.findAll(pageable);
+        final Page<Shop> shops = shopRepository.findAll(pageable);
         LOG.debug("{} Shop(s) found for {}", shops.getNumberOfElements(), pageable);
         return shops;
     }
@@ -73,7 +73,7 @@ public class ShopService {
      * Returns Shop by Id.
      */
     public Shop getShopById(final Long shopId) {
-        final Shop shop = Optional.ofNullable(this.shopRepository.findOne(shopId))
+        final Shop shop = shopRepository.findById(shopId)
                 .orElseThrow(() -> new ShopNotFoundException(shopId));
         LOG.debug("Shop found by Id #{}", shopId);
         return shop;
@@ -83,7 +83,7 @@ public class ShopService {
      * Returns Shop by Name.
      */
     public Shop getShopByName(final String name) {
-        final Shop shop = Optional.ofNullable(this.shopRepository.findOneByName(name))
+        final Shop shop = Optional.ofNullable(shopRepository.findOneByName(name))
                 .orElseThrow(() -> new ShopNotFoundException(-1L));
         LOG.debug("Shop found by Name '{}'", name);
         return shop;
@@ -93,7 +93,7 @@ public class ShopService {
      * Creates Shop.
      */
     public Shop createShop(final ShopForm form) {
-        final Shop shop = this.shopRepository.save(new Shop(form.getName()));
+        final Shop shop = shopRepository.save(new Shop(form.getName()));
         LOG.info("Shop created: {}", shop);
         return shop;
     }
@@ -102,10 +102,10 @@ public class ShopService {
      * Updates Shop.
      */
     public Shop updateShop(final Long shopId, final ShopForm form) {
-        final Shop shop = Optional.ofNullable(this.shopRepository.findOne(shopId))
+        final Shop shop = shopRepository.findById(shopId)
                 .orElseThrow(() -> new ShopNotFoundException(shopId));
         shop.setName(form.getName());
-        final Shop updatedShop = this.shopRepository.save(shop);
+        final Shop updatedShop = shopRepository.save(shop);
         LOG.info("Shop updated: {}", updatedShop);
         return updatedShop;
     }
@@ -114,10 +114,9 @@ public class ShopService {
      * Deletes Shop.
      */
     public void deleteShop(final Long shopId) {
-        final Shop shop = Optional.ofNullable(this.shopRepository.findOne(shopId))
+        final Shop shop = shopRepository.findById(shopId)
                 .orElseThrow(() -> new ShopNotFoundException(shopId));
         this.shopRepository.delete(shop);
         LOG.info("Shop deleted: {}", shop);
     }
-
 }

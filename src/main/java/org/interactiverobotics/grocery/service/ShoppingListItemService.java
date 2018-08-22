@@ -1,7 +1,7 @@
 /*
  * ShoppingListItemService.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -72,8 +71,8 @@ public class ShoppingListItemService {
      * Returns ShoppingListItem(s).
      */
     public List<ShoppingListItem> getShoppingListItems(final Long shoppingListId) {
-        final List<ShoppingListItem> shoppingListItems = this.shoppingListItemRepository.findAllByShoppingList(
-                Optional.ofNullable(this.shoppingListRepository.findOne(shoppingListId))
+        final List<ShoppingListItem> shoppingListItems = shoppingListItemRepository.findAllByShoppingList(
+                shoppingListRepository.findById(shoppingListId)
                         .orElseThrow(() -> new ShoppingListNotFoundException(shoppingListId)));
         LOG.debug("{} ShoppingListItem(s) found", shoppingListItems.size());
         return shoppingListItems;
@@ -83,8 +82,8 @@ public class ShoppingListItemService {
      * Returns page of ShoppingListItem(s).
      */
     public Page<ShoppingListItem> getShoppingListItems(Pageable pageable, final Long shoppingListId) {
-        final Page<ShoppingListItem> shoppingListItems = this.shoppingListItemRepository.findAllByShoppingList(pageable,
-                Optional.ofNullable(this.shoppingListRepository.findOne(shoppingListId))
+        final Page<ShoppingListItem> shoppingListItems = shoppingListItemRepository.findAllByShoppingList(pageable,
+                shoppingListRepository.findById(shoppingListId)
                         .orElseThrow(() -> new ShoppingListNotFoundException(shoppingListId)));
         LOG.debug("{} ShoppingListItem(s) found for {}", shoppingListItems.getNumberOfElements(), pageable);
         return shoppingListItems;
@@ -95,7 +94,7 @@ public class ShoppingListItemService {
      */
     public ShoppingListItem getShoppingListItemById(final Long shoppingListItemId) {
         final ShoppingListItem shoppingListItem =
-                Optional.ofNullable(this.shoppingListItemRepository.findOne(shoppingListItemId))
+                shoppingListItemRepository.findById(shoppingListItemId)
                         .orElseThrow(() -> new ShoppingListItemNotFoundException(shoppingListItemId));
         LOG.debug("ShoppingListItem found by Id #{}", shoppingListItemId);
         return shoppingListItem;
@@ -105,11 +104,11 @@ public class ShoppingListItemService {
      * Returns Item(s) not included to ShoppingList.
      */
     public List<Item> getNotAddedItems(final Long shoppingListId) {
-        final ShoppingList shoppingList = Optional.ofNullable(this.shoppingListRepository.findOne(shoppingListId))
+        final ShoppingList shoppingList = shoppingListRepository.findById(shoppingListId)
                 .orElseThrow(() -> new ShoppingListNotFoundException(shoppingListId));
-        return StreamSupport.stream(this.itemRepository.findAll().spliterator(), false)
+        return StreamSupport.stream(itemRepository.findAll().spliterator(), false)
                 .filter(item ->
-                        this.shoppingListItemRepository.findOneByShoppingListAndItem(shoppingList, item) == null)
+                        shoppingListItemRepository.findOneByShoppingListAndItem(shoppingList, item) == null)
                 .collect(Collectors.toList());
     }
 
@@ -119,10 +118,10 @@ public class ShoppingListItemService {
     public ShoppingListItem createShoppingListItem(final ShoppingListItemCreateForm form) {
 
         final ShoppingList shoppingList =
-                Optional.ofNullable(this.shoppingListRepository.findOne(form.getShoppingList()))
+                shoppingListRepository.findById(form.getShoppingList())
                         .orElseThrow(() -> new ShoppingListNotFoundException(form.getShoppingList()));
 
-        final Item item = Optional.ofNullable(this.itemRepository.findOne(form.getItem()))
+        final Item item = itemRepository.findById(form.getItem())
                 .orElseThrow(() -> new ItemNotFoundException(form.getItem()));
 
         // Quantity must be > 0
@@ -132,7 +131,7 @@ public class ShoppingListItemService {
         }
 
         final ShoppingListItem shoppingListItem =
-                this.shoppingListItemRepository.save(new ShoppingListItem(shoppingList, item, quantity));
+                shoppingListItemRepository.save(new ShoppingListItem(shoppingList, item, quantity));
 
         LOG.info("ShoppingListItem created: {}", shoppingListItem);
         return shoppingListItem;
@@ -145,7 +144,7 @@ public class ShoppingListItemService {
                                                    final ShoppingListItemUpdateForm form) {
 
         final ShoppingListItem shoppingListItem =
-                Optional.ofNullable(this.shoppingListItemRepository.findOne(shoppingListItemId))
+                shoppingListItemRepository.findById(shoppingListItemId)
                         .orElseThrow(() -> new ShoppingListItemNotFoundException(shoppingListItemId));
 
         // Quantity must be > 0
@@ -155,7 +154,7 @@ public class ShoppingListItemService {
         }
         shoppingListItem.setQuantity(quantity);
 
-        final ShoppingListItem updatedShoppingListItem = this.shoppingListItemRepository.save(shoppingListItem);
+        final ShoppingListItem updatedShoppingListItem = shoppingListItemRepository.save(shoppingListItem);
 
         LOG.info("ShoppingListItem updated: {}", updatedShoppingListItem);
         return updatedShoppingListItem;
@@ -166,10 +165,9 @@ public class ShoppingListItemService {
      */
     public void deleteShoppingListItem(final Long shoppingListItemId) {
         final ShoppingListItem shoppingListItem =
-                Optional.ofNullable(this.shoppingListItemRepository.findOne(shoppingListItemId))
+                shoppingListItemRepository.findById(shoppingListItemId)
                         .orElseThrow(() -> new ShoppingListItemNotFoundException(shoppingListItemId));
-        this.shoppingListItemRepository.delete(shoppingListItem);
+        shoppingListItemRepository.delete(shoppingListItem);
         LOG.info("ShoppingListItem deleted: {}", shoppingListItem);
     }
-
 }

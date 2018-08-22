@@ -1,7 +1,7 @@
 /*
  * ItemRestControllerTest.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,27 @@
 
 package org.interactiverobotics.grocery.rest;
 
+import org.interactiverobotics.grocery.domain.Item;
+import org.interactiverobotics.grocery.exception.ItemNotFoundException;
+import org.interactiverobotics.grocery.form.ItemForm;
+import org.interactiverobotics.grocery.service.ItemService;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
@@ -34,29 +55,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import org.interactiverobotics.grocery.domain.Item;
-import org.interactiverobotics.grocery.exception.ItemNotFoundException;
-import org.interactiverobotics.grocery.form.ItemForm;
-import org.interactiverobotics.grocery.service.ItemService;
-import org.interactiverobotics.grocery.service.ItemServiceTest;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Item REST controller test.
@@ -89,24 +87,6 @@ public class ItemRestControllerTest {
                 .andExpect(jsonPath("$[1].name", is(existingItems.get(1).getName())));
     }
 
-
-    public static class ItemPageAnswer implements Answer<Page<Item>> {
-
-        private final List<Item> items;
-
-        public ItemPageAnswer(final List<Item> items) {
-            this.items = items;
-        }
-
-        @Override
-        public Page<Item> answer(InvocationOnMock invocation) throws Throwable {
-            assertEquals(1, invocation.getArguments().length);
-            final Pageable pageable = invocation.getArgumentAt(0, Pageable.class);
-            return new PageImpl<>(items, pageable, items.size());
-        }
-    }
-
-
     @Test
     public void testGetItemsPage() throws Exception {
 
@@ -115,8 +95,11 @@ public class ItemRestControllerTest {
             existingItems.add(new Item(i, "test-item-" + i));
         }
 
-        final ItemServiceTest.ItemPageAnswer itemPageAnswer = new ItemServiceTest.ItemPageAnswer(existingItems);
-        when(itemService.getItems(any(Pageable.class))).thenAnswer(itemPageAnswer);
+        when(itemService.getItems(any(Pageable.class))).thenAnswer(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            final Pageable pageable = invocation.getArgument(0);
+            return new PageImpl<>(existingItems, pageable, existingItems.size());
+        });
 
         mvc.perform(get("/api/v1/item/list?page=1&size=10").accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
@@ -180,7 +163,7 @@ public class ItemRestControllerTest {
         @Override
         public Item answer(InvocationOnMock invocation) throws Throwable {
             assertEquals(1, invocation.getArguments().length);
-            final ItemForm form = invocation.getArgumentAt(0, ItemForm.class);
+            final ItemForm form = invocation.getArgument(0);
             item = new Item(1L, form.getName());
             return item;
         }
@@ -221,10 +204,10 @@ public class ItemRestControllerTest {
 
             assertEquals(2, invocation.getArguments().length);
 
-            final Long id = invocation.getArgumentAt(0, Long.class);
+            final Long id = invocation.getArgument(0);
             assertEquals(item.getId(), id);
 
-            final ItemForm form = invocation.getArgumentAt(1, ItemForm.class);
+            final ItemForm form = invocation.getArgument(1);
             item.setName(form.getName());
 
             return item;
@@ -277,5 +260,4 @@ public class ItemRestControllerTest {
 
         mvc.perform(delete("/api/v1/item/" + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
     }
-
 }
