@@ -1,7 +1,7 @@
 /*
  * VisitRestControllerTest.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -102,24 +102,6 @@ public class VisitRestControllerTest {
                 .andExpect(jsonPath("$[1].shop.id", is(existingVisits.get(1).getShop().getId().intValue())));
     }
 
-
-    public static class VisitPageAnswer implements Answer<Page<Visit>> {
-
-        private final List<Visit> visits;
-
-        public VisitPageAnswer(final List<Visit> visits) {
-            this.visits = visits;
-        }
-
-        @Override
-        public Page<Visit> answer(InvocationOnMock invocation) throws Throwable {
-            assertEquals(1, invocation.getArguments().length);
-            final Pageable pageable = invocation.getArgumentAt(0, Pageable.class);
-            return new PageImpl<>(visits, pageable, visits.size());
-        }
-    }
-
-
     @Test
     public void testGetVisitsPage() throws Exception {
 
@@ -128,8 +110,11 @@ public class VisitRestControllerTest {
             existingVisits.add(new Visit(i, shop));
         }
 
-        final VisitPageAnswer visitPageAnswer = new VisitPageAnswer(existingVisits);
-        when(visitService.getVisits(any(Pageable.class))).thenAnswer(visitPageAnswer);
+        when(visitService.getVisits(any(Pageable.class))).thenAnswer(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            final Pageable pageable = invocation.getArgument(0);
+            return new PageImpl<>(existingVisits, pageable, existingVisits.size());
+        });
 
         mvc.perform(get("/api/v1/visit/list?page=1&size=10").accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
@@ -201,7 +186,7 @@ public class VisitRestControllerTest {
 
             assertEquals(1, invocation.getArguments().length);
 
-            final Long shopId = invocation.getArgumentAt(0, Long.class);
+            final Long shopId = invocation.getArgument(0);
             assertEquals(shop.getId(), shopId);
 
             visit = new Visit(1L, shop);
@@ -294,5 +279,4 @@ public class VisitRestControllerTest {
 
         mvc.perform(delete("/api/v1/visit/" + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
     }
-
 }

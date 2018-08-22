@@ -1,7 +1,7 @@
 /*
  * ShoppingListServiceTest.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,6 @@
 
 package org.interactiverobotics.grocery.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import org.interactiverobotics.grocery.domain.ShoppingList;
 import org.interactiverobotics.grocery.exception.ShoppingListNotFoundException;
 import org.interactiverobotics.grocery.form.ShoppingListForm;
@@ -35,22 +29,29 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * ShoppingList service test.
  * Tests Service class with mocked Repository.
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(SpringRunner.class)
 public class ShoppingListServiceTest {
 
     @Mock
@@ -77,24 +78,6 @@ public class ShoppingListServiceTest {
         assertEquals(existingShoppingLists, shoppingLists);
     }
 
-
-    public static class ShoppingListPageAnswer implements Answer<Page<ShoppingList>> {
-
-        private final List<ShoppingList> shoppingLists;
-
-        public ShoppingListPageAnswer(final List<ShoppingList> shoppingLists) {
-            this.shoppingLists = shoppingLists;
-        }
-
-        @Override
-        public Page<ShoppingList> answer(InvocationOnMock invocation) throws Throwable {
-            assertEquals(1, invocation.getArguments().length);
-            final Pageable pageable = invocation.getArgumentAt(0, Pageable.class);
-            return new PageImpl<>(shoppingLists, pageable, shoppingLists.size());
-        }
-    }
-
-
     @Test
     public void testGetShoppingListsPage() {
 
@@ -103,8 +86,11 @@ public class ShoppingListServiceTest {
             existingShoppingLists.add(new ShoppingList(i, "test-shopping-list-" + i));
         }
 
-        final ShoppingListPageAnswer shoppingListPageAnswer = new ShoppingListPageAnswer(existingShoppingLists);
-        when(shoppingListRepository.findAll(any(Pageable.class))).thenAnswer(shoppingListPageAnswer);
+        when(shoppingListRepository.findAll(any(Pageable.class))).thenAnswer(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            final Pageable pageable = invocation.getArgument(0);
+            return new PageImpl<>(existingShoppingLists, pageable, existingShoppingLists.size());
+        });
 
         final Page<ShoppingList> shoppingLists = shoppingListService.getShoppingLists(new PageRequest(0, 10));
 
@@ -116,7 +102,7 @@ public class ShoppingListServiceTest {
     public void testGetShoppingListById() {
 
         ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
-        when(shoppingListRepository.findOne(existingShoppingList.getId())).thenReturn(existingShoppingList);
+        when(shoppingListRepository.findById(existingShoppingList.getId())).thenReturn(Optional.of(existingShoppingList));
 
         final ShoppingList shoppingList = shoppingListService.getShoppingListById(existingShoppingList.getId());
 
@@ -126,7 +112,7 @@ public class ShoppingListServiceTest {
     @Test(expected = ShoppingListNotFoundException.class)
     public void testGetNotExistingShoppingListById() {
 
-        when(shoppingListRepository.findOne(any())).thenReturn(null);
+        when(shoppingListRepository.findById(any())).thenReturn(Optional.empty());
 
         shoppingListService.getShoppingListById(1L);
     }
@@ -145,7 +131,7 @@ public class ShoppingListServiceTest {
     @Test(expected = ShoppingListNotFoundException.class)
     public void testGetNotExistingShoppingListByName() {
 
-        when(shoppingListRepository.findOne(any())).thenReturn(null);
+        when(shoppingListRepository.findById(any())).thenReturn(Optional.empty());
 
         shoppingListService.getShoppingListByName("test-name");
     }
@@ -162,7 +148,7 @@ public class ShoppingListServiceTest {
         @Override
         public ShoppingList answer(InvocationOnMock invocation) throws Throwable {
             assertEquals(1, invocation.getArguments().length);
-            shoppingList = invocation.getArgumentAt(0, ShoppingList.class);
+            shoppingList = invocation.getArgument(0);
             if (shoppingList.getId() == null) {
                 shoppingList.setId(1L);
             }
@@ -193,7 +179,7 @@ public class ShoppingListServiceTest {
     public void testUpdateShoppingList() {
 
         ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
-        when(shoppingListRepository.findOne(existingShoppingList.getId())).thenReturn(existingShoppingList);
+        when(shoppingListRepository.findById(existingShoppingList.getId())).thenReturn(Optional.of(existingShoppingList));
 
         final SaveAndReturnShoppingListAnswer saveAndReturnShoppingListAnswer = new SaveAndReturnShoppingListAnswer();
         when(shoppingListRepository.save(any(ShoppingList.class))).then(saveAndReturnShoppingListAnswer);
@@ -213,7 +199,7 @@ public class ShoppingListServiceTest {
     @Test(expected = ShoppingListNotFoundException.class)
     public void testUpdateNotExistingShoppingList() {
 
-        when(shoppingListRepository.findOne(any())).thenReturn(null);
+        when(shoppingListRepository.findById(any())).thenReturn(Optional.empty());
 
         final ShoppingListForm form = new ShoppingListForm("updated-test-shopping-list");
 
@@ -224,7 +210,7 @@ public class ShoppingListServiceTest {
     public void testDeleteShoppingList() {
 
         ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
-        when(shoppingListRepository.findOne(existingShoppingList.getId())).thenReturn(existingShoppingList);
+        when(shoppingListRepository.findById(existingShoppingList.getId())).thenReturn(Optional.of(existingShoppingList));
 
         shoppingListService.deleteShoppingList(existingShoppingList.getId());
 
@@ -234,9 +220,8 @@ public class ShoppingListServiceTest {
     @Test(expected = ShoppingListNotFoundException.class)
     public void testDeleteNotExistingShoppingList() {
 
-        when(shoppingListRepository.findOne(any())).thenReturn(null);
+        when(shoppingListRepository.findById(any())).thenReturn(Optional.empty());
 
         shoppingListService.deleteShoppingList(999L);
     }
-
 }

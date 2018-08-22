@@ -1,7 +1,7 @@
 /*
  * PurchaseService.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,9 +39,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
@@ -75,10 +73,8 @@ public class PurchaseService {
      * Returns Purchase(s).
      */
     public List<Purchase> getPurchases(final Long visitId) {
-        final Visit visit = this.visitRepository.findOne(visitId);
-        if (visit == null) {
-            throw new VisitNotFoundException(visitId);
-        }
+        final Visit visit = visitRepository.findById(visitId)
+                .orElseThrow(() -> new VisitNotFoundException(visitId));
         return getPurchases(visit);
     }
 
@@ -95,10 +91,8 @@ public class PurchaseService {
      * Returns page of Purchase(s).
      */
     public Page<Purchase> getPurchases(Pageable pageable, final Long visitId) {
-        final Visit visit = this.visitRepository.findOne(visitId);
-        if (visit == null) {
-            throw new VisitNotFoundException(visitId);
-        }
+        final Visit visit = visitRepository.findById(visitId)
+                .orElseThrow(() -> new VisitNotFoundException(visitId));
         return getPurchases(pageable, visit);
     }
 
@@ -106,7 +100,7 @@ public class PurchaseService {
      * Returns page of Purchase(s).
      */
     public Page<Purchase> getPurchases(Pageable pageable, final Visit visit) {
-        final Page<Purchase> purchases = this.purchaseRepository.findAllByVisit(pageable, visit);
+        final Page<Purchase> purchases = purchaseRepository.findAllByVisit(pageable, visit);
         LOG.debug("{} Purchase(s) found for Visit {} and {}", purchases.getNumberOfElements(), visit, pageable);
         return purchases;
     }
@@ -115,10 +109,8 @@ public class PurchaseService {
      * Returns Item(s) not existing in Visit's Purchase(s).
      */
     public List<Item> getNotPurchasedItems(final Long visitId) {
-        final Visit visit = this.visitRepository.findOne(visitId);
-        if (visit == null) {
-            throw new VisitNotFoundException(visitId);
-        }
+        final Visit visit = visitRepository.findById(visitId)
+                .orElseThrow(() -> new VisitNotFoundException(visitId));
         return getNotPurchasedItems(visit);
     }
 
@@ -126,8 +118,8 @@ public class PurchaseService {
      * Returns Item(s) not existing in Visit's Purchase(s).
      */
     public List<Item> getNotPurchasedItems(final Visit visit) {
-        final List<Item> items = StreamSupport.stream(this.itemRepository.findAll().spliterator(), false)
-                .filter(item -> this.purchaseRepository.findOneByVisitAndItem(visit, item) == null)
+        final List<Item> items = StreamSupport.stream(itemRepository.findAll().spliterator(), false)
+                .filter(item -> purchaseRepository.findOneByVisitAndItem(visit, item) == null)
                 .collect(Collectors.toList());
         LOG.debug("{} not purchased Item(s) found for Visit {}", items.size(), visit);
         return items;
@@ -137,14 +129,10 @@ public class PurchaseService {
      * Buy item by VisitId, ItemId.
      */
     public Purchase buyItem(final Long visitId, final Long itemId, final Long quantity, final BigDecimal price) {
-        final Visit visit = this.visitRepository.findOne(visitId);
-        if (visit == null) {
-            throw new VisitNotFoundException(visitId);
-        }
-        final Item item = this.itemRepository.findOne(itemId);
-        if (item == null) {
-            throw new ItemNotFoundException(itemId);
-        }
+        final Visit visit = visitRepository.findById(visitId)
+                .orElseThrow(() -> new VisitNotFoundException(visitId));
+        final Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ItemNotFoundException(itemId));
         return buyItem(visit, item, quantity, price);
     }
 
@@ -152,7 +140,7 @@ public class PurchaseService {
      * Buy item by Visit, Item.
      */
     public Purchase buyItem(final Visit visit, final Item item, final Long quantity, final BigDecimal price) {
-        return buyItem(Optional.ofNullable(this.purchaseRepository.findOneByVisitAndItem(visit, item))
+        return buyItem(Optional.ofNullable(purchaseRepository.findOneByVisitAndItem(visit, item))
                 .orElseGet(() -> new Purchase(visit, item)), quantity, price);
     }
 
@@ -188,7 +176,7 @@ public class PurchaseService {
             }
         }
 
-        final Purchase updatedPurchase = this.purchaseRepository.save(purchase);
+        final Purchase updatedPurchase = purchaseRepository.save(purchase);
         LOG.info("Purchase updated: {}", updatedPurchase);
         return updatedPurchase;
     }
@@ -197,14 +185,10 @@ public class PurchaseService {
      * Return item by VisitId, ItemId.
      */
     public Purchase returnItem(final Long visitId, final Long itemId, final Long quantity) {
-        final Visit visit = this.visitRepository.findOne(visitId);
-        if (visit == null) {
-            throw new VisitNotFoundException(visitId);
-        }
-        final Item item = this.itemRepository.findOne(itemId);
-        if (item == null) {
-            throw new ItemNotFoundException(itemId);
-        }
+        final Visit visit = visitRepository.findById(visitId)
+                .orElseThrow(() -> new VisitNotFoundException(visitId));
+        final Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ItemNotFoundException(itemId));
         return returnItem(visit, item, quantity);
     }
 
@@ -212,7 +196,7 @@ public class PurchaseService {
      * Return item by Visit, Item.
      */
     public Purchase returnItem(final Visit visit, final Item item, final Long quantity) {
-        return returnItem(Optional.ofNullable(this.purchaseRepository.findOneByVisitAndItem(visit, item))
+        return returnItem(Optional.ofNullable(purchaseRepository.findOneByVisitAndItem(visit, item))
                 .orElseThrow(() -> new PurchaseNotFoundException("Purchase not found!")), quantity);
     }
 
@@ -230,12 +214,12 @@ public class PurchaseService {
         purchase.setQuantity(newQuantity);
 
         if (newQuantity > 0) {
-            final Purchase updatedPurchase = this.purchaseRepository.save(purchase);
+            final Purchase updatedPurchase = purchaseRepository.save(purchase);
             LOG.info("Purchase updated: {}", updatedPurchase);
             return updatedPurchase;
         } else {
             // Delete empty purchase
-            this.purchaseRepository.delete(purchase);
+            purchaseRepository.delete(purchase);
             LOG.info("Purchase deleted: {}", purchase);
             return null;
         }
@@ -245,14 +229,10 @@ public class PurchaseService {
      * Updates Price by VisitId, ItemId.
      */
     public Purchase updatePrice(final Long visitId, final Long itemId, final BigDecimal price) {
-        final Visit visit = this.visitRepository.findOne(visitId);
-        if (visit == null) {
-            throw new VisitNotFoundException(visitId);
-        }
-        final Item item = this.itemRepository.findOne(itemId);
-        if (item == null) {
-            throw new ItemNotFoundException(itemId);
-        }
+        final Visit visit = visitRepository.findById(visitId)
+                .orElseThrow(() -> new VisitNotFoundException(visitId));
+        final Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ItemNotFoundException(itemId));
         return updatePrice(visit, item, price);
     }
 
@@ -260,7 +240,7 @@ public class PurchaseService {
      * Updates Price by Visit, Item.
      */
     public Purchase updatePrice(final Visit visit, final Item item, final BigDecimal price) {
-        return updatePrice(Optional.ofNullable(this.purchaseRepository.findOneByVisitAndItem(visit, item))
+        return updatePrice(Optional.ofNullable(purchaseRepository.findOneByVisitAndItem(visit, item))
                 .orElseThrow(() -> new PurchaseNotFoundException("Purchase not found!")), price);
     }
 
@@ -276,9 +256,8 @@ public class PurchaseService {
 
         purchase.setPrice(price);
 
-        final Purchase updatedPurchase = this.purchaseRepository.save(purchase);
+        final Purchase updatedPurchase = purchaseRepository.save(purchase);
         LOG.info("Purchase updated: {}", updatedPurchase);
         return updatedPurchase;
     }
-
 }

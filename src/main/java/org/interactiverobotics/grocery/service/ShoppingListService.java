@@ -1,7 +1,7 @@
 /*
  * ShoppingListService.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ public class ShoppingListService {
      */
     public List<ShoppingList> getShoppingLists() {
         final List<ShoppingList> shoppingLists = new ArrayList<>();
-        this.shoppingListRepository.findAll().forEach(shoppingList -> shoppingLists.add(shoppingList));
+        shoppingListRepository.findAll().forEach(shoppingList -> shoppingLists.add(shoppingList));
         return shoppingLists;
     }
 
@@ -59,14 +59,14 @@ public class ShoppingListService {
      * Returns page of ShoppingList(s).
      */
     public Page<ShoppingList> getShoppingLists(Pageable pageable) {
-        return this.shoppingListRepository.findAll(pageable);
+        return shoppingListRepository.findAll(pageable);
     }
 
     /**
      * Returns ShoppingList by Id.
      */
     public ShoppingList getShoppingListById(final Long shoppingListId) {
-        return Optional.ofNullable(this.shoppingListRepository.findOne(shoppingListId))
+        return shoppingListRepository.findById(shoppingListId)
                 .orElseThrow(() -> new ShoppingListNotFoundException(shoppingListId));
     }
 
@@ -74,7 +74,7 @@ public class ShoppingListService {
      * Returns ShoppingList by Name.
      */
     public ShoppingList getShoppingListByName(final String name) {
-        return Optional.ofNullable(this.shoppingListRepository.findOneByName(name))
+        return Optional.ofNullable(shoppingListRepository.findOneByName(name))
                 .orElseThrow(() -> new ShoppingListNotFoundException(-1L));
     }
 
@@ -82,26 +82,25 @@ public class ShoppingListService {
      * Creates ShoppingList.
      */
     public ShoppingList createShoppingList(final ShoppingListForm form) {
-        return this.shoppingListRepository.save(new ShoppingList(form.getName()));
+        return shoppingListRepository.save(new ShoppingList(form.getName()));
     }
 
     /**
      * Updates ShoppingList.
      */
     public ShoppingList updateShoppingList(final Long shoppingListId, final ShoppingListForm form) {
-        final ShoppingList shoppingList = Optional.ofNullable(this.shoppingListRepository.findOne(shoppingListId))
+        final ShoppingList shoppingList = shoppingListRepository.findById(shoppingListId)
                 .orElseThrow(() -> new ShoppingListNotFoundException(shoppingListId));
         shoppingList.setName(form.getName());
-        return this.shoppingListRepository.save(shoppingList);
+        return shoppingListRepository.save(shoppingList);
     }
 
     /**
      * Deletes ShoppingList.
      */
     public void deleteShoppingList(final Long itemId) {
-        final ShoppingList shoppingList = Optional.ofNullable(this.shoppingListRepository.findOne(itemId))
+        final ShoppingList shoppingList = shoppingListRepository.findById(itemId)
                 .orElseThrow(() -> new ShoppingListNotFoundException(itemId));
-        this.shoppingListRepository.delete(shoppingList);
+        shoppingListRepository.delete(shoppingList);
     }
-
 }

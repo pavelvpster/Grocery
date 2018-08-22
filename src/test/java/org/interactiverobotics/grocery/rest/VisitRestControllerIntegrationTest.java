@@ -1,7 +1,7 @@
 /*
  * VisitRestControllerIntegrationTest.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,12 +83,12 @@ public class VisitRestControllerIntegrationTest {
     public void testGetVisits() {
 
         final List<Visit> existingVisits = new ArrayList<>();
-        visitRepository.save(Arrays.asList(new Visit(shop), new Visit(shop)))
+        visitRepository.saveAll(Arrays.asList(new Visit(shop), new Visit(shop)))
                 .forEach(visit -> existingVisits.add(visit));
 
         final ResponseEntity<Visit[]> response = restTemplate.getForEntity("/api/v1/visit/", Visit[].class);
 
-        visitRepository.delete(existingVisits);
+        visitRepository.deleteAll(existingVisits);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -108,7 +108,7 @@ public class VisitRestControllerIntegrationTest {
         final ResponseEntity<PageResponse<Visit>> response = restTemplate.exchange("/api/v1/visit/list?page=1&size=10",
                 HttpMethod.GET, null, responseType);
 
-        visitRepository.delete(existingVisits);
+        visitRepository.deleteAll(existingVisits);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -145,13 +145,13 @@ public class VisitRestControllerIntegrationTest {
     public void testGetVisitsByShopId() {
 
         final List<Visit> existingVisits = new ArrayList<>();
-        visitRepository.save(Arrays.asList(new Visit(shop), new Visit(shop)))
+        visitRepository.saveAll(Arrays.asList(new Visit(shop), new Visit(shop)))
                 .forEach(visit -> existingVisits.add(visit));
 
         final ResponseEntity<Visit[]> response = restTemplate
                 .getForEntity("/api/v1/visit/shop/" + shop.getId(), Visit[].class);
 
-        visitRepository.delete(existingVisits);
+        visitRepository.deleteAll(existingVisits);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -246,7 +246,7 @@ public class VisitRestControllerIntegrationTest {
 
         restTemplate.delete("/api/v1/visit/" + existingVisit.getId());
 
-        assertNull(visitRepository.findOne(existingVisit.getId()));
+        assertNull(visitRepository.findById(existingVisit.getId()));
     }
 
     @Test
@@ -257,5 +257,4 @@ public class VisitRestControllerIntegrationTest {
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
-
 }

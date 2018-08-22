@@ -1,7 +1,7 @@
 /*
  * PurchaseRestControllerIntegrationTest.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -114,7 +114,7 @@ public class PurchaseRestControllerIntegrationTest {
     public void testGetNotPurchasedItems() {
 
         final List<Item> existingItems = new ArrayList<>();
-        itemRepository.save(Arrays.asList(new Item("test-item-1"), new Item("test-item-2")))
+        itemRepository.saveAll(Arrays.asList(new Item("test-item-1"), new Item("test-item-2")))
                 .forEach(item -> existingItems.add(item));
 
         final Purchase purchase = purchaseRepository.save(new Purchase(visit, existingItems.get(0), 1L, null));
@@ -124,7 +124,7 @@ public class PurchaseRestControllerIntegrationTest {
 
         purchaseRepository.delete(purchase);
 
-        itemRepository.delete(existingItems);
+        itemRepository.deleteAll(existingItems);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -144,7 +144,7 @@ public class PurchaseRestControllerIntegrationTest {
         final ResponseEntity<PageResponse<Purchase>> response = restTemplate.exchange("/api/v1/purchase/"
                         + visit.getId() + "/list?page=1&size=10", HttpMethod.GET, null, responseType);
 
-        purchaseRepository.delete(existingPurchases);
+        purchaseRepository.deleteAll(existingPurchases);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -343,7 +343,7 @@ public class PurchaseRestControllerIntegrationTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
-        assertNull(purchaseRepository.findOne(existingPurchase.getId()));
+        assertNull(purchaseRepository.findById(existingPurchase.getId()));
     }
 
     @Test
@@ -387,5 +387,4 @@ public class PurchaseRestControllerIntegrationTest {
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
-
 }

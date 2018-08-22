@@ -1,7 +1,7 @@
 /*
  * ShoppingListItemRestControllerIntegrationTest.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -211,7 +211,7 @@ public class ShoppingListItemRestControllerIntegrationTest {
 
         restTemplate.delete("/api/v1/shopping_list_item/" + existingShoppingListItem.getId());
 
-        assertNull(shoppingListItemRepository.findOne(existingShoppingListItem.getId()));
+        assertNull(shoppingListItemRepository.findById(existingShoppingListItem.getId()));
 
         itemRepository.delete(existingItem);
         shoppingListRepository.delete(existingShoppingList);

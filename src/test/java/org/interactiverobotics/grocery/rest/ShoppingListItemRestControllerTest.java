@@ -1,7 +1,7 @@
 /*
  * ShoppingListItemRestControllerTest.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -133,7 +133,7 @@ public class ShoppingListItemRestControllerTest {
 
             assertEquals(1, invocation.getArguments().length);
 
-            final ShoppingListItemCreateForm form = invocation.getArgumentAt(0, ShoppingListItemCreateForm.class);
+            final ShoppingListItemCreateForm form = invocation.getArgument(0);
             assertNotNull(form);
 
             final Long shoppingListId = form.getShoppingList();
@@ -208,10 +208,10 @@ public class ShoppingListItemRestControllerTest {
 
             assertEquals(2, invocation.getArguments().length);
 
-            final Long shoppingListItemId = invocation.getArgumentAt(0, Long.class);
+            final Long shoppingListItemId = invocation.getArgument(0);
             assertEquals(shoppingListItem.getShoppingList().getId(), shoppingListItemId);
 
-            final ShoppingListItemUpdateForm form = invocation.getArgumentAt(1, ShoppingListItemUpdateForm.class);
+            final ShoppingListItemUpdateForm form = invocation.getArgument(1);
             assertNotNull(form);
 
             final Long quantity = form.getQuantity();

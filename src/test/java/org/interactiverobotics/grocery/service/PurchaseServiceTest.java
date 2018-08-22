@@ -1,7 +1,7 @@
 /*
  * PurchaseServiceTest.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,6 @@
 
 package org.interactiverobotics.grocery.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.domain.Purchase;
 import org.interactiverobotics.grocery.domain.Shop;
@@ -42,22 +35,30 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Purchase service test.
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(SpringRunner.class)
 public class PurchaseServiceTest {
 
     @Mock
@@ -92,8 +93,8 @@ public class PurchaseServiceTest {
 
         item = new Item(1L, "test-item");
 
-        when(visitRepository.findOne(visit.getId())).thenReturn(visit);
-        when(itemRepository.findOne(item.getId())).thenReturn(item);
+        when(visitRepository.findById(visit.getId())).thenReturn(Optional.of(visit));
+        when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
     }
 
 
@@ -163,7 +164,7 @@ public class PurchaseServiceTest {
         @Override
         public Page<Purchase> answer(InvocationOnMock invocation) throws Throwable {
             assertEquals(2, invocation.getArguments().length);
-            final Pageable pageable = invocation.getArgumentAt(0, Pageable.class);
+            final Pageable pageable = invocation.getArgument(0);
             return new PageImpl<>(purchases, pageable, purchases.size());
         }
     }
@@ -215,7 +216,7 @@ public class PurchaseServiceTest {
         @Override
         public Purchase answer(InvocationOnMock invocation) throws Throwable {
             assertEquals(1, invocation.getArguments().length);
-            purchase = invocation.getArgumentAt(0, Purchase.class);
+            purchase = invocation.getArgument(0);
             if (purchase.getId() == null) {
                 purchase.setId(1L);
             }
@@ -508,5 +509,4 @@ public class PurchaseServiceTest {
 
         purchaseService.updatePrice(visit, item, BigDecimal.ZERO);
     }
-
 }

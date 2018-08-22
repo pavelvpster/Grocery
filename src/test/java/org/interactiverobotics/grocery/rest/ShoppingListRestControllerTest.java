@@ -1,7 +1,7 @@
 /*
  * ShoppingListRestControllerTest.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,24 +89,6 @@ public class ShoppingListRestControllerTest {
                 .andExpect(jsonPath("$[1].name", is(existingShoppingList.get(1).getName())));
     }
 
-
-    public static class ShoppingListPageAnswer implements Answer<Page<ShoppingList>> {
-
-        private final List<ShoppingList> shoppingLists;
-
-        public ShoppingListPageAnswer(final List<ShoppingList> shoppingLists) {
-            this.shoppingLists = shoppingLists;
-        }
-
-        @Override
-        public Page<ShoppingList> answer(InvocationOnMock invocation) throws Throwable {
-            assertEquals(1, invocation.getArguments().length);
-            final Pageable pageable = invocation.getArgumentAt(0, Pageable.class);
-            return new PageImpl<>(shoppingLists, pageable, shoppingLists.size());
-        }
-    }
-
-
     @Test
     public void testGetShoppingListsPage() throws Exception {
 
@@ -115,8 +97,11 @@ public class ShoppingListRestControllerTest {
             existingShoppingLists.add(new ShoppingList(i, "test-shopping-list-" + i));
         }
 
-        final ShoppingListPageAnswer shoppingListPageAnswer = new ShoppingListPageAnswer(existingShoppingLists);
-        when(shoppingListService.getShoppingLists(any(Pageable.class))).thenAnswer(shoppingListPageAnswer);
+        when(shoppingListService.getShoppingLists(any(Pageable.class))).thenAnswer(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            final Pageable pageable = invocation.getArgument(0);
+            return new PageImpl<>(existingShoppingLists, pageable, existingShoppingLists.size());
+        });
 
         mvc.perform(get("/api/v1/shopping_list/list?page=1&size=10").accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
@@ -183,7 +168,7 @@ public class ShoppingListRestControllerTest {
         @Override
         public ShoppingList answer(InvocationOnMock invocation) throws Throwable {
             assertEquals(1, invocation.getArguments().length);
-            final ShoppingListForm form = invocation.getArgumentAt(0, ShoppingListForm.class);
+            final ShoppingListForm form = invocation.getArgument(0);
             shoppingList = new ShoppingList(1L, form.getName());
             return shoppingList;
         }
@@ -224,10 +209,10 @@ public class ShoppingListRestControllerTest {
 
             assertEquals(2, invocation.getArguments().length);
 
-            final Long id = invocation.getArgumentAt(0, Long.class);
+            final Long id = invocation.getArgument(0);
             assertEquals(shoppingList.getId(), id);
 
-            final ShoppingListForm form = invocation.getArgumentAt(1, ShoppingListForm.class);
+            final ShoppingListForm form = invocation.getArgument(1);
             shoppingList.setName(form.getName());
 
             return shoppingList;
@@ -281,5 +266,4 @@ public class ShoppingListRestControllerTest {
 
         mvc.perform(delete("/api/v1/shopping_list/" + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
     }
-
 }
