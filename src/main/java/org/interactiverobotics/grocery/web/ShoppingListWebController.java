@@ -45,6 +45,8 @@ import java.util.List;
 @RequestMapping("/shopping_list")
 public class ShoppingListWebController {
 
+    private static final String REDIRECT_TO_SHOPPING_LIST = "redirect:/shopping_list/";
+
     private final ShoppingListService shoppingListService;
 
     /**
@@ -70,7 +72,8 @@ public class ShoppingListWebController {
     public String getShoppingLists(@RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
                                    @RequestParam(value = "size", defaultValue = "10") Integer pageSize, Model model) {
 
-        final Page<ShoppingList> page = this.shoppingListService.getShoppingLists(PageRequest.of(pageNumber - 1, pageSize));
+        final Page<ShoppingList> page = this.shoppingListService
+                .getShoppingLists(PageRequest.of(pageNumber - 1, pageSize));
 
         final List<ShoppingList> shoppingLists = new ArrayList<>();
         page.forEach(shoppingList -> shoppingLists.add(shoppingList));
@@ -98,10 +101,10 @@ public class ShoppingListWebController {
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public String createShoppingList(@Valid ShoppingListForm form, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "redirect:/shopping_list/";
+            return REDIRECT_TO_SHOPPING_LIST;
         }
         this.shoppingListService.createShoppingList(form);
-        return "redirect:/shopping_list/";
+        return REDIRECT_TO_SHOPPING_LIST;
     }
 
     /**
@@ -120,10 +123,10 @@ public class ShoppingListWebController {
     @RequestMapping(value = "/{id}", method = RequestMethod.POST)
     public String updateShoppingList(@PathVariable Long id, @Valid ShoppingListForm form, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "redirect:/shopping_list/";
+            return REDIRECT_TO_SHOPPING_LIST;
         }
         this.shoppingListService.updateShoppingList(id, form);
-        return "redirect:/shopping_list/";
+        return REDIRECT_TO_SHOPPING_LIST;
     }
 
     /**
@@ -132,6 +135,6 @@ public class ShoppingListWebController {
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public String deleteShoppingList(@PathVariable Long id) {
         this.shoppingListService.deleteShoppingList(id);
-        return "redirect:/shopping_list/";
+        return REDIRECT_TO_SHOPPING_LIST;
     }
 }

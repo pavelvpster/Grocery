@@ -67,13 +67,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ImportAutoConfiguration(JsonConfiguration.class)
 public class PurchaseRestControllerTest {
 
+    private static final String PURCHASE_ENDPOINT = "/api/v1/purchase/";
+    private static final String QUANTITY_PARAM = "quantity";
+
     @Autowired
     private MockMvc mvc;
 
     @MockBean
     private PurchaseService purchaseService;
-
-    private Shop shop;
 
     private Visit visit;
 
@@ -86,9 +87,7 @@ public class PurchaseRestControllerTest {
     @Before
     public void setUp() throws Exception {
 
-        shop = new Shop(1L, "test-shop");
-
-        visit = new Visit(1L, shop);
+        visit = new Visit(1L, new Shop(1L, "test-shop"));
 
         item = new Item(1L, "test-item");
     }
@@ -100,7 +99,7 @@ public class PurchaseRestControllerTest {
         final List<Item> notPurchasedItems = Arrays.asList(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
         when(purchaseService.getNotPurchasedItems(visit.getId())).thenReturn(notPurchasedItems);
 
-        mvc.perform(get("/api/v1/purchase/" + visit.getId() + "/not_purchased_items")
+        mvc.perform(get(PURCHASE_ENDPOINT + visit.getId() + "/not_purchased_items")
                 .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -125,7 +124,7 @@ public class PurchaseRestControllerTest {
             return new PageImpl<>(existingPurchases, pageable, existingPurchases.size());
         });
 
-        mvc.perform(get("/api/v1/purchase/" + visit.getId() + "/list?page=1&size=10")
+        mvc.perform(get(PURCHASE_ENDPOINT + visit.getId() + "/list?page=1&size=10")
                 .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -186,8 +185,8 @@ public class PurchaseRestControllerTest {
         when(purchaseService.buyItem(eq(visit.getId()), eq(item.getId()), any(Long.class), any()))
                 .thenAnswer(buyItemAnswer);
 
-        mvc.perform(post("/api/v1/purchase/" + visit.getId() + "/buy/" + item.getId())
-                .param("quantity", "1")
+        mvc.perform(post(PURCHASE_ENDPOINT + visit.getId() + "/buy/" + item.getId())
+                .param(QUANTITY_PARAM, "1")
                 .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -199,10 +198,11 @@ public class PurchaseRestControllerTest {
     @Test(expected = Exception.class)
     public void testBuyItemForWrongParams() throws Exception {
 
-        when(purchaseService.buyItem(any(Long.class), any(Long.class), any(Long.class), any(BigDecimal.class))).thenThrow(new Exception());
+        when(purchaseService.buyItem(any(Long.class), any(Long.class), any(Long.class), any(BigDecimal.class)))
+                .thenThrow(new Exception());
 
-        mvc.perform(post("/api/v1/purchase/" + new Long(999L) + "/buy/" + new Long(999L))
-                .param("quantity", "-1")
+        mvc.perform(post(PURCHASE_ENDPOINT + new Long(999L) + "/buy/" + new Long(999L))
+                .param(QUANTITY_PARAM, "-1")
                 .accept(MediaType.APPLICATION_JSON_UTF8));
     }
 
@@ -213,8 +213,8 @@ public class PurchaseRestControllerTest {
         when(purchaseService.buyItem(eq(visit.getId()), eq(item.getId()), any(Long.class), any(BigDecimal.class)))
                 .thenAnswer(buyItemAnswer);
 
-        mvc.perform(post("/api/v1/purchase/" + visit.getId() + "/buy/" + item.getId())
-                .param("quantity", "1")
+        mvc.perform(post(PURCHASE_ENDPOINT + visit.getId() + "/buy/" + item.getId())
+                .param(QUANTITY_PARAM, "1")
                 .param("price", "10")
                 .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
@@ -271,8 +271,8 @@ public class PurchaseRestControllerTest {
         when(purchaseService.returnItem(eq(visit.getId()), eq(item.getId()), any(Long.class)))
                 .thenAnswer(returnItemAnswer);
 
-        mvc.perform(post("/api/v1/purchase/" + visit.getId() + "/return/" + item.getId())
-                .param("quantity", "1")
+        mvc.perform(post(PURCHASE_ENDPOINT + visit.getId() + "/return/" + item.getId())
+                .param(QUANTITY_PARAM, "1")
                 .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -286,8 +286,8 @@ public class PurchaseRestControllerTest {
 
         when(purchaseService.returnItem(any(Long.class), any(Long.class), any(Long.class))).thenThrow(new Exception());
 
-        mvc.perform(post("/api/v1/purchase/" + new Long(999L) + "/return/" + new Long(999L))
-                .param("quantity", "-1")
+        mvc.perform(post(PURCHASE_ENDPOINT + new Long(999L) + "/return/" + new Long(999L))
+                .param(QUANTITY_PARAM, "-1")
                 .accept(MediaType.APPLICATION_JSON_UTF8));
     }
 
@@ -331,7 +331,7 @@ public class PurchaseRestControllerTest {
         when(purchaseService.updatePrice(eq(visit.getId()), eq(item.getId()), any(BigDecimal.class)))
                 .thenAnswer(updatePriceAnswer);
 
-        mvc.perform(post("/api/v1/purchase/" + visit.getId() + "/price/" + item.getId())
+        mvc.perform(post(PURCHASE_ENDPOINT + visit.getId() + "/price/" + item.getId())
                 .param("price", "10")
                 .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
@@ -344,9 +344,10 @@ public class PurchaseRestControllerTest {
     @Test(expected = Exception.class)
     public void testUpdatePriceForWrongParams() throws Exception {
 
-        when(purchaseService.updatePrice(any(Long.class), any(Long.class), any(BigDecimal.class))).thenThrow(new Exception());
+        when(purchaseService.updatePrice(any(Long.class), any(Long.class), any(BigDecimal.class)))
+                .thenThrow(new Exception());
 
-        mvc.perform(post("/api/v1/purchase/" + new Long(999L) + "/price/" + new Long(999L))
+        mvc.perform(post(PURCHASE_ENDPOINT + new Long(999L) + "/price/" + new Long(999L))
                 .param("price", "-1")
                 .accept(MediaType.APPLICATION_JSON_UTF8));
     }

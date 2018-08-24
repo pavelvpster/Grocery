@@ -20,10 +20,6 @@
 
 package org.interactiverobotics.grocery.rest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.form.ItemForm;
 import org.interactiverobotics.grocery.repository.ItemRepository;
@@ -42,7 +38,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Item REST controller integration test.
@@ -52,6 +51,9 @@ import java.util.Optional;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ItemRestControllerIntegrationTest {
+
+    private static final String ITEM_ENDPOINT = "/api/v1/item/";
+    private static final String TEST_ITEM_NAME = "test-item";
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -73,7 +75,7 @@ public class ItemRestControllerIntegrationTest {
         itemRepository.saveAll(Arrays.asList(new Item("test-item-1"), new Item("test-item-2")))
                 .forEach(item -> existingItems.add(item));
 
-        final ResponseEntity<Item[]> response = restTemplate.getForEntity("/api/v1/item/", Item[].class);
+        final ResponseEntity<Item[]> response = restTemplate.getForEntity(ITEM_ENDPOINT, Item[].class);
 
         itemRepository.deleteAll(existingItems);
 
@@ -92,7 +94,7 @@ public class ItemRestControllerIntegrationTest {
 
         final ParameterizedTypeReference<PageResponse<Item>> responseType =
                 new ParameterizedTypeReference<PageResponse<Item>>() {};
-        final ResponseEntity<PageResponse<Item>> response = restTemplate.exchange("/api/v1/item/list?page=1&size=10",
+        final ResponseEntity<PageResponse<Item>> response = restTemplate.exchange(ITEM_ENDPOINT + "list?page=1&size=10",
                 HttpMethod.GET, null, responseType);
 
         itemRepository.deleteAll(existingItems);
@@ -107,10 +109,10 @@ public class ItemRestControllerIntegrationTest {
     @Test
     public void testGetItemById() {
 
-        final Item existingItem = itemRepository.save(new Item("test-item"));
+        final Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
 
         final ResponseEntity<Item> response = restTemplate
-                .getForEntity("/api/v1/item/" + existingItem.getId(), Item.class);
+                .getForEntity(ITEM_ENDPOINT + existingItem.getId(), Item.class);
 
         itemRepository.delete(existingItem);
 
@@ -122,7 +124,7 @@ public class ItemRestControllerIntegrationTest {
     @Test
     public void testGetNotExistingItemById() {
 
-        final ResponseEntity<Item> response = restTemplate.getForEntity("/api/v1/item/" + new Long(999L), Item.class);
+        final ResponseEntity<Item> response = restTemplate.getForEntity(ITEM_ENDPOINT + new Long(999L), Item.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
@@ -130,10 +132,10 @@ public class ItemRestControllerIntegrationTest {
     @Test
     public void testGetItemByName() {
 
-        final Item existingItem = itemRepository.save(new Item("test-item"));
+        final Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
 
         final ResponseEntity<Item> response = restTemplate
-                .getForEntity("/api/v1/item/search?name=" + existingItem.getName(), Item.class);
+                .getForEntity(ITEM_ENDPOINT + "search?name=" + existingItem.getName(), Item.class);
 
         itemRepository.delete(existingItem);
 
@@ -145,7 +147,7 @@ public class ItemRestControllerIntegrationTest {
     @Test
     public void testGetNotExistingItemByName() {
 
-        final ResponseEntity<Item> response = restTemplate.getForEntity("/api/v1/item/search?name=test", Item.class);
+        final ResponseEntity<Item> response = restTemplate.getForEntity(ITEM_ENDPOINT + "search?name=test", Item.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
@@ -156,7 +158,7 @@ public class ItemRestControllerIntegrationTest {
         final ItemForm form = new ItemForm();
         form.setName("test-item");
 
-        final ResponseEntity<Item> response = restTemplate.postForEntity("/api/v1/item/", form, Item.class);
+        final ResponseEntity<Item> response = restTemplate.postForEntity(ITEM_ENDPOINT, form, Item.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -169,13 +171,13 @@ public class ItemRestControllerIntegrationTest {
     @Test
     public void testUpdateItem() {
 
-        final Item existingItem = itemRepository.save(new Item("test-item"));
+        final Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
 
         final ItemForm form = new ItemForm();
         form.setName("updated-test-item");
 
         final ResponseEntity<Item> response = restTemplate
-                .postForEntity("/api/v1/item/" + existingItem.getId(), form, Item.class);
+                .postForEntity(ITEM_ENDPOINT + existingItem.getId(), form, Item.class);
 
         itemRepository.delete(existingItem);
 
@@ -192,7 +194,7 @@ public class ItemRestControllerIntegrationTest {
         form.setName("updated-test-item");
 
         final ResponseEntity<Item> response = restTemplate
-                .postForEntity("/api/v1/item/" + new Long(999L), form, Item.class);
+                .postForEntity(ITEM_ENDPOINT + new Long(999L), form, Item.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
@@ -200,9 +202,9 @@ public class ItemRestControllerIntegrationTest {
     @Test
     public void testDeleteItem() {
 
-        final Item existingItem = itemRepository.save(new Item("test-item"));
+        final Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
 
-        restTemplate.delete("/api/v1/item/" + existingItem.getId());
+        restTemplate.delete(ITEM_ENDPOINT + existingItem.getId());
 
         assertNull(itemRepository.findById(existingItem.getId()));
     }
@@ -211,7 +213,7 @@ public class ItemRestControllerIntegrationTest {
     public void testDeleteNotExistingItem() {
 
         final ResponseEntity<?> response = restTemplate
-                .exchange("/api/v1/item/" + new Long(999L), HttpMethod.DELETE, null, Object.class);
+                .exchange(ITEM_ENDPOINT + new Long(999L), HttpMethod.DELETE, null, Object.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }

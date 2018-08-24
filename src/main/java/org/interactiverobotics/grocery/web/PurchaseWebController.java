@@ -84,7 +84,8 @@ public class PurchaseWebController {
                                @RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
                                @RequestParam(value = "size", defaultValue = "10") Integer pageSize, Model model) {
 
-        final Page<Purchase> page = this.purchaseService.getPurchases(PageRequest.of(pageNumber - 1, pageSize), visitId);
+        final Page<Purchase> page = this.purchaseService
+                .getPurchases(PageRequest.of(pageNumber - 1, pageSize), visitId);
 
         final List<Purchase> purchases = new ArrayList<>();
         page.forEach(purchase -> purchases.add(purchase));

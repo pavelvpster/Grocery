@@ -68,7 +68,8 @@ public class ShoppingListItemRestController {
             @PathVariable Long shoppingListId,
             @RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
             @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
-        return this.shoppingListItemService.getShoppingListItems(PageRequest.of(pageNumber - 1, pageSize), shoppingListId);
+        return this.shoppingListItemService
+                .getShoppingListItems(PageRequest.of(pageNumber - 1, pageSize), shoppingListId);
     }
 
     @ApiOperation(value = "Create ShoppingListItem", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)

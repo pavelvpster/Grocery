@@ -45,6 +45,8 @@ import java.util.List;
 @RequestMapping("/shop")
 public class ShopWebController {
 
+    private static final String REDIRECT_TO_SHOP = "redirect:/shop/";
+
     private final ShopService shopService;
 
     /**
@@ -95,10 +97,10 @@ public class ShopWebController {
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public String createShop(@Valid ShopForm form, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "redirect:/shop/";
+            return REDIRECT_TO_SHOP;
         }
         this.shopService.createShop(form);
-        return "redirect:/shop/";
+        return REDIRECT_TO_SHOP;
     }
 
     /**
@@ -117,10 +119,10 @@ public class ShopWebController {
     @RequestMapping(value = "/{id}", method = RequestMethod.POST)
     public String updateShop(@PathVariable Long id, @Valid ShopForm form, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "redirect:/shop/";
+            return REDIRECT_TO_SHOP;
         }
         this.shopService.updateShop(id, form);
-        return "redirect:/shop/";
+        return REDIRECT_TO_SHOP;
     }
 
     /**
@@ -129,6 +131,6 @@ public class ShopWebController {
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public String deleteShop(@PathVariable Long id) {
         this.shopService.deleteShop(id);
-        return "redirect:/shop/";
+        return REDIRECT_TO_SHOP;
     }
 }

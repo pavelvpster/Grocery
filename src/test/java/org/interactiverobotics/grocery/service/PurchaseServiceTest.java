@@ -72,8 +72,6 @@ public class PurchaseServiceTest {
 
     private PurchaseService purchaseService;
 
-    private Shop shop;
-
     private Visit visit;
 
     private Item item;
@@ -87,9 +85,7 @@ public class PurchaseServiceTest {
 
         purchaseService = new PurchaseService(visitRepository, itemRepository, purchaseRepository);
 
-        shop = new Shop(1L, "test-shop");
-
-        visit = new Visit(1L, shop);
+        visit = new Visit(1L, new Shop(1L, "test-shop"));
 
         item = new Item(1L, "test-item");
 

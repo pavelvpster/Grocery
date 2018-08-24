@@ -54,6 +54,8 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class)
 public class ItemServiceTest {
 
+    private static final String TEST_ITEM_NAME = "test-item";
+
     @Mock
     private ItemRepository itemRepository;
 
@@ -100,7 +102,7 @@ public class ItemServiceTest {
     @Test
     public void testGetItemById() {
 
-        Item existingItem = new Item(1L, "test-item");
+        Item existingItem = new Item(1L, TEST_ITEM_NAME);
         when(itemRepository.findById(existingItem.getId())).thenReturn(Optional.of(existingItem));
 
         final Item item = itemService.getItemById(existingItem.getId());
@@ -119,10 +121,10 @@ public class ItemServiceTest {
     @Test
     public void testGetItemByName() {
 
-        Item existingItem = new Item(1L, "test-item");
+        Item existingItem = new Item(1L, TEST_ITEM_NAME);
         when(itemRepository.findOneByName(existingItem.getName())).thenReturn(existingItem);
 
-        final Item item = itemService.getItemByName("test-item");
+        final Item item = itemService.getItemByName(TEST_ITEM_NAME);
 
         assertEquals(existingItem, item);
     }
@@ -132,7 +134,7 @@ public class ItemServiceTest {
 
         when(itemRepository.findById(any())).thenReturn(Optional.empty());
 
-        itemService.getItemByName("test-name");
+        itemService.getItemByName(TEST_ITEM_NAME);
     }
 
 
@@ -162,7 +164,7 @@ public class ItemServiceTest {
         final SaveAndReturnItemAnswer saveAndReturnItemAnswer = new SaveAndReturnItemAnswer();
         when(itemRepository.save(any(Item.class))).then(saveAndReturnItemAnswer);
 
-        final ItemForm form = new ItemForm("test-item");
+        final ItemForm form = new ItemForm(TEST_ITEM_NAME);
 
         final Item item = itemService.createItem(form);
 
@@ -177,7 +179,7 @@ public class ItemServiceTest {
     @Test
     public void testUpdateItem() {
 
-        Item existingItem = new Item(1L, "test-item");
+        Item existingItem = new Item(1L, TEST_ITEM_NAME);
         when(itemRepository.findById(existingItem.getId())).thenReturn(Optional.of(existingItem));
 
         final SaveAndReturnItemAnswer saveAndReturnItemAnswer = new SaveAndReturnItemAnswer();
@@ -208,7 +210,7 @@ public class ItemServiceTest {
     @Test
     public void testDeleteItem() {
 
-        Item existingItem = new Item(1L, "test-item");
+        Item existingItem = new Item(1L, TEST_ITEM_NAME);
         when(itemRepository.findById(existingItem.getId())).thenReturn(Optional.of(existingItem));
 
         itemService.deleteItem(existingItem.getId());

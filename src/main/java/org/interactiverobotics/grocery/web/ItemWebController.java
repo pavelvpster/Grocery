@@ -45,6 +45,8 @@ import java.util.List;
 @RequestMapping("/item")
 public class ItemWebController {
 
+    private static final String REDIRECT_TO_ITEM = "redirect:/item/";
+
     private final ItemService itemService;
 
     /**
@@ -98,10 +100,10 @@ public class ItemWebController {
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public String createItem(@Valid ItemForm form, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "redirect:/item/";
+            return REDIRECT_TO_ITEM;
         }
         this.itemService.createItem(form);
-        return "redirect:/item/";
+        return REDIRECT_TO_ITEM;
     }
 
     /**
@@ -120,10 +122,10 @@ public class ItemWebController {
     @RequestMapping(value = "/{id}", method = RequestMethod.POST)
     public String updateItem(@PathVariable Long id, @Valid ItemForm form, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "redirect:/item/";
+            return REDIRECT_TO_ITEM;
         }
         this.itemService.updateItem(id, form);
-        return "redirect:/item/";
+        return REDIRECT_TO_ITEM;
     }
 
     /**
@@ -133,6 +135,6 @@ public class ItemWebController {
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public String deleteItem(@PathVariable Long id) {
         this.itemService.deleteItem(id);
-        return "redirect:/item/";
+        return REDIRECT_TO_ITEM;
     }
 }

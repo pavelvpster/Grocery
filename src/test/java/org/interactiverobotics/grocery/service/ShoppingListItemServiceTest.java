@@ -99,7 +99,8 @@ public class ShoppingListItemServiceTest {
     public void testGetShoppingListItems() {
 
         final List<ShoppingListItem> existingShoppingListItems = Arrays.asList(
-                new ShoppingListItem(shoppingList, item, 1L), new ShoppingListItem(shoppingList, item, 2L));
+                new ShoppingListItem(shoppingList, item, 1L),
+                new ShoppingListItem(shoppingList, item, 2L));
         when(shoppingListItemRepository.findAllByShoppingList(shoppingList)).thenReturn(existingShoppingListItems);
 
         final List<ShoppingListItem> shoppingListItems =
@@ -146,7 +147,8 @@ public class ShoppingListItemServiceTest {
     public void testGetShoppingListItemById() {
 
         ShoppingListItem existingShoppingListItem = new ShoppingListItem(1L, shoppingList, item, 1L);
-        when(shoppingListItemRepository.findById(existingShoppingListItem.getId())).thenReturn(Optional.of(existingShoppingListItem));
+        when(shoppingListItemRepository.findById(existingShoppingListItem.getId()))
+                .thenReturn(Optional.of(existingShoppingListItem));
 
         final ShoppingListItem shoppingListItem =
                 shoppingListItemService.getShoppingListItemById(existingShoppingListItem.getId());
@@ -165,7 +167,8 @@ public class ShoppingListItemServiceTest {
     @Test
     public void testGetNotAddedItems() {
 
-        final List<Item> existingItems = Arrays.asList(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
+        final List<Item> existingItems = Arrays.asList(new Item(1L, "test-item-1"),
+                new Item(2L, "test-item-2"));
         when(itemRepository.findAll()).thenReturn(existingItems);
 
         final ShoppingListItem existingShoppingListItem =
@@ -225,12 +228,14 @@ public class ShoppingListItemServiceTest {
 
     @Test(expected = ShoppingListNotFoundException.class)
     public void testCreateShoppingListItemForWrongShoppingListId() throws Exception {
-        shoppingListItemService.createShoppingListItem(new ShoppingListItemCreateForm(999L, item.getId(), 1L));
+        shoppingListItemService.createShoppingListItem(
+                new ShoppingListItemCreateForm(999L, item.getId(), 1L));
     }
 
     @Test(expected = ItemNotFoundException.class)
     public void testCreateShoppingListItemForWrongItemId() throws Exception {
-        shoppingListItemService.createShoppingListItem(new ShoppingListItemCreateForm(shoppingList.getId(),999L, 1L));
+        shoppingListItemService.createShoppingListItem(
+                new ShoppingListItemCreateForm(shoppingList.getId(),999L, 1L));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -243,7 +248,8 @@ public class ShoppingListItemServiceTest {
     public void testUpdateShoppingListItem() throws Exception {
 
         final ShoppingListItem existingShoppingListItem = new ShoppingListItem(1L, shoppingList, item, 1L);
-        when(shoppingListItemRepository.findById(existingShoppingListItem.getId())).thenReturn(Optional.of(existingShoppingListItem));
+        when(shoppingListItemRepository.findById(existingShoppingListItem.getId()))
+                .thenReturn(Optional.of(existingShoppingListItem));
 
         final SaveAndReturnShoppingListItemAnswer saveAndReturnShoppingListItemAnswer =
                 new SaveAndReturnShoppingListItemAnswer();
@@ -266,14 +272,16 @@ public class ShoppingListItemServiceTest {
 
     @Test(expected = ShoppingListItemNotFoundException.class)
     public void testUpdateShoppingListItemForWrongShoppingListItemId() throws Exception {
-        shoppingListItemService.updateShoppingListItem(999L, new ShoppingListItemUpdateForm(1L));
+        shoppingListItemService.updateShoppingListItem(999L,
+                new ShoppingListItemUpdateForm(1L));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testUpdateShoppingListItemForWrongQuantity() throws Exception {
 
         final ShoppingListItem existingShoppingListItem = new ShoppingListItem(1L, shoppingList, item, 1L);
-        when(shoppingListItemRepository.findById(existingShoppingListItem.getId())).thenReturn(Optional.of(existingShoppingListItem));
+        when(shoppingListItemRepository.findById(existingShoppingListItem.getId()))
+                .thenReturn(Optional.of(existingShoppingListItem));
 
         shoppingListItemService.updateShoppingListItem(existingShoppingListItem.getId(),
                 new ShoppingListItemUpdateForm(0L));
@@ -283,7 +291,8 @@ public class ShoppingListItemServiceTest {
     public void testDeleteShoppingListItem() throws Exception {
 
         final ShoppingListItem existingShoppingListItem = new ShoppingListItem(1L, shoppingList, item, 1L);
-        when(shoppingListItemRepository.findById(existingShoppingListItem.getId())).thenReturn(Optional.of(existingShoppingListItem));
+        when(shoppingListItemRepository.findById(existingShoppingListItem.getId()))
+                .thenReturn(Optional.of(existingShoppingListItem));
 
         shoppingListItemService.deleteShoppingListItem(existingShoppingListItem.getId());
 

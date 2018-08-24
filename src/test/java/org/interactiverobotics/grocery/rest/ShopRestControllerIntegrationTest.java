@@ -20,10 +20,6 @@
 
 package org.interactiverobotics.grocery.rest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import org.interactiverobotics.grocery.domain.Shop;
 import org.interactiverobotics.grocery.form.ShopForm;
 import org.interactiverobotics.grocery.repository.ShopRepository;
@@ -43,6 +39,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Shop REST controller integration test.
  * Performs queries to running instance of the application.
@@ -51,6 +51,9 @@ import java.util.List;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ShopRestControllerIntegrationTest {
+
+    private static final String SHOP_ENDPOINT = "/api/v1/shop/";
+    private static final String TEST_SHOP_NAME = "test-shop";
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -72,7 +75,7 @@ public class ShopRestControllerIntegrationTest {
         shopRepository.saveAll(Arrays.asList(new Shop("test-shop-1"), new Shop("test-shop-2")))
                 .forEach(shop -> existingShops.add(shop));
 
-        final ResponseEntity<Shop[]> response = restTemplate.getForEntity("/api/v1/shop/", Shop[].class);
+        final ResponseEntity<Shop[]> response = restTemplate.getForEntity(SHOP_ENDPOINT, Shop[].class);
 
         shopRepository.deleteAll(existingShops);
 
@@ -91,7 +94,7 @@ public class ShopRestControllerIntegrationTest {
 
         final ParameterizedTypeReference<PageResponse<Shop>> responseType =
                 new ParameterizedTypeReference<PageResponse<Shop>>() {};
-        final ResponseEntity<PageResponse<Shop>> response = restTemplate.exchange("/api/v1/shop/list?page=1&size=10",
+        final ResponseEntity<PageResponse<Shop>> response = restTemplate.exchange(SHOP_ENDPOINT + "list?page=1&size=10",
                 HttpMethod.GET, null, responseType);
 
         shopRepository.deleteAll(existingShops);
@@ -106,10 +109,10 @@ public class ShopRestControllerIntegrationTest {
     @Test
     public void testGetShopById() {
 
-        final Shop existingShop = shopRepository.save(new Shop("test-shop"));
+        final Shop existingShop = shopRepository.save(new Shop(TEST_SHOP_NAME));
 
         final ResponseEntity<Shop> response = restTemplate
-                .getForEntity("/api/v1/shop/" + existingShop.getId(), Shop.class);
+                .getForEntity(SHOP_ENDPOINT + existingShop.getId(), Shop.class);
 
         shopRepository.delete(existingShop);
 
@@ -121,7 +124,7 @@ public class ShopRestControllerIntegrationTest {
     @Test
     public void testGetNotExistingShopById() {
 
-        final ResponseEntity<Shop> response = restTemplate.getForEntity("/api/v1/shop/" + new Long(999L), Shop.class);
+        final ResponseEntity<Shop> response = restTemplate.getForEntity(SHOP_ENDPOINT + new Long(999L), Shop.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
@@ -129,10 +132,10 @@ public class ShopRestControllerIntegrationTest {
     @Test
     public void testGetShopByName() {
 
-        final Shop existingShop = shopRepository.save(new Shop("test-shop"));
+        final Shop existingShop = shopRepository.save(new Shop(TEST_SHOP_NAME));
 
         final ResponseEntity<Shop> response = restTemplate
-                .getForEntity("/api/v1/shop/search?name=" + existingShop.getName(), Shop.class);
+                .getForEntity(SHOP_ENDPOINT + "search?name=" + existingShop.getName(), Shop.class);
 
         shopRepository.delete(existingShop);
 
@@ -144,7 +147,7 @@ public class ShopRestControllerIntegrationTest {
     @Test
     public void testGetNotExistingShopByName() {
 
-        final ResponseEntity<Shop> response = restTemplate.getForEntity("/api/v1/shop/search?name=test", Shop.class);
+        final ResponseEntity<Shop> response = restTemplate.getForEntity(SHOP_ENDPOINT + "search?name=test", Shop.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
@@ -153,9 +156,9 @@ public class ShopRestControllerIntegrationTest {
     public void testCreateShop() {
 
         final ShopForm form = new ShopForm();
-        form.setName("test-shop");
+        form.setName(TEST_SHOP_NAME);
 
-        final ResponseEntity<Shop> response = restTemplate.postForEntity("/api/v1/shop/", form, Shop.class);
+        final ResponseEntity<Shop> response = restTemplate.postForEntity(SHOP_ENDPOINT, form, Shop.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -168,13 +171,13 @@ public class ShopRestControllerIntegrationTest {
     @Test
     public void testUpdateShop() {
 
-        final Shop existingShop = shopRepository.save(new Shop("test-shop"));
+        final Shop existingShop = shopRepository.save(new Shop(TEST_SHOP_NAME));
 
         final ShopForm form = new ShopForm();
         form.setName("updated-test-shop");
 
         final ResponseEntity<Shop> response = restTemplate
-                .postForEntity("/api/v1/shop/" + existingShop.getId(), form, Shop.class);
+                .postForEntity(SHOP_ENDPOINT + existingShop.getId(), form, Shop.class);
 
         shopRepository.delete(existingShop);
 
@@ -191,7 +194,7 @@ public class ShopRestControllerIntegrationTest {
         form.setName("updated-test-shop");
 
         final ResponseEntity<Shop> response = restTemplate
-                .postForEntity("/api/v1/shop/" + new Long(999L), form, Shop.class);
+                .postForEntity(SHOP_ENDPOINT + new Long(999L), form, Shop.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
@@ -199,9 +202,9 @@ public class ShopRestControllerIntegrationTest {
     @Test
     public void testDeleteShop() {
 
-        final Shop existingShop = shopRepository.save(new Shop("test-shop"));
+        final Shop existingShop = shopRepository.save(new Shop(TEST_SHOP_NAME));
 
-        restTemplate.delete("/api/v1/shop/" + existingShop.getId());
+        restTemplate.delete(SHOP_ENDPOINT + existingShop.getId());
 
         assertNull(shopRepository.findById(existingShop.getId()));
     }
@@ -210,7 +213,7 @@ public class ShopRestControllerIntegrationTest {
     public void testDeleteNotExistingShop() {
 
         final ResponseEntity<?> response = restTemplate
-                .exchange("/api/v1/shop/" + new Long(999L), HttpMethod.DELETE, null, Object.class);
+                .exchange(SHOP_ENDPOINT + new Long(999L), HttpMethod.DELETE, null, Object.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }

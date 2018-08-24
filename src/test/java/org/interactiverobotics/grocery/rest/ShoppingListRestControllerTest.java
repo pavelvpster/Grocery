@@ -64,6 +64,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ShoppingListRestController.class)
 public class ShoppingListRestControllerTest {
 
+    private static final String SHOPPING_LIST_ENDPOINT = "/api/v1/shopping_list/";
+    private static final String ID_SELECTOR = "$.id";
+    private static final String NAME_SELECTOR = "$.name";
+
     @Autowired
     private MockMvc mvc;
 
@@ -78,7 +82,7 @@ public class ShoppingListRestControllerTest {
                 new ShoppingList(1L, "test-shopping-list-1"), new ShoppingList(2L, "test-shopping-list-2"));
         when(shoppingListService.getShoppingLists()).thenReturn(existingShoppingList);
 
-        mvc.perform(get("/api/v1/shopping_list/").accept(MediaType.APPLICATION_JSON_UTF8))
+        mvc.perform(get(SHOPPING_LIST_ENDPOINT).accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("$", hasSize(2)))
@@ -102,7 +106,7 @@ public class ShoppingListRestControllerTest {
             return new PageImpl<>(existingShoppingLists, pageable, existingShoppingLists.size());
         });
 
-        mvc.perform(get("/api/v1/shopping_list/list?page=1&size=10").accept(MediaType.APPLICATION_JSON_UTF8))
+        mvc.perform(get(SHOPPING_LIST_ENDPOINT + "list?page=1&size=10").accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("$.totalElements", is(existingShoppingLists.size())))
@@ -116,12 +120,12 @@ public class ShoppingListRestControllerTest {
         final ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
         when(shoppingListService.getShoppingListById(existingShoppingList.getId())).thenReturn(existingShoppingList);
 
-        mvc.perform(get("/api/v1/shopping_list/" + existingShoppingList.getId())
+        mvc.perform(get(SHOPPING_LIST_ENDPOINT + existingShoppingList.getId())
                 .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.id", is(existingShoppingList.getId().intValue())))
-                .andExpect(jsonPath("$.name", is(existingShoppingList.getName())));
+                .andExpect(jsonPath(ID_SELECTOR, is(existingShoppingList.getId().intValue())))
+                .andExpect(jsonPath(NAME_SELECTOR, is(existingShoppingList.getName())));
     }
 
     @Test(expected = Exception.class)
@@ -129,7 +133,7 @@ public class ShoppingListRestControllerTest {
 
         when(shoppingListService.getShoppingListById(any())).thenThrow(new ShoppingListNotFoundException(-1L));
 
-        mvc.perform(get("/api/v1/shopping_list/" + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
+        mvc.perform(get(SHOPPING_LIST_ENDPOINT + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
     }
 
     @Test
@@ -139,12 +143,12 @@ public class ShoppingListRestControllerTest {
         when(shoppingListService.getShoppingListByName(existingShoppingList.getName()))
                 .thenReturn(existingShoppingList);
 
-        mvc.perform(get("/api/v1/shopping_list/search?name=" + existingShoppingList.getName())
+        mvc.perform(get(SHOPPING_LIST_ENDPOINT + "search?name=" + existingShoppingList.getName())
                 .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.id", is(existingShoppingList.getId().intValue())))
-                .andExpect(jsonPath("$.name", is(existingShoppingList.getName())));
+                .andExpect(jsonPath(ID_SELECTOR, is(existingShoppingList.getId().intValue())))
+                .andExpect(jsonPath(NAME_SELECTOR, is(existingShoppingList.getName())));
     }
 
     @Test(expected = Exception.class)
@@ -152,7 +156,7 @@ public class ShoppingListRestControllerTest {
 
         when(shoppingListService.getShoppingListByName(any())).thenThrow(new ShoppingListNotFoundException(-1L));
 
-        mvc.perform(get("/api/v1/shopping_list/search?name=test").accept(MediaType.APPLICATION_JSON_UTF8));
+        mvc.perform(get(SHOPPING_LIST_ENDPOINT + "search?name=test").accept(MediaType.APPLICATION_JSON_UTF8));
     }
 
 
@@ -180,14 +184,14 @@ public class ShoppingListRestControllerTest {
         final CreateShoppingListAnswer createShoppingListAnswer = new CreateShoppingListAnswer();
         when(shoppingListService.createShoppingList(any(ShoppingListForm.class))).then(createShoppingListAnswer);
 
-        mvc.perform(post("/api/v1/shopping_list/")
+        mvc.perform(post(SHOPPING_LIST_ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content("{\"name\":\"test-shopping-list\"}")
                 .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.id", is(createShoppingListAnswer.getShoppingList().getId().intValue())))
-                .andExpect(jsonPath("$.name", is(createShoppingListAnswer.getShoppingList().getName())));
+                .andExpect(jsonPath(ID_SELECTOR, is(createShoppingListAnswer.getShoppingList().getId().intValue())))
+                .andExpect(jsonPath(NAME_SELECTOR, is(createShoppingListAnswer.getShoppingList().getName())));
     }
 
 
@@ -227,14 +231,14 @@ public class ShoppingListRestControllerTest {
         when(shoppingListService.updateShoppingList(eq(existingShoppingList.getId()), any(ShoppingListForm.class)))
                 .then(updateShoppingListAnswer);
 
-        mvc.perform(post("/api/v1/shopping_list/" + existingShoppingList.getId())
+        mvc.perform(post(SHOPPING_LIST_ENDPOINT + existingShoppingList.getId())
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content("{\"name\":\"updated-test-shopping-list\"}")
                 .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.id", is(updateShoppingListAnswer.getShoppingList().getId().intValue())))
-                .andExpect(jsonPath("$.name", is(updateShoppingListAnswer.getShoppingList().getName())));
+                .andExpect(jsonPath(ID_SELECTOR, is(updateShoppingListAnswer.getShoppingList().getId().intValue())))
+                .andExpect(jsonPath(NAME_SELECTOR, is(updateShoppingListAnswer.getShoppingList().getName())));
     }
 
     @Test(expected = Exception.class)
@@ -242,7 +246,7 @@ public class ShoppingListRestControllerTest {
 
         when(shoppingListService.updateShoppingList(any(), any())).thenThrow(new ShoppingListNotFoundException(-1L));
 
-        mvc.perform(post("/api/v1/shopping_list/" + new Long(999L))
+        mvc.perform(post(SHOPPING_LIST_ENDPOINT + new Long(999L))
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content("{\"name\":\"updated-test-shopping-list\"}")
                 .accept(MediaType.APPLICATION_JSON_UTF8));
@@ -253,7 +257,7 @@ public class ShoppingListRestControllerTest {
 
         final Long id = 1L;
 
-        mvc.perform(delete("/api/v1/shopping_list/" + id).accept(MediaType.APPLICATION_JSON_UTF8));
+        mvc.perform(delete(SHOPPING_LIST_ENDPOINT + id).accept(MediaType.APPLICATION_JSON_UTF8));
 
         verify(shoppingListService).deleteShoppingList(eq(id));
     }
@@ -263,6 +267,6 @@ public class ShoppingListRestControllerTest {
 
         doThrow(new ShoppingListNotFoundException(-1L)).when(shoppingListService).deleteShoppingList(any());
 
-        mvc.perform(delete("/api/v1/shopping_list/" + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
+        mvc.perform(delete(SHOPPING_LIST_ENDPOINT + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
     }
 }
