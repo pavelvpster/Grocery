@@ -20,6 +20,7 @@
 
 package org.interactiverobotics.grocery.rest;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.interactiverobotics.grocery.domain.Shop;
 import org.interactiverobotics.grocery.domain.Visit;
 import org.interactiverobotics.grocery.repository.ShopRepository;
@@ -171,6 +172,7 @@ public class VisitRestControllerIntegrationTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     @Test
     public void testCreateVisit() {
 

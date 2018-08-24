@@ -106,19 +106,19 @@ public class Visit {
     }
 
     public Date getStarted() {
-        return started;
+        return copyDate(started);
     }
 
     public void setStarted(Date started) {
-        this.started = started;
+        this.started = copyDate(started);
     }
 
     public Date getCompleted() {
-        return completed;
+        return copyDate(completed);
     }
 
     public void setCompleted(Date completed) {
-        this.completed = completed;
+        this.completed = copyDate(completed);
     }
 
     public ShoppingList getShoppingList() {
@@ -150,5 +150,18 @@ public class Visit {
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
+    }
+
+    /**
+     * Returns copy of given date or null if source is null.
+     *
+     * @param source source (date)
+     * @return Date
+     */
+    private static Date copyDate(final Date source) {
+        if (source == null) {
+            return null;
+        }
+        return new Date(source.getTime());
     }
 }

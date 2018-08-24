@@ -281,7 +281,7 @@ public class PurchaseServiceTest {
         // Check response content
         assertEquals(visit, purchase.getVisit());
         assertEquals(item, purchase.getItem());
-        assertEquals(new Long(2), purchase.getQuantity());
+        assertEquals(Long.valueOf(2), purchase.getQuantity());
         assertNull(purchase.getPrice());
     }
 
@@ -377,7 +377,7 @@ public class PurchaseServiceTest {
         // Check response content
         assertEquals(visit, purchase.getVisit());
         assertEquals(item, purchase.getItem());
-        assertEquals(new Long(1L), purchase.getQuantity());
+        assertEquals(Long.valueOf(1L), purchase.getQuantity());
         assertNull(purchase.getPrice());
     }
 
@@ -399,7 +399,7 @@ public class PurchaseServiceTest {
         // Check response content
         assertEquals(visit, purchase.getVisit());
         assertEquals(item, purchase.getItem());
-        assertEquals(new Long(1L), purchase.getQuantity());
+        assertEquals(Long.valueOf(1L), purchase.getQuantity());
         assertNull(purchase.getPrice());
     }
 
