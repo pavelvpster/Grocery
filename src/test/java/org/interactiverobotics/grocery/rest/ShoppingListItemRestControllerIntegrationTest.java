@@ -78,7 +78,8 @@ public class ShoppingListItemRestControllerIntegrationTest {
     @Test
     public void testCreateShoppingListItem() {
 
-        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
+        final ShoppingList existingShoppingList = shoppingListRepository
+                .save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
         final Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
 
         final ShoppingListItemCreateForm form =
@@ -118,7 +119,8 @@ public class ShoppingListItemRestControllerIntegrationTest {
     @Test
     public void testCreateShoppingListItemForWrongItemId() {
 
-        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
+        final ShoppingList existingShoppingList = shoppingListRepository
+                .save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
 
         final ShoppingListItemCreateForm form =
                 new ShoppingListItemCreateForm(existingShoppingList.getId(), 999L, 1L);
@@ -134,7 +136,8 @@ public class ShoppingListItemRestControllerIntegrationTest {
     @Test
     public void testCreateShoppingListItemForWrongQuantity() {
 
-        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
+        final ShoppingList existingShoppingList = shoppingListRepository
+                .save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
         final Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
 
         final ShoppingListItemCreateForm form =
@@ -152,7 +155,8 @@ public class ShoppingListItemRestControllerIntegrationTest {
     @Test
     public void testUpdateShoppingListItem() {
 
-        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
+        final ShoppingList existingShoppingList = shoppingListRepository
+                .save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
         final Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
         final ShoppingListItem existingShoppingListItem = shoppingListItemRepository
                 .save(new ShoppingListItem(existingShoppingList, existingItem, 1L));
@@ -188,7 +192,8 @@ public class ShoppingListItemRestControllerIntegrationTest {
     @Test
     public void testUpdateShoppingListItemForWrongQuantity() {
 
-        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
+        final ShoppingList existingShoppingList = shoppingListRepository
+                .save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
         final Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
         final ShoppingListItem existingShoppingListItem = shoppingListItemRepository
                 .save(new ShoppingListItem(existingShoppingList, existingItem, 1L));
@@ -208,7 +213,8 @@ public class ShoppingListItemRestControllerIntegrationTest {
     @Test
     public void testDeleteShoppingListItem() {
 
-        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
+        final ShoppingList existingShoppingList = shoppingListRepository
+                .save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
         final Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
         final ShoppingListItem existingShoppingListItem = shoppingListItemRepository
                 .save(new ShoppingListItem(existingShoppingList, existingItem, 1L));
@@ -225,7 +231,8 @@ public class ShoppingListItemRestControllerIntegrationTest {
     public void testDeleteShoppingListItemForWrongShoppingListItemId() {
 
         final ResponseEntity<?> response = restTemplate
-                .exchange(SHOPPING_LIST_ITEM_ENDPOINT + new Long(999L), HttpMethod.DELETE, null, Object.class);
+                .exchange(SHOPPING_LIST_ITEM_ENDPOINT + new Long(999L),
+                        HttpMethod.DELETE, null, Object.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }

@@ -72,7 +72,8 @@ public class ShoppingListWebController {
     public String getShoppingLists(@RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
                                    @RequestParam(value = "size", defaultValue = "10") Integer pageSize, Model model) {
 
-        final Page<ShoppingList> page = this.shoppingListService.getShoppingLists(PageRequest.of(pageNumber - 1, pageSize));
+        final Page<ShoppingList> page = this.shoppingListService
+                .getShoppingLists(PageRequest.of(pageNumber - 1, pageSize));
 
         final List<ShoppingList> shoppingLists = new ArrayList<>();
         page.forEach(shoppingList -> shoppingLists.add(shoppingList));

@@ -72,7 +72,8 @@ public class ShoppingListServiceTest {
     public void testGetShoppingLists() {
 
         final List<ShoppingList> existingShoppingLists = Arrays.asList(
-                new ShoppingList(1L, "test-shopping-list-1"), new ShoppingList(2L, "test-shopping-list-2"));
+                new ShoppingList(1L, "test-shopping-list-1"),
+                new ShoppingList(2L, "test-shopping-list-2"));
         when(shoppingListRepository.findAll()).thenReturn(existingShoppingLists);
 
         final List<ShoppingList> shoppingLists = shoppingListService.getShoppingLists();
@@ -104,7 +105,8 @@ public class ShoppingListServiceTest {
     public void testGetShoppingListById() {
 
         ShoppingList existingShoppingList = new ShoppingList(1L, TEST_SHOPPING_LIST_NAME);
-        when(shoppingListRepository.findById(existingShoppingList.getId())).thenReturn(Optional.of(existingShoppingList));
+        when(shoppingListRepository.findById(existingShoppingList.getId()))
+                .thenReturn(Optional.of(existingShoppingList));
 
         final ShoppingList shoppingList = shoppingListService.getShoppingListById(existingShoppingList.getId());
 
@@ -181,7 +183,8 @@ public class ShoppingListServiceTest {
     public void testUpdateShoppingList() {
 
         ShoppingList existingShoppingList = new ShoppingList(1L, TEST_SHOPPING_LIST_NAME);
-        when(shoppingListRepository.findById(existingShoppingList.getId())).thenReturn(Optional.of(existingShoppingList));
+        when(shoppingListRepository.findById(existingShoppingList.getId()))
+                .thenReturn(Optional.of(existingShoppingList));
 
         final SaveAndReturnShoppingListAnswer saveAndReturnShoppingListAnswer = new SaveAndReturnShoppingListAnswer();
         when(shoppingListRepository.save(any(ShoppingList.class))).then(saveAndReturnShoppingListAnswer);
@@ -212,7 +215,8 @@ public class ShoppingListServiceTest {
     public void testDeleteShoppingList() {
 
         ShoppingList existingShoppingList = new ShoppingList(1L, TEST_SHOPPING_LIST_NAME);
-        when(shoppingListRepository.findById(existingShoppingList.getId())).thenReturn(Optional.of(existingShoppingList));
+        when(shoppingListRepository.findById(existingShoppingList.getId()))
+                .thenReturn(Optional.of(existingShoppingList));
 
         shoppingListService.deleteShoppingList(existingShoppingList.getId());
 

@@ -20,10 +20,6 @@
 
 package org.interactiverobotics.grocery.rest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import org.interactiverobotics.grocery.domain.ShoppingList;
 import org.interactiverobotics.grocery.form.ShoppingListForm;
 import org.interactiverobotics.grocery.repository.ShoppingListRepository;
@@ -42,6 +38,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * ShoppingList REST controller integration test.
@@ -97,8 +97,8 @@ public class ShoppingListRestControllerIntegrationTest {
         final ParameterizedTypeReference<PageResponse<ShoppingList>> responseType =
                 new ParameterizedTypeReference<PageResponse<ShoppingList>>() {};
         final ResponseEntity<PageResponse<ShoppingList>> response =
-                restTemplate.exchange(SHOPPING_LIST_ENDPOINT + "list?page=1&size=10", HttpMethod.GET, null,
-                        responseType);
+                restTemplate.exchange(SHOPPING_LIST_ENDPOINT + "list?page=1&size=10",
+                        HttpMethod.GET, null, responseType);
 
         shoppingListRepository.deleteAll(existingShoppingLists);
 
@@ -112,7 +112,8 @@ public class ShoppingListRestControllerIntegrationTest {
     @Test
     public void testGetShoppingListById() {
 
-        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
+        final ShoppingList existingShoppingList = shoppingListRepository
+                .save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
 
         final ResponseEntity<ShoppingList> response = restTemplate
                 .getForEntity(SHOPPING_LIST_ENDPOINT + existingShoppingList.getId(), ShoppingList.class);
@@ -136,7 +137,8 @@ public class ShoppingListRestControllerIntegrationTest {
     @Test
     public void testGetShoppingListByName() {
 
-        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
+        final ShoppingList existingShoppingList = shoppingListRepository
+                .save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
 
         final ResponseEntity<ShoppingList> response = restTemplate
                 .getForEntity(SHOPPING_LIST_ENDPOINT + "search?name=" + existingShoppingList.getName(),
@@ -178,7 +180,8 @@ public class ShoppingListRestControllerIntegrationTest {
     @Test
     public void testUpdateShoppingList() {
 
-        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
+        final ShoppingList existingShoppingList = shoppingListRepository
+                .save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
 
         final ShoppingListForm form = new ShoppingListForm();
         form.setName("updated-test-shopping-list");
@@ -209,7 +212,8 @@ public class ShoppingListRestControllerIntegrationTest {
     @Test
     public void testDeleteShoppingList() {
 
-        final ShoppingList existingShoppingList = shoppingListRepository.save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
+        final ShoppingList existingShoppingList = shoppingListRepository
+                .save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
 
         restTemplate.delete(SHOPPING_LIST_ENDPOINT + existingShoppingList.getId());
 
@@ -220,7 +224,8 @@ public class ShoppingListRestControllerIntegrationTest {
     public void testDeleteNotExistingShoppingList() {
 
         final ResponseEntity<?> response = restTemplate
-                .exchange(SHOPPING_LIST_ENDPOINT + new Long(999L), HttpMethod.DELETE, null, Object.class);
+                .exchange(SHOPPING_LIST_ENDPOINT + new Long(999L),
+                        HttpMethod.DELETE, null, Object.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }

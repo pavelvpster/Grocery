@@ -198,7 +198,8 @@ public class PurchaseRestControllerTest {
     @Test(expected = Exception.class)
     public void testBuyItemForWrongParams() throws Exception {
 
-        when(purchaseService.buyItem(any(Long.class), any(Long.class), any(Long.class), any(BigDecimal.class))).thenThrow(new Exception());
+        when(purchaseService.buyItem(any(Long.class), any(Long.class), any(Long.class), any(BigDecimal.class)))
+                .thenThrow(new Exception());
 
         mvc.perform(post(PURCHASE_ENDPOINT + new Long(999L) + "/buy/" + new Long(999L))
                 .param(QUANTITY_PARAM, "-1")
@@ -343,7 +344,8 @@ public class PurchaseRestControllerTest {
     @Test(expected = Exception.class)
     public void testUpdatePriceForWrongParams() throws Exception {
 
-        when(purchaseService.updatePrice(any(Long.class), any(Long.class), any(BigDecimal.class))).thenThrow(new Exception());
+        when(purchaseService.updatePrice(any(Long.class), any(Long.class), any(BigDecimal.class)))
+                .thenThrow(new Exception());
 
         mvc.perform(post(PURCHASE_ENDPOINT + new Long(999L) + "/price/" + new Long(999L))
                 .param("price", "-1")

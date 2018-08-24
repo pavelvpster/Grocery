@@ -108,7 +108,8 @@ public class VisitRestControllerIntegrationTest {
 
         final ParameterizedTypeReference<PageResponse<Visit>> responseType =
                 new ParameterizedTypeReference<PageResponse<Visit>>() {};
-        final ResponseEntity<PageResponse<Visit>> response = restTemplate.exchange(VISIT_ENDPOINT + "list?page=1&size=10",
+        final ResponseEntity<PageResponse<Visit>> response = restTemplate
+                .exchange(VISIT_ENDPOINT + "list?page=1&size=10",
                 HttpMethod.GET, null, responseType);
 
         visitRepository.deleteAll(existingVisits);

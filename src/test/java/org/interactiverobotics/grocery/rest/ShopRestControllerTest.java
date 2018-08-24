@@ -140,7 +140,8 @@ public class ShopRestControllerTest {
         final Shop existingShop = new Shop(1L, "test-shop");
         when(shopService.getShopByName(existingShop.getName())).thenReturn(existingShop);
 
-        mvc.perform(get(SHOP_ENDPOINT + "search?name=" + existingShop.getName()).accept(MediaType.APPLICATION_JSON_UTF8))
+        mvc.perform(get(SHOP_ENDPOINT + "search?name=" + existingShop.getName())
+                .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath(ID_SELECTOR, is(existingShop.getId().intValue())))

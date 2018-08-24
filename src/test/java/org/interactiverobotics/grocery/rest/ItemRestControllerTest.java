@@ -140,7 +140,8 @@ public class ItemRestControllerTest {
         final Item existingItem = new Item(1L, "test-item");
         when(itemService.getItemByName(existingItem.getName())).thenReturn(existingItem);
 
-        mvc.perform(get(ITEM_ENDPOINT + "search?name=" + existingItem.getName()).accept(MediaType.APPLICATION_JSON_UTF8))
+        mvc.perform(get(ITEM_ENDPOINT + "search?name=" + existingItem.getName())
+                .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath(ID_SELECTOR, is(existingItem.getId().intValue())))
