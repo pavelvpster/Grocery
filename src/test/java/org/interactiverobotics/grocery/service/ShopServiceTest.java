@@ -53,6 +53,8 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class)
 public class ShopServiceTest {
 
+    private static final String TEST_SHOP_NAME = "test-shop";
+
     @Mock
     private ShopRepository shopRepository;
 
@@ -99,7 +101,7 @@ public class ShopServiceTest {
     @Test
     public void testGetShopById() {
 
-        Shop existingShop = new Shop(1L, "test-shop");
+        Shop existingShop = new Shop(1L, TEST_SHOP_NAME);
         when(shopRepository.findById(existingShop.getId())).thenReturn(Optional.of(existingShop));
 
         final Shop shop = shopService.getShopById(existingShop.getId());
@@ -118,10 +120,10 @@ public class ShopServiceTest {
     @Test
     public void testGetShopByName() {
 
-        Shop existingShop = new Shop(1L, "test-shop");
+        Shop existingShop = new Shop(1L, TEST_SHOP_NAME);
         when(shopRepository.findOneByName(existingShop.getName())).thenReturn(existingShop);
 
-        final Shop shop = shopService.getShopByName("test-shop");
+        final Shop shop = shopService.getShopByName(TEST_SHOP_NAME);
 
         assertEquals(existingShop, shop);
     }
@@ -161,7 +163,7 @@ public class ShopServiceTest {
         final SaveAndReturnShopAnswer saveAndReturnShopAnswer = new SaveAndReturnShopAnswer();
         when(shopRepository.save(any(Shop.class))).then(saveAndReturnShopAnswer);
 
-        final ShopForm form = new ShopForm("test-shop");
+        final ShopForm form = new ShopForm(TEST_SHOP_NAME);
 
         final Shop shop = shopService.createShop(form);
 
@@ -176,7 +178,7 @@ public class ShopServiceTest {
     @Test
     public void testUpdateShop() {
 
-        Shop existingShop = new Shop(1L, "test-shop");
+        Shop existingShop = new Shop(1L, TEST_SHOP_NAME);
         when(shopRepository.findById(existingShop.getId())).thenReturn(Optional.of(existingShop));
 
         final SaveAndReturnShopAnswer saveAndReturnShopAnswer = new SaveAndReturnShopAnswer();
@@ -207,7 +209,7 @@ public class ShopServiceTest {
     @Test
     public void testDeleteShop() {
 
-        Shop existingShop = new Shop(1L, "test-shop");
+        Shop existingShop = new Shop(1L, TEST_SHOP_NAME);
         when(shopRepository.findById(existingShop.getId())).thenReturn(Optional.of(existingShop));
 
         shopService.deleteShop(existingShop.getId());

@@ -64,6 +64,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ShopRestController.class)
 public class ShopRestControllerTest {
 
+    private static final String SHOP_ENDPOINT = "/api/v1/shop/";
+    private static final String ID_SELECTOR = "$.id";
+    private static final String NAME_SELECTOR = "$.name";
+
     @Autowired
     private MockMvc mvc;
 
@@ -77,7 +81,7 @@ public class ShopRestControllerTest {
         final List<Shop> existingShops = Arrays.asList(new Shop(1L, "test-shop-1"), new Shop(2L, "test-shop-2"));
         when(shopService.getShops()).thenReturn(existingShops);
 
-        mvc.perform(get("/api/v1/shop/").accept(MediaType.APPLICATION_JSON_UTF8))
+        mvc.perform(get(SHOP_ENDPOINT).accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("$", hasSize(2)))
@@ -101,7 +105,7 @@ public class ShopRestControllerTest {
             return new PageImpl<>(existingShops, pageable, existingShops.size());
         });
 
-        mvc.perform(get("/api/v1/shop/list?page=1&size=10").accept(MediaType.APPLICATION_JSON_UTF8))
+        mvc.perform(get(SHOP_ENDPOINT + "list?page=1&size=10").accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("$.totalElements", is(existingShops.size())))
@@ -115,11 +119,11 @@ public class ShopRestControllerTest {
         final Shop existingShop = new Shop(1L, "test-shop");
         when(shopService.getShopById(existingShop.getId())).thenReturn(existingShop);
 
-        mvc.perform(get("/api/v1/shop/" + existingShop.getId()).accept(MediaType.APPLICATION_JSON_UTF8))
+        mvc.perform(get(SHOP_ENDPOINT + existingShop.getId()).accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.id", is(existingShop.getId().intValue())))
-                .andExpect(jsonPath("$.name", is(existingShop.getName())));
+                .andExpect(jsonPath(ID_SELECTOR, is(existingShop.getId().intValue())))
+                .andExpect(jsonPath(NAME_SELECTOR, is(existingShop.getName())));
     }
 
     @Test(expected = Exception.class)
@@ -127,7 +131,7 @@ public class ShopRestControllerTest {
 
         when(shopService.getShopById(any())).thenThrow(new ShopNotFoundException(-1L));
 
-        mvc.perform(get("/api/v1/shop/" + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
+        mvc.perform(get(SHOP_ENDPOINT + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
     }
 
     @Test
@@ -136,11 +140,11 @@ public class ShopRestControllerTest {
         final Shop existingShop = new Shop(1L, "test-shop");
         when(shopService.getShopByName(existingShop.getName())).thenReturn(existingShop);
 
-        mvc.perform(get("/api/v1/shop/search?name=" + existingShop.getName()).accept(MediaType.APPLICATION_JSON_UTF8))
+        mvc.perform(get(SHOP_ENDPOINT + "search?name=" + existingShop.getName()).accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.id", is(existingShop.getId().intValue())))
-                .andExpect(jsonPath("$.name", is(existingShop.getName())));
+                .andExpect(jsonPath(ID_SELECTOR, is(existingShop.getId().intValue())))
+                .andExpect(jsonPath(NAME_SELECTOR, is(existingShop.getName())));
     }
 
     @Test(expected = Exception.class)
@@ -148,7 +152,7 @@ public class ShopRestControllerTest {
 
         when(shopService.getShopByName(any())).thenThrow(new ShopNotFoundException(-1L));
 
-        mvc.perform(get("/api/v1/shop/search?name=test").accept(MediaType.APPLICATION_JSON_UTF8));
+        mvc.perform(get(SHOP_ENDPOINT + "search?name=test").accept(MediaType.APPLICATION_JSON_UTF8));
     }
 
 
@@ -176,14 +180,14 @@ public class ShopRestControllerTest {
         final CreateShopAnswer createShopAnswer = new CreateShopAnswer();
         when(shopService.createShop(any(ShopForm.class))).then(createShopAnswer);
 
-        mvc.perform(post("/api/v1/shop/")
+        mvc.perform(post(SHOP_ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content("{\"name\":\"test-shop\"}")
                 .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.id", is(createShopAnswer.getShop().getId().intValue())))
-                .andExpect(jsonPath("$.name", is(createShopAnswer.getShop().getName())));
+                .andExpect(jsonPath(ID_SELECTOR, is(createShopAnswer.getShop().getId().intValue())))
+                .andExpect(jsonPath(NAME_SELECTOR, is(createShopAnswer.getShop().getName())));
     }
 
 
@@ -222,14 +226,14 @@ public class ShopRestControllerTest {
         final UpdateShopAnswer updateShopAnswer = new UpdateShopAnswer(existingShop);
         when(shopService.updateShop(eq(existingShop.getId()), any(ShopForm.class))).then(updateShopAnswer);
 
-        mvc.perform(post("/api/v1/shop/" + existingShop.getId())
+        mvc.perform(post(SHOP_ENDPOINT + existingShop.getId())
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content("{\"name\":\"updated-test-shop\"}")
                 .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.id", is(updateShopAnswer.getShop().getId().intValue())))
-                .andExpect(jsonPath("$.name", is(updateShopAnswer.getShop().getName())));
+                .andExpect(jsonPath(ID_SELECTOR, is(updateShopAnswer.getShop().getId().intValue())))
+                .andExpect(jsonPath(NAME_SELECTOR, is(updateShopAnswer.getShop().getName())));
     }
 
     @Test(expected = Exception.class)
@@ -237,7 +241,7 @@ public class ShopRestControllerTest {
 
         when(shopService.updateShop(any(), any())).thenThrow(new ShopNotFoundException(-1L));
 
-        mvc.perform(post("/api/v1/shop/" + new Long(999L))
+        mvc.perform(post(SHOP_ENDPOINT + new Long(999L))
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content("{\"name\":\"updated-test-shop\"}")
                 .accept(MediaType.APPLICATION_JSON_UTF8));
@@ -248,7 +252,7 @@ public class ShopRestControllerTest {
 
         final Long id = 1L;
 
-        mvc.perform(delete("/api/v1/shop/" + id).accept(MediaType.APPLICATION_JSON_UTF8));
+        mvc.perform(delete(SHOP_ENDPOINT + id).accept(MediaType.APPLICATION_JSON_UTF8));
 
         verify(shopService).deleteShop(eq(id));
     }
@@ -258,6 +262,6 @@ public class ShopRestControllerTest {
 
         doThrow(new ShopNotFoundException(-1L)).when(shopService).deleteShop(any());
 
-        mvc.perform(delete("/api/v1/shop/" + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
+        mvc.perform(delete(SHOP_ENDPOINT + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
     }
 }

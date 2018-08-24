@@ -66,6 +66,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ShoppingListItemRestController.class)
 public class ShoppingListItemRestControllerTest {
 
+    private static final String SHOPPING_LIST_ITEM_ENDPOINT = "/api/v1/shopping_list_item/";
+
     @Autowired
     private MockMvc mvc;
 
@@ -84,7 +86,7 @@ public class ShoppingListItemRestControllerTest {
         when(shoppingListItemService.getShoppingListItems(existingShoppingList.getId()))
                 .thenReturn(existingShoppingListItems);
 
-        mvc.perform(get("/api/v1/shopping_list_item/" + existingShoppingList.getId())
+        mvc.perform(get(SHOPPING_LIST_ITEM_ENDPOINT + existingShoppingList.getId())
                 .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -106,7 +108,7 @@ public class ShoppingListItemRestControllerTest {
 
         when(shoppingListItemService.getShoppingListItems(anyLong())).thenThrow(new ShoppingListNotFoundException(-1L));
 
-        mvc.perform(get("/api/v1/shopping_list_item/" + new Long(999L))
+        mvc.perform(get(SHOPPING_LIST_ITEM_ENDPOINT + new Long(999L))
                 .accept(MediaType.APPLICATION_JSON_UTF8));
     }
 
@@ -166,7 +168,7 @@ public class ShoppingListItemRestControllerTest {
         when(shoppingListItemService.createShoppingListItem(any(ShoppingListItemCreateForm.class)))
                 .thenAnswer(createShoppingListItemAnswer);
 
-        mvc.perform(post("/api/v1/shopping_list_item/")
+        mvc.perform(post(SHOPPING_LIST_ITEM_ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content("{\"shoppingList\":" + existingShoppingList.getId() + ",\"item\":" + existingItem.getId()
                         + ",\"quantity\":1}")
@@ -188,7 +190,7 @@ public class ShoppingListItemRestControllerTest {
         when(shoppingListItemService.createShoppingListItem(any(ShoppingListItemCreateForm.class)))
                 .thenThrow(new Exception());
 
-        mvc.perform(post("/api/v1/shopping_list_item/")
+        mvc.perform(post(SHOPPING_LIST_ITEM_ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content("{\"shoppingList\":999,\"item\":999,\"quantity\":-1}")
                 .accept(MediaType.APPLICATION_JSON_UTF8));
@@ -238,7 +240,7 @@ public class ShoppingListItemRestControllerTest {
 
         final Long quantity = 2L;
 
-        mvc.perform(post("/api/v1/shopping_list_item/" + existingShoppingListItem.getId())
+        mvc.perform(post(SHOPPING_LIST_ITEM_ENDPOINT + existingShoppingListItem.getId())
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content("{\"quantity\":" + quantity + "}")
                 .accept(MediaType.APPLICATION_JSON_UTF8))
@@ -257,7 +259,7 @@ public class ShoppingListItemRestControllerTest {
         when(shoppingListItemService.updateShoppingListItem(anyLong(), any(ShoppingListItemUpdateForm.class)))
                 .thenThrow(new Exception());
 
-        mvc.perform(post("/api/v1/shopping_list_item/" + new Long(999L))
+        mvc.perform(post(SHOPPING_LIST_ITEM_ENDPOINT + new Long(999L))
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content("{\"quantity\":-1}")
                 .accept(MediaType.APPLICATION_JSON_UTF8));
@@ -268,7 +270,7 @@ public class ShoppingListItemRestControllerTest {
 
         final Long shoppingListItemId = 1L;
 
-        mvc.perform(delete("/api/v1/shopping_list_item/" + shoppingListItemId)
+        mvc.perform(delete(SHOPPING_LIST_ITEM_ENDPOINT + shoppingListItemId)
                 .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk());
 
@@ -280,8 +282,7 @@ public class ShoppingListItemRestControllerTest {
 
         doThrow(new Exception()).when(shoppingListItemService).deleteShoppingListItem(anyLong());
 
-        mvc.perform(delete("/api/v1/shopping_list_item/" + new Long(999L))
+        mvc.perform(delete(SHOPPING_LIST_ITEM_ENDPOINT + new Long(999L))
                 .accept(MediaType.APPLICATION_JSON_UTF8));
     }
-
 }

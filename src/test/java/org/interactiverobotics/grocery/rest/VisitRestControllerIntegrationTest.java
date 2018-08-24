@@ -20,11 +20,6 @@
 
 package org.interactiverobotics.grocery.rest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import org.interactiverobotics.grocery.domain.Shop;
 import org.interactiverobotics.grocery.domain.Visit;
 import org.interactiverobotics.grocery.repository.ShopRepository;
@@ -46,6 +41,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Visit REST controller integration test.
  * Performs queries to running instance of the application.
@@ -54,6 +54,9 @@ import java.util.List;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class VisitRestControllerIntegrationTest {
+
+    private static final String VISIT_ENDPOINT = "/api/v1/visit/";
+    private static final String VISIT_SHOP_ENDPOINT = "/api/v1/visit/shop/";
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -86,7 +89,7 @@ public class VisitRestControllerIntegrationTest {
         visitRepository.saveAll(Arrays.asList(new Visit(shop), new Visit(shop)))
                 .forEach(visit -> existingVisits.add(visit));
 
-        final ResponseEntity<Visit[]> response = restTemplate.getForEntity("/api/v1/visit/", Visit[].class);
+        final ResponseEntity<Visit[]> response = restTemplate.getForEntity(VISIT_ENDPOINT, Visit[].class);
 
         visitRepository.deleteAll(existingVisits);
 
@@ -105,7 +108,7 @@ public class VisitRestControllerIntegrationTest {
 
         final ParameterizedTypeReference<PageResponse<Visit>> responseType =
                 new ParameterizedTypeReference<PageResponse<Visit>>() {};
-        final ResponseEntity<PageResponse<Visit>> response = restTemplate.exchange("/api/v1/visit/list?page=1&size=10",
+        final ResponseEntity<PageResponse<Visit>> response = restTemplate.exchange(VISIT_ENDPOINT + "list?page=1&size=10",
                 HttpMethod.GET, null, responseType);
 
         visitRepository.deleteAll(existingVisits);
@@ -123,7 +126,7 @@ public class VisitRestControllerIntegrationTest {
         final Visit existingVisit = visitRepository.save(new Visit(shop));
 
         final ResponseEntity<Visit> response = restTemplate
-                .getForEntity("/api/v1/visit/" + existingVisit.getId(), Visit.class);
+                .getForEntity(VISIT_ENDPOINT + existingVisit.getId(), Visit.class);
 
         visitRepository.delete(existingVisit);
 
@@ -136,7 +139,7 @@ public class VisitRestControllerIntegrationTest {
     public void testGetNotExistingVisitById() {
 
         final ResponseEntity<Visit> response = restTemplate
-                .getForEntity("/api/v1/visit/" + new Long(999L), Visit.class);
+                .getForEntity(VISIT_ENDPOINT + new Long(999L), Visit.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
@@ -149,7 +152,7 @@ public class VisitRestControllerIntegrationTest {
                 .forEach(visit -> existingVisits.add(visit));
 
         final ResponseEntity<Visit[]> response = restTemplate
-                .getForEntity("/api/v1/visit/shop/" + shop.getId(), Visit[].class);
+                .getForEntity(VISIT_SHOP_ENDPOINT + shop.getId(), Visit[].class);
 
         visitRepository.deleteAll(existingVisits);
 
@@ -162,7 +165,7 @@ public class VisitRestControllerIntegrationTest {
     public void testGetVisitsByNotExistingShopId() {
 
         final ResponseEntity<Object> response = restTemplate
-                .getForEntity("/api/v1/visit/shop/" + new Long(999L), Object.class);
+                .getForEntity(VISIT_SHOP_ENDPOINT + new Long(999L), Object.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
@@ -171,7 +174,7 @@ public class VisitRestControllerIntegrationTest {
     public void testCreateVisit() {
 
         final ResponseEntity<Visit> response = restTemplate
-                .postForEntity("/api/v1/visit/shop/" + shop.getId(), null, Visit.class);
+                .postForEntity(VISIT_SHOP_ENDPOINT + shop.getId(), null, Visit.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
@@ -183,7 +186,7 @@ public class VisitRestControllerIntegrationTest {
     public void testCreateVisitsForNotExistingShop() {
 
         final ResponseEntity<Object> response = restTemplate
-                .postForEntity("/api/v1/visit/shop/" + new Long(999L), null, Object.class);
+                .postForEntity(VISIT_SHOP_ENDPOINT + new Long(999L), null, Object.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
@@ -194,7 +197,7 @@ public class VisitRestControllerIntegrationTest {
         final Visit existingVisit = visitRepository.save(new Visit(shop));
 
         final ResponseEntity<Visit> response = restTemplate
-                .postForEntity("/api/v1/visit/" + existingVisit.getId() + "/start", null, Visit.class);
+                .postForEntity(VISIT_ENDPOINT + existingVisit.getId() + "/start", null, Visit.class);
 
         visitRepository.delete(existingVisit);
 
@@ -208,7 +211,7 @@ public class VisitRestControllerIntegrationTest {
     public void testStartNotExistingVisit() {
 
         final ResponseEntity<Object> response = restTemplate
-                .postForEntity("/api/v1/visit/" + new Long(999L) + "/start", null, Object.class);
+                .postForEntity(VISIT_ENDPOINT + new Long(999L) + "/start", null, Object.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
@@ -219,7 +222,7 @@ public class VisitRestControllerIntegrationTest {
         final Visit existingVisit = visitRepository.save(new Visit(shop));
 
         final ResponseEntity<Visit> response = restTemplate
-                .postForEntity("/api/v1/visit/" + existingVisit.getId() + "/complete", null, Visit.class);
+                .postForEntity(VISIT_ENDPOINT + existingVisit.getId() + "/complete", null, Visit.class);
 
         visitRepository.delete(existingVisit);
 
@@ -234,7 +237,7 @@ public class VisitRestControllerIntegrationTest {
     public void testCompleteNotExistingVisit() {
 
         final ResponseEntity<Object> response = restTemplate
-                .postForEntity("/api/v1/visit/" + new Long(999L) + "/complete", null, Object.class);
+                .postForEntity(VISIT_ENDPOINT + new Long(999L) + "/complete", null, Object.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
@@ -244,7 +247,7 @@ public class VisitRestControllerIntegrationTest {
 
         final Visit existingVisit = visitRepository.save(new Visit(shop));
 
-        restTemplate.delete("/api/v1/visit/" + existingVisit.getId());
+        restTemplate.delete(VISIT_ENDPOINT + existingVisit.getId());
 
         assertNull(visitRepository.findById(existingVisit.getId()));
     }
@@ -253,7 +256,7 @@ public class VisitRestControllerIntegrationTest {
     public void testDeleteNotExistingVisit() {
 
         final ResponseEntity<?> response = restTemplate
-                .exchange("/api/v1/visit/" + new Long(999L), HttpMethod.DELETE, null, Object.class);
+                .exchange(VISIT_ENDPOINT + new Long(999L), HttpMethod.DELETE, null, Object.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }

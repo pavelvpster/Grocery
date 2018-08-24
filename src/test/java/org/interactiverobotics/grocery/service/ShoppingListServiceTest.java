@@ -54,6 +54,8 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class)
 public class ShoppingListServiceTest {
 
+    private static final String TEST_SHOPPING_LIST_NAME = "test-shopping-list";
+
     @Mock
     private ShoppingListRepository shoppingListRepository;
 
@@ -101,7 +103,7 @@ public class ShoppingListServiceTest {
     @Test
     public void testGetShoppingListById() {
 
-        ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
+        ShoppingList existingShoppingList = new ShoppingList(1L, TEST_SHOPPING_LIST_NAME);
         when(shoppingListRepository.findById(existingShoppingList.getId())).thenReturn(Optional.of(existingShoppingList));
 
         final ShoppingList shoppingList = shoppingListService.getShoppingListById(existingShoppingList.getId());
@@ -120,10 +122,10 @@ public class ShoppingListServiceTest {
     @Test
     public void testGetShoppingListByName() {
 
-        ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
+        ShoppingList existingShoppingList = new ShoppingList(1L, TEST_SHOPPING_LIST_NAME);
         when(shoppingListRepository.findOneByName(existingShoppingList.getName())).thenReturn(existingShoppingList);
 
-        final ShoppingList shoppingList = shoppingListService.getShoppingListByName("test-shopping-list");
+        final ShoppingList shoppingList = shoppingListService.getShoppingListByName(TEST_SHOPPING_LIST_NAME);
 
         assertEquals(existingShoppingList, shoppingList);
     }
@@ -163,7 +165,7 @@ public class ShoppingListServiceTest {
         final SaveAndReturnShoppingListAnswer saveAndReturnShoppingListAnswer = new SaveAndReturnShoppingListAnswer();
         when(shoppingListRepository.save(any(ShoppingList.class))).then(saveAndReturnShoppingListAnswer);
 
-        final ShoppingListForm form = new ShoppingListForm("test-shopping-list");
+        final ShoppingListForm form = new ShoppingListForm(TEST_SHOPPING_LIST_NAME);
 
         final ShoppingList shoppingList = shoppingListService.createShoppingList(form);
 
@@ -178,7 +180,7 @@ public class ShoppingListServiceTest {
     @Test
     public void testUpdateShoppingList() {
 
-        ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
+        ShoppingList existingShoppingList = new ShoppingList(1L, TEST_SHOPPING_LIST_NAME);
         when(shoppingListRepository.findById(existingShoppingList.getId())).thenReturn(Optional.of(existingShoppingList));
 
         final SaveAndReturnShoppingListAnswer saveAndReturnShoppingListAnswer = new SaveAndReturnShoppingListAnswer();
@@ -209,7 +211,7 @@ public class ShoppingListServiceTest {
     @Test
     public void testDeleteShoppingList() {
 
-        ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
+        ShoppingList existingShoppingList = new ShoppingList(1L, TEST_SHOPPING_LIST_NAME);
         when(shoppingListRepository.findById(existingShoppingList.getId())).thenReturn(Optional.of(existingShoppingList));
 
         shoppingListService.deleteShoppingList(existingShoppingList.getId());
