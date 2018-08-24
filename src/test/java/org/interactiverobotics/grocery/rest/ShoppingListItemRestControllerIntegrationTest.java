@@ -20,6 +20,7 @@
 
 package org.interactiverobotics.grocery.rest;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.domain.ShoppingList;
 import org.interactiverobotics.grocery.domain.ShoppingListItem;
@@ -75,6 +76,7 @@ public class ShoppingListItemRestControllerIntegrationTest {
     }
 
 
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     @Test
     public void testCreateShoppingListItem() {
 
@@ -97,7 +99,7 @@ public class ShoppingListItemRestControllerIntegrationTest {
 
         assertEquals(existingShoppingList, response.getBody().getShoppingList());
         assertEquals(existingItem, response.getBody().getItem());
-        assertEquals(new Long(1L), response.getBody().getQuantity());
+        assertEquals(Long.valueOf(1L), response.getBody().getQuantity());
     }
 
     @Test
