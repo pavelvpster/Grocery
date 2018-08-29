@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorator="layout">
+      layout:decorate="~{layout}">
 <head>
     <title>Visits</title>
     <script th:src="@{/pagination.js}"/>
@@ -13,7 +13,7 @@
     <div class="container">
 
         <div id="visit-list-container"/>
-        <th:block th:include="pagination"/>
+        <th:block th:insert="pagination"/>
 
     </div>
 
