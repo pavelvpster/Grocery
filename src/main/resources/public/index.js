@@ -1,3 +1,3 @@
 $(function() {
-    $(".nav").find(".active").removeClass("active");
+    $(".nav-item").find(".active").removeClass("active");
 });

@@ -1,6 +1,6 @@
 $(function() {
-    $(".nav").find(".active").removeClass("active");
-    $(".nav").find("#purchase").parent().addClass("active");
+    $(".nav-item").find(".active").removeClass("active");
+    $(".nav-item").find("#purchase").parent().addClass("active");
 
     $.get("/purchase/" + getVisitId() + "/item_selector", {}, function(result) {
         $("#item-selector-container").html(result);

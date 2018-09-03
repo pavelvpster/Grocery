@@ -1,6 +1,6 @@
 $(function() {
-    $(".nav").find(".active").removeClass("active");
-    $(".nav").find("#visit").parent().addClass("active");
+    $(".nav-item").find(".active").removeClass("active");
+    $(".nav-item").find("#visit").parent().addClass("active");
 
     initializePagination("/visit/list", "#visit-list-container");
 });

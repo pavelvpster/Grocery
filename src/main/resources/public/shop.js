@@ -1,6 +1,6 @@
 $(function() {
-    $(".nav").find(".active").removeClass("active");
-    $(".nav").find("#shop").parent().addClass("active");
+    $(".nav-item").find(".active").removeClass("active");
+    $(".nav-item").find("#shop").parent().addClass("active");
 
     initializePagination("/shop/list", "#shop-list-container");
 });

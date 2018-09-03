@@ -1,7 +1,7 @@
 $(function() {
 
-    $(".nav").find(".active").removeClass("active");
-    $(".nav").find("#item").parent().addClass("active");
+    $(".nav-item").find(".active").removeClass("active");
+    $(".nav-item").find("#item").parent().addClass("active");
 
     initializePagination("/item/list", "#item-list-container");
 });
