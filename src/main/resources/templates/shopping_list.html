@@ -1,24 +1,31 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorator="layout">
+      layout:decorate="~{layout}">
 <head>
     <title>Shopping Lists</title>
-    <script th:src="@{/pagination.js}"/>
-    <script th:src="@{/shopping_list.js}"/>
+    <script th:src="@{/pagination.js}"></script>
+    <script th:src="@{/shopping_list.js}"></script>
 </head>
 <body>
 
 <section layout:fragment="content">
 
     <div class="container">
+        <div>
+            <button type="button" class="btn btn-secondary" onclick="showCreateShoppingListForm()">Add Shopping List</button>
+        </div>
 
-        <button type="button" class="btn btn-default" onclick="showCreateShoppingListForm()">Add Shopping List</button>
+        <div>
+            <div id="shopping-list-form-container"/>
+        </div>
 
-        <div id="shopping-list-form-container"/>
+        <div>
+            <div id="shopping-list-list-container"/>
+        </div>
 
-        <div id="shopping-list-list-container"/>
-        <th:block th:include="pagination"/>
-
+        <div>
+            <th:block th:insert="pagination"/>
+        </div>
     </div>
 
 </section>

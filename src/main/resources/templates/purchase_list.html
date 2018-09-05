@@ -18,11 +18,11 @@
         <td th:text="${purchase.quantity}"></td>
         <td th:text="${purchase.price}"></td>
         <td>
-            <span class="glyphicon glyphicon-plus" aria-hidden="true"
-                  th:onclick="'buyItem(' + ${purchase.item.id} + ')'"/>
+            <i class="far fa-plus-square"
+               th:onclick="'buyItem(' + ${purchase.item.id} + ')'"/>
             &nbsp;
-            <span class="glyphicon glyphicon-minus" aria-hidden="true"
-                  th:onclick="'returnItem(' + ${purchase.item.id} + ')'"/>
+            <i class="far fa-minus-square"
+               th:onclick="'returnItem(' + ${purchase.item.id} + ')'"/>
         </td>
     </tr>
     </tbody>

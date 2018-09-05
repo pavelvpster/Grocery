@@ -1,7 +1,7 @@
 $(function() {
 
-    $(".nav").find(".active").removeClass("active");
-    $(".nav").find("#shopping-list").parent().addClass("active");
+    $(".nav-item").find(".active").removeClass("active");
+    $(".nav-item").find("#shopping-list").parent().addClass("active");
 
     initializePagination("/shopping_list/list", "#shopping-list-list-container");
 });
@@ -32,7 +32,7 @@ function deleteShoppingList(id) {
     $.ajax({
         type: 'DELETE',
         url: "/shopping_list/" + id,
-        success: function(result) {
+        done: function(result) {
             window.location = "/shopping_list/";
         }
     });

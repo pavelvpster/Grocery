@@ -14,15 +14,15 @@
         <td><span th:text="${offset + row.index}"/></td>
         <td th:text="${shoppingList.name}"></td>
         <td>
-            <span class="glyphicon glyphicon-pencil" aria-hidden="true"
-                  th:onclick="'showUpdateShoppingListForm(' + ${shoppingList.id} + ')'"/>
+            <i class="far fa-edit"
+               th:onclick="'showUpdateShoppingListForm(' + ${shoppingList.id} + ')'"/>
             &nbsp;
-            <span class="glyphicon glyphicon-trash" aria-hidden="true"
-                  th:onclick="'deleteShoppingList(' + ${shoppingList.id} + ')'"/>
+            <i class="far fa-trash-alt"
+               th:onclick="'deleteShoppingList(' + ${shoppingList.id} + ')'"/>
             &nbsp;
             &nbsp;
-            <span class="glyphicon glyphicon-asterisk" aria-hidden="true"
-                  th:onclick="'gotoShoppingListItems(' + ${shoppingList.id} + ')'"/>
+            <i class="far fa-plus-square"
+               th:onclick="'gotoShoppingListItems(' + ${shoppingList.id} + ')'"/>
         </td>
     </tr>
     </tbody>

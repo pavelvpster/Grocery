@@ -1,27 +1,36 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorator="layout">
+      layout:decorate="~{layout}">
 <head>
     <title>Shopping Lists</title>
-    <script th:src="@{/common.js}"/>
-    <script th:src="@{/pagination.js}"/>
-    <script th:src="@{/shopping_list_item.js}"/>
+    <script th:src="@{/common.js}"></script>
+    <script th:src="@{/pagination.js}"></script>
+    <script th:src="@{/shopping_list_item.js}"></script>
 </head>
 <body>
 
 <section layout:fragment="content">
 
     <div class="container">
+        <div>
+            <input type="hidden" id="shopping-list-id" th:value="${shoppingListId}"/>
+        </div>
 
-        <input type="hidden" id="shopping-list-id" th:value="${shoppingListId}"/>
+        <div>
+            <button type="button" class="btn btn-secondary" onclick="showCreateShoppingListItemForm()">Add Item</button>
+        </div>
 
-        <button type="button" class="btn btn-default" onclick="showCreateShoppingListItemForm()">Add Item</button>
+        <div>
+            <div id="shopping-list-item-form-container"/>
+        </div>
 
-        <div id="shopping-list-item-form-container"/>
+        <div>
+            <div id="shopping-list-item-list-container"/>
+        </div>
 
-        <div id="shopping-list-item-list-container"/>
-        <th:block th:include="pagination"/>
-
+        <div>
+            <th:block th:insert="pagination"/>
+        </div>
     </div>
 
 </section>
