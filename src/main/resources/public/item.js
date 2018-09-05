@@ -32,7 +32,7 @@ function deleteItem(id) {
     $.ajax({
         type: 'DELETE',
         url: "/item/" + id,
-        success: function(result) {
+        done: function(result) {
             window.location = "/item/";
         }
     });

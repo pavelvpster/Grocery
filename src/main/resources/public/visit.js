@@ -7,7 +7,7 @@ $(function() {
 
 function startVisit(id) {
     $.post("/api/v1/visit/" + id + "/start")
-        .success(function() {
+        .done(function() {
             window.location = "/visit/";
         })
         .fail(function() {
@@ -17,7 +17,7 @@ function startVisit(id) {
 
 function completeVisit(id) {
     $.post("/api/v1/visit/" + id + "/complete")
-        .success(function() {
+        .done(function() {
             window.location = "/visit/";
         })
         .fail(function() {
@@ -29,7 +29,7 @@ function deleteVisit(id) {
     $.ajax({
         type: 'DELETE',
         url: "/api/v1/visit/" + id,
-        success: function(result) {
+        done: function(result) {
             window.location = "/visit/";
         }
     });

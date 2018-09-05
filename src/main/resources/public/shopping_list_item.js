@@ -79,7 +79,7 @@ function submitForm() {
         url: $("#shopping-list-item-properties").attr("action"),
         data: JSON.stringify($("#shopping-list-item-properties").serializeObject()),
         contentType: "application/json",
-        success: function(result) {
+        done: function(result) {
             window.location = "/shopping_list_item/" + getShoppingListId();
         },
         fail: function(result) {
@@ -92,7 +92,7 @@ function deleteShoppingListItem(id) {
     $.ajax({
         type: 'DELETE',
         url: "api/v1/shopping_list_item/" + id,
-        success: function(result) {
+        done: function(result) {
             window.location = "/shopping_list_item/" + getShoppingListId();
         }
     });

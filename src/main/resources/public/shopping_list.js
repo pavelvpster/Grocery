@@ -32,7 +32,7 @@ function deleteShoppingList(id) {
     $.ajax({
         type: 'DELETE',
         url: "/shopping_list/" + id,
-        success: function(result) {
+        done: function(result) {
             window.location = "/shopping_list/";
         }
     });

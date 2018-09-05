@@ -31,7 +31,7 @@ function deleteShop(id) {
     $.ajax({
         type: 'DELETE',
         url: "/shop/" + id,
-        success: function(result) {
+        done: function(result) {
             window.location = "/shop/";
         }
     });
