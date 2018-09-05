@@ -11,14 +11,21 @@
 <section layout:fragment="content">
 
     <div class="container">
+        <div>
+            <button type="button" class="btn btn-secondary" onclick="showCreateShoppingListForm()">Add Shopping List</button>
+        </div>
 
-        <button type="button" class="btn btn-default" onclick="showCreateShoppingListForm()">Add Shopping List</button>
+        <div>
+            <div id="shopping-list-form-container"/>
+        </div>
 
-        <div id="shopping-list-form-container"/>
+        <div>
+            <div id="shopping-list-list-container"/>
+        </div>
 
-        <div id="shopping-list-list-container"/>
-        <th:block th:insert="pagination"/>
-
+        <div>
+            <th:block th:insert="pagination"/>
+        </div>
     </div>
 
 </section>

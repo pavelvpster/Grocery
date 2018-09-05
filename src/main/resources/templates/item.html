@@ -11,14 +11,21 @@
 <section layout:fragment="content">
 
     <div class="container">
+        <div>
+            <button type="button" class="btn btn-secondary" onclick="showCreateItemForm()">Add Item</button>
+        </div>
 
-        <button type="button" class="btn btn-default" onclick="showCreateItemForm()">Add Item</button>
+        <div>
+            <div id="item-form-container"/>
+        </div>
 
-        <div id="item-form-container"/>
+        <div>
+            <div id="item-list-container"/>
+        </div>
 
-        <div id="item-list-container"/>
-        <th:block th:insert="pagination"/>
-
+        <div>
+            <th:block th:insert="pagination"/>
+        </div>
     </div>
 
 </section>
