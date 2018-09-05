@@ -11,14 +11,21 @@
 <section layout:fragment="content">
 
     <div class="container">
+        <div>
+            <input type="hidden" id="visit-id" th:value="${visitId}"/>
+        </div>
 
-        <input type="hidden" id="visit-id" th:value="${visitId}"/>
+        <div>
+            <div id="item-selector-container"/>
+        </div>
 
-        <div id="item-selector-container"/>
+        <div>
+            <div id="purchase-list-container"/>
+        </div>
 
-        <div id="purchase-list-container"/>
-        <th:block th:insert="pagination"/>
-
+        <div>
+            <th:block th:insert="pagination"/>
+        </div>
     </div>
 
 </section>
