@@ -14,11 +14,11 @@
         <td><span th:text="${offset + row.index}"/></td>
         <td th:text="${item.name}"></td>
         <td>
-            <span class="glyphicon glyphicon-pencil" aria-hidden="true"
-                  th:onclick="'showUpdateItemForm(' + ${item.id} + ')'"/>
+            <i class="far fa-edit"
+               th:onclick="'showUpdateItemForm(' + ${item.id} + ')'"/>
             &nbsp;
-            <span class="glyphicon glyphicon-trash" aria-hidden="true"
-                  th:onclick="'deleteItem(' + ${item.id} + ')'"/>
+            <i class="far fa-trash-alt"
+               th:onclick="'deleteItem(' + ${item.id} + ')'"/>
         </td>
     </tr>
     </tbody>

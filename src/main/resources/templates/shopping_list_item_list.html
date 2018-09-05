@@ -16,11 +16,11 @@
         <td th:text="${shoppingListItem.item.name}"></td>
         <td th:text="${shoppingListItem.quantity}"></td>
         <td>
-            <span class="glyphicon glyphicon-pencil" aria-hidden="true"
-                  th:onclick="'showUpdateShoppingListItemForm(' + ${shoppingListItem.id} + ')'"/>
+            <i class="far fa-edit"
+               th:onclick="'showUpdateShoppingListItemForm(' + ${shoppingListItem.id} + ')'"/>
             &nbsp;
-            <span class="glyphicon glyphicon-trash" aria-hidden="true"
-                  th:onclick="'deleteShoppingListItem(' + ${shoppingListItem.id} + ')'"/>
+            <i class="far fa-trash-alt"
+               th:onclick="'deleteShoppingListItem(' + ${shoppingListItem.id} + ')'"/>
         </td>
     </tr>
     </tbody>
