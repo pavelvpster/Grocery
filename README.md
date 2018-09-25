@@ -28,8 +28,18 @@ CREATE USER grocery WITH PASSWORD 'grocery';
 CREATE DATABASE grocery OWNER grocery;
 
 \q (quit from PSQL)
+```
 
-psql grocery < ./sql/grocery.sql
+Update database schema:
+
+```
+./gradlew update
+```
+
+Rollback one migration:
+
+```
+./gradlew rollbackCount -PliquibaseCommandValue=1
 ```
 
 ## Build
