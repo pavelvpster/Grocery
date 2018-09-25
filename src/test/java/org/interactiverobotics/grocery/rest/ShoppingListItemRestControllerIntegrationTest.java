@@ -41,7 +41,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -223,7 +223,7 @@ public class ShoppingListItemRestControllerIntegrationTest {
 
         restTemplate.delete(SHOPPING_LIST_ITEM_ENDPOINT + existingShoppingListItem.getId());
 
-        assertNull(shoppingListItemRepository.findById(existingShoppingListItem.getId()));
+        assertFalse(shoppingListItemRepository.findById(existingShoppingListItem.getId()).isPresent());
 
         itemRepository.delete(existingItem);
         shoppingListRepository.delete(existingShoppingList);

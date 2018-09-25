@@ -41,7 +41,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -219,7 +219,7 @@ public class ShoppingListRestControllerIntegrationTest {
 
         restTemplate.delete(SHOPPING_LIST_ENDPOINT + existingShoppingList.getId());
 
-        assertNull(shoppingListRepository.findById(existingShoppingList.getId()));
+        assertFalse(shoppingListRepository.findById(existingShoppingList.getId()).isPresent());
     }
 
     @Test
