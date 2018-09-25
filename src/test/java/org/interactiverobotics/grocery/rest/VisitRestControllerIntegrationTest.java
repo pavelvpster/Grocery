@@ -43,8 +43,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -252,7 +252,7 @@ public class VisitRestControllerIntegrationTest {
 
         restTemplate.delete(VISIT_ENDPOINT + existingVisit.getId());
 
-        assertNull(visitRepository.findById(existingVisit.getId()));
+        assertFalse(visitRepository.findById(existingVisit.getId()).isPresent());
     }
 
     @Test

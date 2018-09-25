@@ -48,7 +48,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -352,7 +352,7 @@ public class PurchaseRestControllerIntegrationTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
-        assertNull(purchaseRepository.findById(existingPurchase.getId()));
+        assertFalse(purchaseRepository.findById(existingPurchase.getId()).isPresent());
     }
 
     @Test

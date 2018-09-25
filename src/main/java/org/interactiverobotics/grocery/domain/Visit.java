@@ -48,7 +48,7 @@ import java.util.List;
  * Visit domain class.
  */
 @Entity
-@Table(schema = "grocery", name = "visits")
+@Table(name = "visits")
 @JsonFilter("jpaFilter")
 public class Visit {
 

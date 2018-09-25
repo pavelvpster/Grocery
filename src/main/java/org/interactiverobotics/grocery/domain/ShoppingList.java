@@ -41,7 +41,7 @@ import java.util.List;
  * ShoppingList domain class.
  */
 @Entity
-@Table(schema = "grocery", name = "shopping_lists")
+@Table(name = "shopping_lists")
 public class ShoppingList {
 
     @Id

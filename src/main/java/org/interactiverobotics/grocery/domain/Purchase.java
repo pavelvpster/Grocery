@@ -41,7 +41,7 @@ import java.math.BigDecimal;
  * Purchase domain class.
  */
 @Entity
-@Table(schema = "grocery", name = "purchases")
+@Table(name = "purchases")
 public class Purchase {
 
     @Id
