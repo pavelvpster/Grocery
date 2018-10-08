@@ -1,7 +1,7 @@
 /*
  * Visit.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import java.util.Date;
-import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -37,17 +35,20 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Visit domain class.
  */
 @Entity
-@Table(schema = "grocery", name = "visits")
+@Table(name = "visits")
 @JsonFilter("jpaFilter")
 public class Visit {
 
@@ -67,6 +68,10 @@ public class Visit {
     @Column
     @Temporal(TemporalType.TIMESTAMP)
     private Date completed;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shopping_list_id")
+    private ShoppingList shoppingList;
 
     @Transient
     @OneToMany(mappedBy = "visit", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
@@ -101,19 +106,27 @@ public class Visit {
     }
 
     public Date getStarted() {
-        return started;
+        return copyDate(started);
     }
 
     public void setStarted(Date started) {
-        this.started = started;
+        this.started = copyDate(started);
     }
 
     public Date getCompleted() {
-        return completed;
+        return copyDate(completed);
     }
 
     public void setCompleted(Date completed) {
-        this.completed = completed;
+        this.completed = copyDate(completed);
+    }
+
+    public ShoppingList getShoppingList() {
+        return shoppingList;
+    }
+
+    public void setShoppingList(ShoppingList shoppingList) {
+        this.shoppingList = shoppingList;
     }
 
     public List<Purchase> getPurchases() {
@@ -139,4 +152,16 @@ public class Visit {
         return ToStringBuilder.reflectionToString(this);
     }
 
+    /**
+     * Returns copy of given date or null if source is null.
+     *
+     * @param source source (date)
+     * @return Date
+     */
+    private static Date copyDate(final Date source) {
+        if (source == null) {
+            return null;
+        }
+        return new Date(source.getTime());
+    }
 }

@@ -1,7 +1,7 @@
 /*
  * ItemServiceTest.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,29 +29,32 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.junit.Assert.*;
 
 /**
  * Item service test.
  * Tests Service class with mocked Repository.
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(SpringRunner.class)
 public class ItemServiceTest {
+
+    private static final String TEST_ITEM_NAME = "test-item";
 
     @Mock
     private ItemRepository itemRepository;
@@ -76,24 +79,6 @@ public class ItemServiceTest {
         assertEquals(existingItems, items);
     }
 
-
-    public static class ItemPageAnswer implements Answer<Page<Item>> {
-
-        private final List<Item> items;
-
-        public ItemPageAnswer(final List<Item> items) {
-            this.items = items;
-        }
-
-        @Override
-        public Page<Item> answer(InvocationOnMock invocation) throws Throwable {
-            assertEquals(1, invocation.getArguments().length);
-            final Pageable pageable = invocation.getArgumentAt(0, Pageable.class);
-            return new PageImpl<>(items, pageable, items.size());
-        }
-    }
-
-
     @Test
     public void testGetItemsPage() {
 
@@ -102,10 +87,13 @@ public class ItemServiceTest {
             existingItems.add(new Item(i, "test-item-" + i));
         }
 
-        final ItemPageAnswer itemPageAnswer = new ItemPageAnswer(existingItems);
-        when(itemRepository.findAll(any(Pageable.class))).thenAnswer(itemPageAnswer);
+        when(itemRepository.findAll(any(Pageable.class))).thenAnswer(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            final Pageable pageable = invocation.getArgument(0);
+            return new PageImpl<>(existingItems, pageable, existingItems.size());
+        });
 
-        final Page<Item> items = itemService.getItems(new PageRequest(0, 10));
+        final Page<Item> items = itemService.getItems(PageRequest.of(0, 10));
 
         assertEquals(existingItems.size(), items.getTotalElements());
         assertEquals(10, items.getTotalPages());
@@ -114,8 +102,8 @@ public class ItemServiceTest {
     @Test
     public void testGetItemById() {
 
-        Item existingItem = new Item(1L, "test-item");
-        when(itemRepository.findOne(existingItem.getId())).thenReturn(existingItem);
+        Item existingItem = new Item(1L, TEST_ITEM_NAME);
+        when(itemRepository.findById(existingItem.getId())).thenReturn(Optional.of(existingItem));
 
         final Item item = itemService.getItemById(existingItem.getId());
 
@@ -125,7 +113,7 @@ public class ItemServiceTest {
     @Test(expected = ItemNotFoundException.class)
     public void testGetNotExistingItemById() {
 
-        when(itemRepository.findOne(any())).thenReturn(null);
+        when(itemRepository.findById(any())).thenReturn(Optional.empty());
 
         itemService.getItemById(1L);
     }
@@ -133,10 +121,10 @@ public class ItemServiceTest {
     @Test
     public void testGetItemByName() {
 
-        Item existingItem = new Item(1L, "test-item");
+        Item existingItem = new Item(1L, TEST_ITEM_NAME);
         when(itemRepository.findOneByName(existingItem.getName())).thenReturn(existingItem);
 
-        final Item item = itemService.getItemByName("test-item");
+        final Item item = itemService.getItemByName(TEST_ITEM_NAME);
 
         assertEquals(existingItem, item);
     }
@@ -144,9 +132,9 @@ public class ItemServiceTest {
     @Test(expected = ItemNotFoundException.class)
     public void testGetNotExistingItemByName() {
 
-        when(itemRepository.findOne(any())).thenReturn(null);
+        when(itemRepository.findById(any())).thenReturn(Optional.empty());
 
-        itemService.getItemByName("test-name");
+        itemService.getItemByName(TEST_ITEM_NAME);
     }
 
 
@@ -161,7 +149,7 @@ public class ItemServiceTest {
         @Override
         public Item answer(InvocationOnMock invocation) throws Throwable {
             assertEquals(1, invocation.getArguments().length);
-            item = invocation.getArgumentAt(0, Item.class);
+            item = invocation.getArgument(0);
             if (item.getId() == null) {
                 item.setId(1L);
             }
@@ -176,7 +164,7 @@ public class ItemServiceTest {
         final SaveAndReturnItemAnswer saveAndReturnItemAnswer = new SaveAndReturnItemAnswer();
         when(itemRepository.save(any(Item.class))).then(saveAndReturnItemAnswer);
 
-        final ItemForm form = new ItemForm("test-item");
+        final ItemForm form = new ItemForm(TEST_ITEM_NAME);
 
         final Item item = itemService.createItem(form);
 
@@ -191,8 +179,8 @@ public class ItemServiceTest {
     @Test
     public void testUpdateItem() {
 
-        Item existingItem = new Item(1L, "test-item");
-        when(itemRepository.findOne(existingItem.getId())).thenReturn(existingItem);
+        Item existingItem = new Item(1L, TEST_ITEM_NAME);
+        when(itemRepository.findById(existingItem.getId())).thenReturn(Optional.of(existingItem));
 
         final SaveAndReturnItemAnswer saveAndReturnItemAnswer = new SaveAndReturnItemAnswer();
         when(itemRepository.save(any(Item.class))).then(saveAndReturnItemAnswer);
@@ -212,7 +200,7 @@ public class ItemServiceTest {
     @Test(expected = ItemNotFoundException.class)
     public void testUpdateNotExistingItem() {
 
-        when(itemRepository.findOne(any())).thenReturn(null);
+        when(itemRepository.findById(any())).thenReturn(Optional.empty());
 
         final ItemForm form = new ItemForm("updated-test-item");
 
@@ -222,8 +210,8 @@ public class ItemServiceTest {
     @Test
     public void testDeleteItem() {
 
-        Item existingItem = new Item(1L, "test-item");
-        when(itemRepository.findOne(existingItem.getId())).thenReturn(existingItem);
+        Item existingItem = new Item(1L, TEST_ITEM_NAME);
+        when(itemRepository.findById(existingItem.getId())).thenReturn(Optional.of(existingItem));
 
         itemService.deleteItem(existingItem.getId());
 
@@ -233,9 +221,8 @@ public class ItemServiceTest {
     @Test(expected = ItemNotFoundException.class)
     public void testDeleteNotExistingItem() {
 
-        when(itemRepository.findOne(any())).thenReturn(null);
+        when(itemRepository.findById(any())).thenReturn(Optional.empty());
 
         itemService.deleteItem(999L);
     }
-
 }

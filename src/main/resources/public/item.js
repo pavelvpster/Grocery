@@ -1,7 +1,7 @@
 $(function() {
 
-    $(".nav").find(".active").removeClass("active");
-    $(".nav").find("#item").parent().addClass("active");
+    $(".nav-item").find(".active").removeClass("active");
+    $(".nav-item").find("#item").parent().addClass("active");
 
     initializePagination("/item/list", "#item-list-container");
 });
@@ -32,7 +32,7 @@ function deleteItem(id) {
     $.ajax({
         type: 'DELETE',
         url: "/item/" + id,
-        success: function(result) {
+        done: function(result) {
             window.location = "/item/";
         }
     });

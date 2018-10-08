@@ -1,7 +1,7 @@
 /*
  * PurchaseRestController.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,9 +22,12 @@ package org.interactiverobotics.grocery.rest;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.domain.Purchase;
 import org.interactiverobotics.grocery.service.PurchaseService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Purchase REST controller.
@@ -47,6 +51,22 @@ public class PurchaseRestController {
     @Autowired
     public PurchaseRestController(final PurchaseService purchaseService) {
         this.purchaseService = purchaseService;
+    }
+
+    @ApiOperation(value = "Get Items that not existing in Purchases", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/{visitId}/not_purchased_items", method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public List<Item> getNotPurchasedItems(@PathVariable Long visitId) {
+        return this.purchaseService.getNotPurchasedItems(visitId);
+    }
+
+    @ApiOperation(value = "Get page of Purchases", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/{visitId}/list", method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public Page<Purchase> getPurchasesPage(@PathVariable Long visitId,
+                                           @RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
+                                           @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
+        return this.purchaseService.getPurchases(PageRequest.of(pageNumber - 1, pageSize), visitId);
     }
 
     @ApiOperation(value = "Buy Item in Visit", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -71,5 +91,4 @@ public class PurchaseRestController {
     public Purchase updatePrice(@PathVariable Long visitId, @PathVariable Long itemId, @RequestParam BigDecimal price) {
         return this.purchaseService.updatePrice(visitId, itemId, price);
     }
-
 }

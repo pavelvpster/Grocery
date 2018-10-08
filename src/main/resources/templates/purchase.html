@@ -1,24 +1,31 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorator="layout">
+      layout:decorate="~{layout}">
 <head>
     <title>Purchases</title>
-    <script th:src="@{/pagination.js}"/>
-    <script th:src="@{/purchase.js}"/>
+    <script th:src="@{/pagination.js}"></script>
+    <script th:src="@{/purchase.js}"></script>
 </head>
 <body>
 
 <section layout:fragment="content">
 
     <div class="container">
+        <div>
+            <input type="hidden" id="visit-id" th:value="${visitId}"/>
+        </div>
 
-        <input type="hidden" id="visit-id" th:value="${visitId}"/>
+        <div>
+            <div id="item-selector-container"/>
+        </div>
 
-        <div id="item-selector-container"/>
+        <div>
+            <div id="purchase-list-container"/>
+        </div>
 
-        <div id="purchase-list-container"/>
-        <th:block th:include="pagination"/>
-
+        <div>
+            <th:block th:insert="pagination"/>
+        </div>
     </div>
 
 </section>

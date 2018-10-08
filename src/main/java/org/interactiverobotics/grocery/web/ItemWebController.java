@@ -1,7 +1,7 @@
 /*
  * ItemWebController.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,9 +34,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.Valid;
 
 /**
  * Item web controller.
@@ -44,6 +44,8 @@ import javax.validation.Valid;
 @Controller
 @RequestMapping("/item")
 public class ItemWebController {
+
+    private static final String REDIRECT_TO_ITEM = "redirect:/item/";
 
     private final ItemService itemService;
 
@@ -70,8 +72,7 @@ public class ItemWebController {
     public String getItems(@RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
                            @RequestParam(value = "size", defaultValue = "10") Integer pageSize, Model model) {
 
-        final PageRequest pageRequest = new PageRequest(pageNumber - 1, pageSize);
-        final Page<Item> page = this.itemService.getItems(pageRequest);
+        final Page<Item> page = this.itemService.getItems(PageRequest.of(pageNumber - 1, pageSize));
 
         final List<Item> items = new ArrayList<>();
         page.forEach(item -> items.add(item));
@@ -99,10 +100,10 @@ public class ItemWebController {
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public String createItem(@Valid ItemForm form, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "redirect:/item/";
+            return REDIRECT_TO_ITEM;
         }
         this.itemService.createItem(form);
-        return "redirect:/item/";
+        return REDIRECT_TO_ITEM;
     }
 
     /**
@@ -121,19 +122,19 @@ public class ItemWebController {
     @RequestMapping(value = "/{id}", method = RequestMethod.POST)
     public String updateItem(@PathVariable Long id, @Valid ItemForm form, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "redirect:/item/";
+            return REDIRECT_TO_ITEM;
         }
         this.itemService.updateItem(id, form);
-        return "redirect:/item/";
+        return REDIRECT_TO_ITEM;
     }
 
     /**
      * Deletes Item.
+     * todo: ensure that there are no redirects from DELETE methods
      */
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public String deleteItem(@PathVariable Long id) {
         this.itemService.deleteItem(id);
-        return "redirect:/item/";
+        return REDIRECT_TO_ITEM;
     }
-
 }

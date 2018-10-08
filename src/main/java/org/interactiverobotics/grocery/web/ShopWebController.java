@@ -1,7 +1,7 @@
 /*
  * ShopWebController.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,9 +34,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.Valid;
 
 /**
  * Shop web controller.
@@ -44,6 +44,8 @@ import javax.validation.Valid;
 @Controller
 @RequestMapping("/shop")
 public class ShopWebController {
+
+    private static final String REDIRECT_TO_SHOP = "redirect:/shop/";
 
     private final ShopService shopService;
 
@@ -67,8 +69,7 @@ public class ShopWebController {
     public String getShops(@RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
                            @RequestParam(value = "size", defaultValue = "10") Integer pageSize, Model model) {
 
-        final PageRequest pageRequest = new PageRequest(pageNumber - 1, pageSize);
-        final Page<Shop> page = this.shopService.getShops(pageRequest);
+        final Page<Shop> page = this.shopService.getShops(PageRequest.of(pageNumber - 1, pageSize));
 
         final List<Shop> shops = new ArrayList<>();
         page.forEach(shop -> shops.add(shop));
@@ -96,10 +97,10 @@ public class ShopWebController {
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public String createShop(@Valid ShopForm form, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "redirect:/shop/";
+            return REDIRECT_TO_SHOP;
         }
         this.shopService.createShop(form);
-        return "redirect:/shop/";
+        return REDIRECT_TO_SHOP;
     }
 
     /**
@@ -118,10 +119,10 @@ public class ShopWebController {
     @RequestMapping(value = "/{id}", method = RequestMethod.POST)
     public String updateShop(@PathVariable Long id, @Valid ShopForm form, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "redirect:/shop/";
+            return REDIRECT_TO_SHOP;
         }
         this.shopService.updateShop(id, form);
-        return "redirect:/shop/";
+        return REDIRECT_TO_SHOP;
     }
 
     /**
@@ -130,7 +131,6 @@ public class ShopWebController {
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public String deleteShop(@PathVariable Long id) {
         this.shopService.deleteShop(id);
-        return "redirect:/shop/";
+        return REDIRECT_TO_SHOP;
     }
-
 }

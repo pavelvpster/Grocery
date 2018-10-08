@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FindBugsFilter>
+    <!-- Just some samples
+    <Match>
+        <Package name="my[.]sample[.]package([.].*)?" />
+    </Match>
+    <Match>
+        <Package name="~com[.]hybris[.]datahub[.]c4c[.]endpoint[.]mock[.]schema([.].*)?" />
+    </Match>
+    <Match>
+        <Class name=".*\.MyClass.*" />
+    </Match>
+
+    <Match>
+        <Class name="com.example.ExampleClass" />
+        <Bug pattern="PATH_TRAVERSAL_IN" />
+    </Match>
+    -->
+
+    <Match>
+        <Bug pattern="CRLF_INJECTION_LOGS"/>
+    </Match>
+</FindBugsFilter>

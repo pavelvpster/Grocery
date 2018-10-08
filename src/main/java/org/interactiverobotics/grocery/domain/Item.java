@@ -36,7 +36,7 @@ import javax.persistence.Table;
  * Item domain class.
  */
 @Entity
-@Table(schema = "grocery", name = "items")
+@Table(name = "items")
 public class Item {
 
     @Id

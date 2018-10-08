@@ -1,7 +1,7 @@
 /*
  * ItemRestController.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,8 @@ import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.form.ItemForm;
 import org.interactiverobotics.grocery.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -52,9 +54,16 @@ public class ItemRestController {
     }
 
     @ApiOperation(value = "Get all Item(s)", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = {"", "/"}, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public List<Item> getItems() {
         return this.itemService.getItems();
+    }
+
+    @ApiOperation(value = "Get page of Items", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public Page<Item> getItemsPage(@RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
+                                   @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
+        return this.itemService.getItems(PageRequest.of(pageNumber - 1, pageSize));
     }
 
     @ApiOperation(value = "Get Item by Id", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -86,5 +95,4 @@ public class ItemRestController {
     public void deleteItem(@PathVariable Long id) {
         this.itemService.deleteItem(id);
     }
-
 }

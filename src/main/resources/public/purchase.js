@@ -1,6 +1,6 @@
 $(function() {
-    $(".nav").find(".active").removeClass("active");
-    $(".nav").find("#purchase").parent().addClass("active");
+    $(".nav-item").find(".active").removeClass("active");
+    $(".nav-item").find("#purchase").parent().addClass("active");
 
     $.get("/purchase/" + getVisitId() + "/item_selector", {}, function(result) {
         $("#item-selector-container").html(result);
@@ -15,7 +15,7 @@ function getVisitId() {
 
 function buyItem(itemId) {
     $.post("/api/v1/purchase/" + getVisitId() + "/buy/" + itemId + "?quantity=1")
-        .success(function() {
+        .done(function() {
             window.location = "/purchase/" + getVisitId();
         })
         .fail(function() {
@@ -25,7 +25,7 @@ function buyItem(itemId) {
 
 function returnItem(itemId) {
     $.post("/api/v1/purchase/" + getVisitId() + "/return/" + itemId + "?quantity=1")
-        .success(function() {
+        .done(function() {
             window.location = "/purchase/" + getVisitId();
         })
         .fail(function() {

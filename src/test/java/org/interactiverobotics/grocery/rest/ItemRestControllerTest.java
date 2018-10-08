@@ -1,7 +1,7 @@
 /*
  * ItemRestControllerTest.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,27 +31,30 @@ import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.mockito.Mockito.when;
-import static org.junit.Assert.*;
 
 /**
  * Item REST controller test.
@@ -60,6 +63,10 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)
 @WebMvcTest(ItemRestController.class)
 public class ItemRestControllerTest {
+
+    private static final String ITEM_ENDPOINT = "/api/v1/item/";
+    private static final String ID_SELECTOR = "$.id";
+    private static final String NAME_SELECTOR = "$.name";
 
     @Autowired
     private MockMvc mvc;
@@ -74,7 +81,7 @@ public class ItemRestControllerTest {
         final List<Item> existingItems = Arrays.asList(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
         when(itemService.getItems()).thenReturn(existingItems);
 
-        mvc.perform(get("/api/v1/item/").accept(MediaType.APPLICATION_JSON_UTF8))
+        mvc.perform(get(ITEM_ENDPOINT).accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(jsonPath("$", hasSize(2)))
@@ -85,16 +92,38 @@ public class ItemRestControllerTest {
     }
 
     @Test
+    public void testGetItemsPage() throws Exception {
+
+        final List<Item> existingItems = new ArrayList<>();
+        for (long i = 0; i < 100; i ++) {
+            existingItems.add(new Item(i, "test-item-" + i));
+        }
+
+        when(itemService.getItems(any(Pageable.class))).thenAnswer(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            final Pageable pageable = invocation.getArgument(0);
+            return new PageImpl<>(existingItems, pageable, existingItems.size());
+        });
+
+        mvc.perform(get(ITEM_ENDPOINT + "list?page=1&size=10").accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$.totalElements", is(existingItems.size())))
+                .andExpect(jsonPath("$.totalPages", is(10)))
+                .andExpect(jsonPath("$.size", is(10)));
+    }
+
+    @Test
     public void testGetItemById() throws Exception {
 
         final Item existingItem = new Item(1L, "test-item");
         when(itemService.getItemById(existingItem.getId())).thenReturn(existingItem);
 
-        mvc.perform(get("/api/v1/item/" + existingItem.getId()).accept(MediaType.APPLICATION_JSON_UTF8))
+        mvc.perform(get(ITEM_ENDPOINT + existingItem.getId()).accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.id", is(existingItem.getId().intValue())))
-                .andExpect(jsonPath("$.name", is(existingItem.getName())));
+                .andExpect(jsonPath(ID_SELECTOR, is(existingItem.getId().intValue())))
+                .andExpect(jsonPath(NAME_SELECTOR, is(existingItem.getName())));
     }
 
     @Test(expected = Exception.class)
@@ -102,7 +131,7 @@ public class ItemRestControllerTest {
 
         when(itemService.getItemById(any())).thenThrow(new ItemNotFoundException(-1L));
 
-        mvc.perform(get("/api/v1/item/" + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
+        mvc.perform(get(ITEM_ENDPOINT + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
     }
 
     @Test
@@ -111,11 +140,12 @@ public class ItemRestControllerTest {
         final Item existingItem = new Item(1L, "test-item");
         when(itemService.getItemByName(existingItem.getName())).thenReturn(existingItem);
 
-        mvc.perform(get("/api/v1/item/search?name=" + existingItem.getName()).accept(MediaType.APPLICATION_JSON_UTF8))
+        mvc.perform(get(ITEM_ENDPOINT + "search?name=" + existingItem.getName())
+                .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.id", is(existingItem.getId().intValue())))
-                .andExpect(jsonPath("$.name", is(existingItem.getName())));
+                .andExpect(jsonPath(ID_SELECTOR, is(existingItem.getId().intValue())))
+                .andExpect(jsonPath(NAME_SELECTOR, is(existingItem.getName())));
     }
 
     @Test(expected = Exception.class)
@@ -123,7 +153,7 @@ public class ItemRestControllerTest {
 
         when(itemService.getItemByName(any())).thenThrow(new ItemNotFoundException(-1L));
 
-        mvc.perform(get("/api/v1/item/search?name=test").accept(MediaType.APPLICATION_JSON_UTF8));
+        mvc.perform(get(ITEM_ENDPOINT + "search?name=test").accept(MediaType.APPLICATION_JSON_UTF8));
     }
 
 
@@ -138,7 +168,7 @@ public class ItemRestControllerTest {
         @Override
         public Item answer(InvocationOnMock invocation) throws Throwable {
             assertEquals(1, invocation.getArguments().length);
-            final ItemForm form = invocation.getArgumentAt(0, ItemForm.class);
+            final ItemForm form = invocation.getArgument(0);
             item = new Item(1L, form.getName());
             return item;
         }
@@ -151,14 +181,14 @@ public class ItemRestControllerTest {
         final CreateItemAnswer createItemAnswer = new CreateItemAnswer();
         when(itemService.createItem(any(ItemForm.class))).then(createItemAnswer);
 
-        mvc.perform(post("/api/v1/item/")
+        mvc.perform(post(ITEM_ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content("{\"name\":\"test-item\"}")
                 .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.id", is(createItemAnswer.getItem().getId().intValue())))
-                .andExpect(jsonPath("$.name", is(createItemAnswer.getItem().getName())));
+                .andExpect(jsonPath(ID_SELECTOR, is(createItemAnswer.getItem().getId().intValue())))
+                .andExpect(jsonPath(NAME_SELECTOR, is(createItemAnswer.getItem().getName())));
     }
 
 
@@ -179,10 +209,10 @@ public class ItemRestControllerTest {
 
             assertEquals(2, invocation.getArguments().length);
 
-            final Long id = invocation.getArgumentAt(0, Long.class);
+            final Long id = invocation.getArgument(0);
             assertEquals(item.getId(), id);
 
-            final ItemForm form = invocation.getArgumentAt(1, ItemForm.class);
+            final ItemForm form = invocation.getArgument(1);
             item.setName(form.getName());
 
             return item;
@@ -194,19 +224,17 @@ public class ItemRestControllerTest {
     public void testUpdateItem() throws Exception {
 
         final Item existingItem = new Item(1L, "test-item");
-        when(itemService.getItemByName(existingItem.getName())).thenReturn(existingItem);
-
         final UpdateItemAnswer updateItemAnswer = new UpdateItemAnswer(existingItem);
         when(itemService.updateItem(eq(existingItem.getId()), any(ItemForm.class))).then(updateItemAnswer);
 
-        mvc.perform(post("/api/v1/item/" + existingItem.getId())
+        mvc.perform(post(ITEM_ENDPOINT + existingItem.getId())
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content("{\"name\":\"updated-test-item\"}")
                 .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.id", is(updateItemAnswer.getItem().getId().intValue())))
-                .andExpect(jsonPath("$.name", is(updateItemAnswer.getItem().getName())));
+                .andExpect(jsonPath(ID_SELECTOR, is(updateItemAnswer.getItem().getId().intValue())))
+                .andExpect(jsonPath(NAME_SELECTOR, is(updateItemAnswer.getItem().getName())));
     }
 
     @Test(expected = Exception.class)
@@ -214,7 +242,7 @@ public class ItemRestControllerTest {
 
         when(itemService.updateItem(any(), any())).thenThrow(new ItemNotFoundException(-1L));
 
-        mvc.perform(post("/api/v1/item/" + new Long(999L))
+        mvc.perform(post(ITEM_ENDPOINT + new Long(999L))
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content("{\"name\":\"updated-test-item\"}")
                 .accept(MediaType.APPLICATION_JSON_UTF8));
@@ -225,7 +253,7 @@ public class ItemRestControllerTest {
 
         final Long id = 1L;
 
-        mvc.perform(delete("/api/v1/item/" + id).accept(MediaType.APPLICATION_JSON_UTF8));
+        mvc.perform(delete(ITEM_ENDPOINT + id).accept(MediaType.APPLICATION_JSON_UTF8));
 
         verify(itemService).deleteItem(eq(id));
     }
@@ -235,7 +263,6 @@ public class ItemRestControllerTest {
 
         doThrow(new ItemNotFoundException(-1L)).when(itemService).deleteItem(any());
 
-        mvc.perform(delete("/api/v1/item/" + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
+        mvc.perform(delete(ITEM_ENDPOINT + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
     }
-
 }

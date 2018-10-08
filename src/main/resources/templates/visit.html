@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorator="layout">
+      layout:decorate="~{layout}">
 <head>
     <title>Visits</title>
-    <script th:src="@{/pagination.js}"/>
-    <script th:src="@{/visit.js}"/>
+    <script th:src="@{/pagination.js}"></script>
+    <script th:src="@{/visit.js}"></script>
 </head>
 <body>
 
 <section layout:fragment="content">
 
     <div class="container">
+        <div>
+            <div id="visit-list-container"/>
+        </div>
 
-        <div id="visit-list-container"/>
-        <th:block th:include="pagination"/>
-
+        <div>
+            <th:block th:insert="pagination"/>
+        </div>
     </div>
 
 </section>

@@ -1,6 +1,6 @@
 $(function() {
-    $(".nav").find(".active").removeClass("active");
-    $(".nav").find("#shop").parent().addClass("active");
+    $(".nav-item").find(".active").removeClass("active");
+    $(".nav-item").find("#shop").parent().addClass("active");
 
     initializePagination("/shop/list", "#shop-list-container");
 });
@@ -31,7 +31,7 @@ function deleteShop(id) {
     $.ajax({
         type: 'DELETE',
         url: "/shop/" + id,
-        success: function(result) {
+        done: function(result) {
             window.location = "/shop/";
         }
     });

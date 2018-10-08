@@ -1,0 +1,27 @@
+<div id="shopping-list-item-form" class="modal fade" role="dialog" xmlns:th="http://www.thymeleaf.org">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h2 class="modal-title">Shopping List Item</h2>
+            </div>
+            <div class="modal-body">
+                <form id="shopping-list-item-properties" action="/api/v1/shopping_list_item/"
+                      onsubmit="return submitShoppingListItemCreateForm()">
+                    <div class="form-group">
+                        <input type="hidden" id="shoppingList" name="shoppingList" th:value="${shoppingListId}" />
+                        <label for="item">Item:</label>
+                        <select id="item" name="item" class="form-control">
+                            <option th:each="item: ${items}" th:value="${item.id}" th:text="${item.name}"/>
+                        </select>
+                        <span id="item-error" class="label label-danger"/>
+                        <label for="quantity">Quantity:</label>
+                        <input type="text" id="quantity" name="quantity" class="form-control" value="1"/>
+                        <span id="quantity-error" class="label label-danger"/>
+                    </div>
+                    <button type="submit" class="btn btn-secondary">OK</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

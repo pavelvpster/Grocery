@@ -1,7 +1,7 @@
 /*
  * ShopServiceTest.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,28 +29,31 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
  * Shop service test.
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(SpringRunner.class)
 public class ShopServiceTest {
+
+    private static final String TEST_SHOP_NAME = "test-shop";
 
     @Mock
     private ShopRepository shopRepository;
@@ -75,24 +78,6 @@ public class ShopServiceTest {
         assertEquals(existingShops, shops);
     }
 
-
-    public static class ShopPageAnswer implements Answer<Page<Shop>> {
-
-        private final List<Shop> shops;
-
-        public ShopPageAnswer(final List<Shop> shops) {
-            this.shops = shops;
-        }
-
-        @Override
-        public Page<Shop> answer(InvocationOnMock invocation) throws Throwable {
-            assertEquals(1, invocation.getArguments().length);
-            final Pageable pageable = invocation.getArgumentAt(0, Pageable.class);
-            return new PageImpl<>(shops, pageable, shops.size());
-        }
-    }
-
-
     @Test
     public void testGetShopsPage() {
 
@@ -101,10 +86,13 @@ public class ShopServiceTest {
             existingShops.add(new Shop(i, "test-shop-" + i));
         }
 
-        final ShopPageAnswer shopPageAnswer = new ShopPageAnswer(existingShops);
-        when(shopRepository.findAll(any(Pageable.class))).thenAnswer(shopPageAnswer);
+        when(shopRepository.findAll(any(Pageable.class))).thenAnswer(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            final Pageable pageable = invocation.getArgument(0);
+            return new PageImpl<>(existingShops, pageable, existingShops.size());
+        });
 
-        final Page<Shop> shops = shopService.getShops(new PageRequest(0, 10));
+        final Page<Shop> shops = shopService.getShops(PageRequest.of(0, 10));
 
         assertEquals(existingShops.size(), shops.getTotalElements());
         assertEquals(10, shops.getTotalPages());
@@ -113,8 +101,8 @@ public class ShopServiceTest {
     @Test
     public void testGetShopById() {
 
-        Shop existingShop = new Shop(1L, "test-shop");
-        when(shopRepository.findOne(existingShop.getId())).thenReturn(existingShop);
+        Shop existingShop = new Shop(1L, TEST_SHOP_NAME);
+        when(shopRepository.findById(existingShop.getId())).thenReturn(Optional.of(existingShop));
 
         final Shop shop = shopService.getShopById(existingShop.getId());
 
@@ -124,7 +112,7 @@ public class ShopServiceTest {
     @Test(expected = ShopNotFoundException.class)
     public void testGetNotExistingShopById() {
 
-        when(shopRepository.findOne(any())).thenReturn(null);
+        when(shopRepository.findById(any())).thenReturn(Optional.empty());
 
         shopService.getShopById(1L);
     }
@@ -132,10 +120,10 @@ public class ShopServiceTest {
     @Test
     public void testGetShopByName() {
 
-        Shop existingShop = new Shop(1L, "test-shop");
+        Shop existingShop = new Shop(1L, TEST_SHOP_NAME);
         when(shopRepository.findOneByName(existingShop.getName())).thenReturn(existingShop);
 
-        final Shop shop = shopService.getShopByName("test-shop");
+        final Shop shop = shopService.getShopByName(TEST_SHOP_NAME);
 
         assertEquals(existingShop, shop);
     }
@@ -143,7 +131,7 @@ public class ShopServiceTest {
     @Test(expected = ShopNotFoundException.class)
     public void testGetNotExistingShopByName() {
 
-        when(shopRepository.findOne(any())).thenReturn(null);
+        when(shopRepository.findById(any())).thenReturn(Optional.empty());
 
         shopService.getShopByName("test-name");
     }
@@ -160,7 +148,7 @@ public class ShopServiceTest {
         @Override
         public Shop answer(InvocationOnMock invocation) throws Throwable {
             assertEquals(1, invocation.getArguments().length);
-            shop = invocation.getArgumentAt(0, Shop.class);
+            shop = invocation.getArgument(0);
             if (shop.getId() == null) {
                 shop.setId(1L);
             }
@@ -175,7 +163,7 @@ public class ShopServiceTest {
         final SaveAndReturnShopAnswer saveAndReturnShopAnswer = new SaveAndReturnShopAnswer();
         when(shopRepository.save(any(Shop.class))).then(saveAndReturnShopAnswer);
 
-        final ShopForm form = new ShopForm("test-shop");
+        final ShopForm form = new ShopForm(TEST_SHOP_NAME);
 
         final Shop shop = shopService.createShop(form);
 
@@ -190,8 +178,8 @@ public class ShopServiceTest {
     @Test
     public void testUpdateShop() {
 
-        Shop existingShop = new Shop(1L, "test-shop");
-        when(shopRepository.findOne(existingShop.getId())).thenReturn(existingShop);
+        Shop existingShop = new Shop(1L, TEST_SHOP_NAME);
+        when(shopRepository.findById(existingShop.getId())).thenReturn(Optional.of(existingShop));
 
         final SaveAndReturnShopAnswer saveAndReturnShopAnswer = new SaveAndReturnShopAnswer();
         when(shopRepository.save(any(Shop.class))).then(saveAndReturnShopAnswer);
@@ -211,7 +199,7 @@ public class ShopServiceTest {
     @Test(expected = ShopNotFoundException.class)
     public void testUpdateNotExistingShop() {
 
-        when(shopRepository.findOne(any())).thenReturn(null);
+        when(shopRepository.findById(any())).thenReturn(Optional.empty());
 
         final ShopForm form = new ShopForm("updated-test-shop");
 
@@ -221,8 +209,8 @@ public class ShopServiceTest {
     @Test
     public void testDeleteShop() {
 
-        Shop existingShop = new Shop(1L, "test-shop");
-        when(shopRepository.findOne(existingShop.getId())).thenReturn(existingShop);
+        Shop existingShop = new Shop(1L, TEST_SHOP_NAME);
+        when(shopRepository.findById(existingShop.getId())).thenReturn(Optional.of(existingShop));
 
         shopService.deleteShop(existingShop.getId());
 
@@ -232,9 +220,8 @@ public class ShopServiceTest {
     @Test(expected = ShopNotFoundException.class)
     public void testDeleteNotExistingShop() {
 
-        when(shopRepository.findOne(any())).thenReturn(null);
+        when(shopRepository.findById(any())).thenReturn(Optional.empty());
 
         shopService.deleteShop(999L);
     }
-
 }

@@ -1,7 +1,7 @@
 /*
  * ShopRestController.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,8 @@ import org.interactiverobotics.grocery.domain.Shop;
 import org.interactiverobotics.grocery.form.ShopForm;
 import org.interactiverobotics.grocery.service.ShopService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -52,9 +54,16 @@ public class ShopRestController {
     }
 
     @ApiOperation(value = "Get all Shop(s)", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = {"", "/"}, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public List<Shop> getShops() {
         return this.shopService.getShops();
+    }
+
+    @ApiOperation(value = "Get page of Shops", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public Page<Shop> getShopsPage(@RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
+                                   @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
+        return this.shopService.getShops(PageRequest.of(pageNumber - 1, pageSize));
     }
 
     @ApiOperation(value = "Get Shop by Id", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -86,5 +95,4 @@ public class ShopRestController {
     public void deleteShop(@PathVariable Long id) {
         this.shopService.deleteShop(id);
     }
-
 }

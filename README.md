@@ -1,7 +1,10 @@
 # Grocery
 
-Grocery is a web application that allows user to track their purchases in
-different shops.
+Grocery is a web application that allows users to track their purchases made in different shops.
+
+## Documentation
+
+[Release Process](doc/release-process.md)
 
 ## Setup database
 
@@ -25,8 +28,18 @@ CREATE USER grocery WITH PASSWORD 'grocery';
 CREATE DATABASE grocery OWNER grocery;
 
 \q (quit from PSQL)
+```
 
-psql grocery < ./sql/grocery.sql
+Update database schema:
+
+```
+./gradlew update
+```
+
+Rollback one migration:
+
+```
+./gradlew rollbackCount -PliquibaseCommandValue=1
 ```
 
 ## Build
@@ -35,9 +48,21 @@ psql grocery < ./sql/grocery.sql
 ./gradlew clean build test
 ```
 
+## Run
+
+```
+./gradlew run
+```
+
+or
+
+```
+java -jar grocery-<version>.jar
+```
+
 ## License
 
-Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
 
 
 This program is free software: you can redistribute it and/or modify

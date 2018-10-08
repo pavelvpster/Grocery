@@ -3,6 +3,12 @@ spring:
   resources:
     chain:
       enabled: true
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
   datasource:
     url: jdbc:postgresql://localhost/grocery
     username: grocery

@@ -1,7 +1,7 @@
 /*
  * ShopService.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@ import org.interactiverobotics.grocery.domain.Shop;
 import org.interactiverobotics.grocery.exception.ShopNotFoundException;
 import org.interactiverobotics.grocery.form.ShopForm;
 import org.interactiverobotics.grocery.repository.ShopRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +41,8 @@ import java.util.Optional;
 @Service
 public class ShopService {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ShopService.class);
+
     private final ShopRepository shopRepository;
 
     @Autowired
@@ -51,7 +55,8 @@ public class ShopService {
      */
     public List<Shop> getShops() {
         final List<Shop> shops = new ArrayList<>();
-        this.shopRepository.findAll().forEach(shop -> shops.add(shop));
+        shopRepository.findAll().forEach(shop -> shops.add(shop));
+        LOG.debug("{} Shop(s) found", shops.size());
         return shops;
     }
 
@@ -59,49 +64,59 @@ public class ShopService {
      * Returns page of Shop(s).
      */
     public Page<Shop> getShops(Pageable pageable) {
-        return this.shopRepository.findAll(pageable);
+        final Page<Shop> shops = shopRepository.findAll(pageable);
+        LOG.debug("{} Shop(s) found for {}", shops.getNumberOfElements(), pageable);
+        return shops;
     }
 
     /**
      * Returns Shop by Id.
      */
     public Shop getShopById(final Long shopId) {
-        return Optional.ofNullable(this.shopRepository.findOne(shopId))
+        final Shop shop = shopRepository.findById(shopId)
                 .orElseThrow(() -> new ShopNotFoundException(shopId));
+        LOG.debug("Shop found by Id #{}", shopId);
+        return shop;
     }
 
     /**
      * Returns Shop by Name.
      */
     public Shop getShopByName(final String name) {
-        return Optional.ofNullable(this.shopRepository.findOneByName(name))
+        final Shop shop = Optional.ofNullable(shopRepository.findOneByName(name))
                 .orElseThrow(() -> new ShopNotFoundException(-1L));
+        LOG.debug("Shop found by Name '{}'", name);
+        return shop;
     }
 
     /**
      * Creates Shop.
      */
     public Shop createShop(final ShopForm form) {
-        return this.shopRepository.save(new Shop(form.getName()));
+        final Shop shop = shopRepository.save(new Shop(form.getName()));
+        LOG.info("Shop created: {}", shop);
+        return shop;
     }
 
     /**
      * Updates Shop.
      */
     public Shop updateShop(final Long shopId, final ShopForm form) {
-        final Shop shop = Optional.ofNullable(this.shopRepository.findOne(shopId))
+        final Shop shop = shopRepository.findById(shopId)
                 .orElseThrow(() -> new ShopNotFoundException(shopId));
         shop.setName(form.getName());
-        return this.shopRepository.save(shop);
+        final Shop updatedShop = shopRepository.save(shop);
+        LOG.info("Shop updated: {}", updatedShop);
+        return updatedShop;
     }
 
     /**
      * Deletes Shop.
      */
     public void deleteShop(final Long shopId) {
-        final Shop shop = Optional.ofNullable(this.shopRepository.findOne(shopId))
+        final Shop shop = shopRepository.findById(shopId)
                 .orElseThrow(() -> new ShopNotFoundException(shopId));
         this.shopRepository.delete(shop);
+        LOG.info("Shop deleted: {}", shop);
     }
-
 }
