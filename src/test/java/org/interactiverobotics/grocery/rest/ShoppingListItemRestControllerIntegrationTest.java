@@ -20,7 +20,6 @@
 
 package org.interactiverobotics.grocery.rest;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.domain.ShoppingList;
 import org.interactiverobotics.grocery.domain.ShoppingListItem;
@@ -76,7 +75,6 @@ public class ShoppingListItemRestControllerIntegrationTest {
     }
 
 
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     @Test
     public void testCreateShoppingListItem() {
 
