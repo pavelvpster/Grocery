@@ -62,7 +62,7 @@ java -jar grocery-<version>.jar
 
 ## License
 
-Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
 
 
 This program is free software: you can redistribute it and/or modify

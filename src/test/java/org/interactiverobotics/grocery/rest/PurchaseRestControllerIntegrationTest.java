@@ -20,7 +20,6 @@
 
 package org.interactiverobotics.grocery.rest;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.domain.Purchase;
 import org.interactiverobotics.grocery.domain.Shop;
@@ -160,7 +159,6 @@ public class PurchaseRestControllerIntegrationTest {
         assertEquals(10, response.getBody().getSize());
     }
 
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     @Test
     public void testBuyItem() {
 
@@ -230,7 +228,6 @@ public class PurchaseRestControllerIntegrationTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     @Test
     public void testBuyItemSetPriceForNewPurchase() {
 
