@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+  backend:
+    build: ./backend
+    container_name: backend
+    ports:
+      - "48080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/grocery
+      - SPRING_DATASOURCE_USERNAME=grocery
+      - SPRING_DATASOURCE_PASSWORD=grocery
+  db:
+    image: postgres
+    container_name: db
+    environment:
+      POSTGRES_DB: "grocery"
+      POSTGRES_USER: "grocery"
+      POSTGRES_PASSWORD: "grocery"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - ./db/initdb:/docker-entrypoint-initdb.d
+      - ./db:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U grocery -d grocery" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
