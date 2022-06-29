@@ -1,4 +1,5 @@
 *.sql
 *.jar
+*.log
 
 pgdata/
