@@ -20,6 +20,8 @@ services:
       POSTGRES_USER: "grocery"
       POSTGRES_PASSWORD: "grocery"
       PGDATA: "/var/lib/postgresql/data/pgdata"
+    ports:
+      - "5432:5432"
     volumes:
       - ./db/initdb:/docker-entrypoint-initdb.d
       - ./db:/var/lib/postgresql/data
