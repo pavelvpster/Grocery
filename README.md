@@ -1,67 +1,34 @@
 # Grocery
-
 Grocery is a web application that allows users to track their purchases made in different shops.
 
-## Documentation
 
+## Documentation
 [Release Process](doc/release-process.md)
 
-## Setup database
 
-Install PostgreSQL:
+## Build Docker
+```sh
+./gradlew clean bootJar
 
-```
-sudo apt-get install postgresql
-```
+cp ./build/libs/grocery-*.jar ./docker/backend/grocery.jar
 
-Start `psql` as `postgres` user:
+cp ./src/main/resources/db/migration/*.sql ./docker/db/initdb
+rm ./docker/db/initdb/*-rollback.sql
 
-```
-sudo su postgres
-psql
-```
+cd ./docker
 
-Create user and database:
-
-```
-CREATE USER grocery WITH PASSWORD 'grocery';
-CREATE DATABASE grocery OWNER grocery;
-
-\q (quit from PSQL)
+docker-compose build
 ```
 
-Update database schema:
 
-```
-./gradlew update
-```
-
-Rollback one migration:
-
-```
-./gradlew rollbackCount -PliquibaseCommandValue=1
+## Run Docker
+```sh
+cd ./docker
+docker-compose up
 ```
 
-## Build
-
-```
-./gradlew clean build test
-```
-
-## Run
-
-```
-./gradlew run
-```
-
-or
-
-```
-java -jar grocery-<version>.jar
-```
 
 ## License
-
 Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
 
 
