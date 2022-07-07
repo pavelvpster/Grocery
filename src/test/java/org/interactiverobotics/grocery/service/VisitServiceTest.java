@@ -1,7 +1,7 @@
 /*
  * VisitServiceTest.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,26 +26,24 @@ import org.interactiverobotics.grocery.exception.ShopNotFoundException;
 import org.interactiverobotics.grocery.exception.VisitNotFoundException;
 import org.interactiverobotics.grocery.repository.ShopRepository;
 import org.interactiverobotics.grocery.repository.VisitRepository;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -54,7 +52,7 @@ import static org.mockito.Mockito.when;
 /**
  * Visit service test.
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class VisitServiceTest {
 
     @Mock
@@ -63,6 +61,7 @@ public class VisitServiceTest {
     @Mock
     private ShopRepository shopRepository;
 
+    @InjectMocks
     private VisitService visitService;
 
     private Shop shop;
@@ -71,31 +70,26 @@ public class VisitServiceTest {
     /**
      * Initializes test.
      */
-    @Before
-    public void setUp() throws Exception {
-
-        visitService = new VisitService(visitRepository, shopRepository);
-
+    @BeforeEach
+    public void setUp() {
         shop = new Shop(1L, "test-shop");
     }
 
 
     @Test
-    public void testGetVisits() {
-
-        final List<Visit> existingVisits = Arrays.asList(new Visit(1L, shop), new Visit(2L, shop));
+    public void getVisits_returnsVisits() {
+        List<Visit> existingVisits = List.of(new Visit(1L, shop), new Visit(2L, shop));
         when(visitRepository.findAll()).thenReturn(existingVisits);
 
-        final List<Visit> visits = visitService.getVisits();
+        List<Visit> visits = visitService.getVisits();
 
         assertEquals(existingVisits, visits);
     }
 
     @Test
-    public void testGetVisitsPage() {
-
-        final List<Visit> existingVisits = new ArrayList<>();
-        for (long i = 0; i < 100; i ++) {
+    public void getVisits_givenPageRequest_returnsPageOfVisits() {
+        List<Visit> existingVisits = new ArrayList<>();
+        for (long i = 0; i < 100; i++) {
             existingVisits.add(new Visit(i, shop));
         }
 
@@ -105,235 +99,221 @@ public class VisitServiceTest {
             return new PageImpl<>(existingVisits, pageable, existingVisits.size());
         });
 
-        final Page<Visit> visits = visitService.getVisits(PageRequest.of(0, 10));
+        Page<Visit> visits = visitService.getVisits(PageRequest.of(0, 10));
 
         assertEquals(existingVisits.size(), visits.getTotalElements());
         assertEquals(10, visits.getTotalPages());
     }
 
     @Test
-    public void testGetVisitById() {
-
+    public void getVisitById_returnsVisit() {
         Visit existingVisit = new Visit(1L, shop);
         when(visitRepository.findById(existingVisit.getId())).thenReturn(Optional.of(existingVisit));
 
-        final Visit visit = visitService.getVisitById(existingVisit.getId());
+        Visit visit = visitService.getVisitById(existingVisit.getId());
 
         assertEquals(existingVisit, visit);
     }
 
-    @Test(expected = VisitNotFoundException.class)
-    public void testGetNotExistingVisitById() {
+    @Test
+    public void getVisitById_whenVisitDoesNotExist_throwsException() {
+        assertThrows(VisitNotFoundException.class, () -> {
+            when(visitRepository.findById(any())).thenReturn(Optional.empty());
 
-        when(visitRepository.findById(any())).thenReturn(Optional.empty());
-
-        visitService.getVisitById(999L);
+            visitService.getVisitById(999L);
+        });
     }
 
     @Test
-    public void testGetVisitsByShopId() {
-
+    public void getVisitsByShopId_returnsVisits() {
         Visit existingVisit = new Visit(1L, shop);
         when(visitRepository.findAllByShop(shop)).thenReturn(Collections.singletonList(existingVisit));
 
         when(shopRepository.findById(shop.getId())).thenReturn(Optional.of(shop));
 
-        final List<Visit> visits = visitService.getVisitsByShopId(shop.getId());
+        List<Visit> visits = visitService.getVisitsByShopId(shop.getId());
 
         assertEquals(1, visits.size());
         assertEquals(existingVisit, visits.get(0));
     }
 
-    @Test(expected = ShopNotFoundException.class)
-    public void testGetVisitsByNotExistingShopId() {
+    @Test
+    public void getVisitsByShopId_whenShopDoesNotExist_throwsException() {
+        assertThrows(ShopNotFoundException.class, () -> {
+            when(shopRepository.findById(any())).thenReturn(Optional.empty());
 
-        when(shopRepository.findById(any())).thenReturn(Optional.empty());
-
-        visitService.getVisitsByShopId(999L);
+            visitService.getVisitsByShopId(999L);
+        });
     }
 
     @Test
-    public void testGetVisitsByShopName() {
-
+    public void getVisitsByShopName_returnsVisits() {
         Visit existingVisit = new Visit(1L, shop);
         when(visitRepository.findAllByShop(shop)).thenReturn(Collections.singletonList(existingVisit));
 
         when(shopRepository.findOneByName(shop.getName())).thenReturn(shop);
 
-        final List<Visit> visits = visitService.getVisitsByShopName(shop.getName());
+        List<Visit> visits = visitService.getVisitsByShopName(shop.getName());
 
         assertEquals(1, visits.size());
         assertEquals(existingVisit, visits.get(0));
-    }
-
-    @Test(expected = ShopNotFoundException.class)
-    public void testGetVisitsByNotExistingShopName() {
-
-        when(shopRepository.findOneByName(any())).thenReturn(null);
-
-        visitService.getVisitsByShopName("test-shop");
     }
 
     @Test
-    public void testGetVisitsByShop() {
+    public void getVisitsByShopName_whenShopDoesNotExist_throwsException() {
+        assertThrows(ShopNotFoundException.class, () -> {
+            when(shopRepository.findOneByName(any())).thenReturn(null);
 
+            visitService.getVisitsByShopName("test-shop");
+        });
+    }
+
+    @Test
+    public void getVisitsByShop_returnsVisits() {
         Visit existingVisit = new Visit(1L, shop);
         when(visitRepository.findAllByShop(shop)).thenReturn(Collections.singletonList(existingVisit));
 
-        final List<Visit> visits = visitService.getVisitsByShop(shop);
+        List<Visit> visits = visitService.getVisitsByShop(shop);
 
         assertEquals(1, visits.size());
         assertEquals(existingVisit, visits.get(0));
     }
 
-
-    public static class SaveAndReturnVisitAnswer implements Answer<Visit> {
-
-        private Visit visit;
-
-        public Visit getVisit() {
-            return visit;
-        }
-
-        @Override
-        public Visit answer(InvocationOnMock invocation) throws Throwable {
+    @Test
+    public void createVisit_givenShopId_createsAndReturnsVisit() {
+        when(visitRepository.save(any(Visit.class))).then(invocation -> {
             assertEquals(1, invocation.getArguments().length);
-            visit = invocation.getArgument(0);
-            if (visit.getId() == null) {
-                visit.setId(1L);
-            }
-            return visit;
-        }
-    }
-
-
-    @Test
-    public void testCreateVisit1() {
-
-        final SaveAndReturnVisitAnswer saveAndReturnVisitAnswer = new SaveAndReturnVisitAnswer();
-        when(visitRepository.save(any(Visit.class))).then(saveAndReturnVisitAnswer);
+            return invocation.getArgument(0);
+        });
 
         when(shopRepository.findById(shop.getId())).thenReturn(Optional.of(shop));
 
-        final Visit visit = visitService.createVisit(shop.getId());
+        Visit visit = visitService.createVisit(shop.getId());
 
-        // Check that Service returns what was saved
-        final Visit savedVisit = saveAndReturnVisitAnswer.getVisit();
+        ArgumentCaptor<Visit> captor = ArgumentCaptor.forClass(Visit.class);
+        verify(visitRepository).save(captor.capture());
+        Visit savedVisit = captor.getValue();
+
         assertEquals(savedVisit, visit);
-
-        // Check response content
         assertEquals(shop, visit.getShop());
     }
 
-    @Test(expected = ShopNotFoundException.class)
-    public void testCreateVisitForNotExistingShopId() {
+    @Test
+    public void createVisit_givenShopId_whenShopDoesNotExist_throwsException() {
+        assertThrows(ShopNotFoundException.class, () -> {
+            when(shopRepository.findById(any())).thenReturn(Optional.empty());
 
-        when(shopRepository.findById(any())).thenReturn(Optional.empty());
-
-        visitService.createVisit(999L);
+            visitService.createVisit(999L);
+        });
     }
 
     @Test
-    public void testCreateVisit2() {
-
-        final SaveAndReturnVisitAnswer saveAndReturnVisitAnswer = new SaveAndReturnVisitAnswer();
-        when(visitRepository.save(any(Visit.class))).then(saveAndReturnVisitAnswer);
+    public void createVisit_givenShopName_createsAndReturnsVisit() {
+        when(visitRepository.save(any(Visit.class))).then(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            return invocation.getArgument(0);
+        });
 
         when(shopRepository.findOneByName(shop.getName())).thenReturn(shop);
 
-        final Visit visit = visitService.createVisit(shop.getName());
+        Visit visit = visitService.createVisit(shop.getName());
 
-        // Check that Service returns what was saved
-        final Visit savedVisit = saveAndReturnVisitAnswer.getVisit();
+        ArgumentCaptor<Visit> captor = ArgumentCaptor.forClass(Visit.class);
+        verify(visitRepository).save(captor.capture());
+        Visit savedVisit = captor.getValue();
+
         assertEquals(savedVisit, visit);
-
-        // Check response content
-        assertEquals(shop, visit.getShop());
-    }
-
-    @Test(expected = ShopNotFoundException.class)
-    public void testCreateVisitForNotExistingShopName() {
-
-        when(shopRepository.findOneByName(any())).thenReturn(null);
-
-        visitService.createVisit("test-shop");
-    }
-
-    @Test
-    public void testCreateVisit3() {
-
-        final SaveAndReturnVisitAnswer saveAndReturnVisitAnswer = new SaveAndReturnVisitAnswer();
-        when(visitRepository.save(any(Visit.class))).then(saveAndReturnVisitAnswer);
-
-        final Visit visit = visitService.createVisit(shop);
-
-        // Check that Service returns what was saved
-        final Visit savedVisit = saveAndReturnVisitAnswer.getVisit();
-        assertEquals(savedVisit, visit);
-
-        // Check response content
         assertEquals(shop, visit.getShop());
     }
 
     @Test
-    public void testStartVisit() {
+    public void createVisit_givenShopName_whenShopDoesNotExist_throwsException() {
+        assertThrows(ShopNotFoundException.class, () -> {
+            when(shopRepository.findOneByName(any())).thenReturn(null);
 
+            visitService.createVisit("test-shop");
+        });
+    }
+
+    @Test
+    public void createVisit_createsAndReturnsVisit() {
+        when(visitRepository.save(any(Visit.class))).then(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            return invocation.getArgument(0);
+        });
+
+        Visit visit = visitService.createVisit(shop);
+
+        ArgumentCaptor<Visit> captor = ArgumentCaptor.forClass(Visit.class);
+        verify(visitRepository).save(captor.capture());
+        Visit savedVisit = captor.getValue();
+
+        assertEquals(savedVisit, visit);
+        assertEquals(shop, visit.getShop());
+    }
+
+    @Test
+    public void startVisit_startsAndReturnsVisit() {
         Visit existingVisit = new Visit(1L, shop);
         when(visitRepository.findById(existingVisit.getId())).thenReturn(Optional.of(existingVisit));
 
-        final SaveAndReturnVisitAnswer saveAndReturnVisitAnswer = new SaveAndReturnVisitAnswer();
-        when(visitRepository.save(any(Visit.class))).then(saveAndReturnVisitAnswer);
+        when(visitRepository.save(any(Visit.class))).then(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            return invocation.getArgument(0);
+        });
 
-        final Visit visit = visitService.startVisit(existingVisit.getId());
+        Visit visit = visitService.startVisit(existingVisit.getId());
 
-        // Check that Service returns what was saved
-        final Visit savedVisit = saveAndReturnVisitAnswer.getVisit();
+        ArgumentCaptor<Visit> captor = ArgumentCaptor.forClass(Visit.class);
+        verify(visitRepository).save(captor.capture());
+        Visit savedVisit = captor.getValue();
+
         assertEquals(savedVisit, visit);
-
-        // Check response content
         assertEquals(existingVisit.getId(), visit.getId());
         assertNotNull(visit.getStarted());
     }
 
-    @Test(expected = VisitNotFoundException.class)
-    public void testStartNotExistingVisit() {
+    @Test
+    public void startVisit_whenVisitDoesNotExist_throwsException() {
+        assertThrows(VisitNotFoundException.class, () -> {
+            when(visitRepository.findById(any())).thenReturn(Optional.empty());
 
-        when(visitRepository.findById(any())).thenReturn(Optional.empty());
-
-        visitService.startVisit(999L);
+            visitService.startVisit(999L);
+        });
     }
 
     @Test
-    public void testCompleteVisit() {
-
+    public void completeVisit_completesVisit() {
         Visit existingVisit = new Visit(1L, shop);
         when(visitRepository.findById(existingVisit.getId())).thenReturn(Optional.of(existingVisit));
 
-        final SaveAndReturnVisitAnswer saveAndReturnVisitAnswer = new SaveAndReturnVisitAnswer();
-        when(visitRepository.save(any(Visit.class))).then(saveAndReturnVisitAnswer);
+        when(visitRepository.save(any(Visit.class))).then(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            return invocation.getArgument(0);
+        });
 
-        final Visit visit = visitService.completeVisit(existingVisit.getId());
+        Visit visit = visitService.completeVisit(existingVisit.getId());
 
-        // Check that Service returns what was saved
-        final Visit savedVisit = saveAndReturnVisitAnswer.getVisit();
+        ArgumentCaptor<Visit> captor = ArgumentCaptor.forClass(Visit.class);
+        verify(visitRepository).save(captor.capture());
+        Visit savedVisit = captor.getValue();
+
         assertEquals(savedVisit, visit);
-
-        // Check response content
         assertEquals(existingVisit.getId(), visit.getId());
         assertNotNull(visit.getCompleted());
     }
 
-    @Test(expected = VisitNotFoundException.class)
-    public void testCompleteNotExistingVisit() {
+    @Test
+    public void completeVisit_whenVisitDoesNotExist_throwsException() {
+        assertThrows(VisitNotFoundException.class, () -> {
+            when(visitRepository.findById(any())).thenReturn(Optional.empty());
 
-        when(visitRepository.findById(any())).thenReturn(Optional.empty());
-
-        visitService.completeVisit(999L);
+            visitService.completeVisit(999L);
+        });
     }
 
     @Test
-    public void testDeleteVisit() {
-
+    public void deleteVisit_deletesVisit() {
         Visit existingVisit = new Visit(1L, shop);
         when(visitRepository.findById(existingVisit.getId())).thenReturn(Optional.of(existingVisit));
 
@@ -342,11 +322,12 @@ public class VisitServiceTest {
         verify(visitRepository).delete(eq(existingVisit));
     }
 
-    @Test(expected = VisitNotFoundException.class)
-    public void testDeleteNotExistingVisit() {
+    @Test
+    public void deleteVisit_whenVisitDoesNotExist_throwsException() {
+        assertThrows(VisitNotFoundException.class, () -> {
+            when(visitRepository.findById(any())).thenReturn(Optional.empty());
 
-        when(visitRepository.findById(any())).thenReturn(Optional.empty());
-
-        visitService.deleteVisit(999L);
+            visitService.deleteVisit(999L);
+        });
     }
 }

@@ -1,7 +1,7 @@
 /*
  * ShopServiceTest.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,33 +24,31 @@ import org.interactiverobotics.grocery.domain.Shop;
 import org.interactiverobotics.grocery.exception.ShopNotFoundException;
 import org.interactiverobotics.grocery.form.ShopForm;
 import org.interactiverobotics.grocery.repository.ShopRepository;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
  * Shop service test.
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ShopServiceTest {
 
     private static final String TEST_SHOP_NAME = "test-shop";
@@ -58,157 +56,131 @@ public class ShopServiceTest {
     @Mock
     private ShopRepository shopRepository;
 
+    @InjectMocks
     private ShopService shopService;
 
 
-    @Before
-    public void setUp() throws Exception {
-        shopService = new ShopService(shopRepository);
-    }
-
-
     @Test
-    public void testGetShops() {
-
-        final List<Shop> existingShops = Arrays.asList(new Shop(1L, "test-shop-1"), new Shop(2L, "test-shop-2"));
+    public void getShops_returnsShops() {
+        List<Shop> existingShops = List.of(new Shop(1L, "test-shop-1"), new Shop(2L, "test-shop-2"));
         when(shopRepository.findAll()).thenReturn(existingShops);
 
-        final List<Shop> shops = shopService.getShops();
+        List<Shop> shops = shopService.getShops();
 
         assertEquals(existingShops, shops);
     }
 
     @Test
-    public void testGetShopsPage() {
-
-        final List<Shop> existingShops = new ArrayList<>();
+    public void getShops_givenPageRequest_returnsPageOfShops() {
+        List<Shop> existingShops = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
             existingShops.add(new Shop(i, "test-shop-" + i));
         }
 
         when(shopRepository.findAll(any(Pageable.class))).thenAnswer(invocation -> {
             assertEquals(1, invocation.getArguments().length);
-            final Pageable pageable = invocation.getArgument(0);
+            Pageable pageable = invocation.getArgument(0);
             return new PageImpl<>(existingShops, pageable, existingShops.size());
         });
 
-        final Page<Shop> shops = shopService.getShops(PageRequest.of(0, 10));
+        Page<Shop> shops = shopService.getShops(PageRequest.of(0, 10));
 
         assertEquals(existingShops.size(), shops.getTotalElements());
         assertEquals(10, shops.getTotalPages());
     }
 
     @Test
-    public void testGetShopById() {
-
+    public void getShopById_returnsShop() {
         Shop existingShop = new Shop(1L, TEST_SHOP_NAME);
         when(shopRepository.findById(existingShop.getId())).thenReturn(Optional.of(existingShop));
 
-        final Shop shop = shopService.getShopById(existingShop.getId());
+        Shop shop = shopService.getShopById(existingShop.getId());
 
         assertEquals(existingShop, shop);
     }
 
-    @Test(expected = ShopNotFoundException.class)
-    public void testGetNotExistingShopById() {
+    @Test
+    public void getShopById_whenShopDoesNotExist_throwsException() {
+        assertThrows(ShopNotFoundException.class, () -> {
+            when(shopRepository.findById(any())).thenReturn(Optional.empty());
 
-        when(shopRepository.findById(any())).thenReturn(Optional.empty());
-
-        shopService.getShopById(1L);
+            shopService.getShopById(1L);
+        });
     }
 
     @Test
-    public void testGetShopByName() {
-
+    public void getShopByName_returnsShop() {
         Shop existingShop = new Shop(1L, TEST_SHOP_NAME);
         when(shopRepository.findOneByName(existingShop.getName())).thenReturn(existingShop);
 
-        final Shop shop = shopService.getShopByName(TEST_SHOP_NAME);
+        Shop shop = shopService.getShopByName(TEST_SHOP_NAME);
 
         assertEquals(existingShop, shop);
     }
 
-    @Test(expected = ShopNotFoundException.class)
-    public void testGetNotExistingShopByName() {
+    @Test
+    public void getShopByName_whenShopDoesNotExist_throwsException() {
+        assertThrows(ShopNotFoundException.class, () -> {
+            when(shopRepository.findOneByName(anyString())).thenReturn(null);
 
-        when(shopRepository.findById(any())).thenReturn(Optional.empty());
-
-        shopService.getShopByName("test-name");
+            shopService.getShopByName("test-name");
+        });
     }
-
-
-    public static class SaveAndReturnShopAnswer implements Answer<Shop> {
-
-        private Shop shop;
-
-        public Shop getShop() {
-            return shop;
-        }
-
-        @Override
-        public Shop answer(InvocationOnMock invocation) throws Throwable {
-            assertEquals(1, invocation.getArguments().length);
-            shop = invocation.getArgument(0);
-            if (shop.getId() == null) {
-                shop.setId(1L);
-            }
-            return shop;
-        }
-    }
-
 
     @Test
-    public void testCreateShop() {
+    public void createShop_createsAndReturnsShop() {
+        when(shopRepository.save(any(Shop.class))).then(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            return invocation.getArgument(0);
+        });
 
-        final SaveAndReturnShopAnswer saveAndReturnShopAnswer = new SaveAndReturnShopAnswer();
-        when(shopRepository.save(any(Shop.class))).then(saveAndReturnShopAnswer);
+        ShopForm form = new ShopForm(TEST_SHOP_NAME);
 
-        final ShopForm form = new ShopForm(TEST_SHOP_NAME);
+        Shop shop = shopService.createShop(form);
 
-        final Shop shop = shopService.createShop(form);
+        ArgumentCaptor<Shop> captor = ArgumentCaptor.forClass(Shop.class);
+        verify(shopRepository).save(captor.capture());
+        Shop savedShop = captor.getValue();
 
-        // Check that Service returns what was saved
-        final Shop savedShop = saveAndReturnShopAnswer.getShop();
         assertEquals(savedShop, shop);
-
-        // Check response content
         assertEquals(form.getName(), shop.getName());
     }
 
     @Test
-    public void testUpdateShop() {
-
+    public void updateShop_updatesAndReturnsShop() {
         Shop existingShop = new Shop(1L, TEST_SHOP_NAME);
         when(shopRepository.findById(existingShop.getId())).thenReturn(Optional.of(existingShop));
 
-        final SaveAndReturnShopAnswer saveAndReturnShopAnswer = new SaveAndReturnShopAnswer();
-        when(shopRepository.save(any(Shop.class))).then(saveAndReturnShopAnswer);
+        when(shopRepository.save(any(Shop.class))).then(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            return invocation.getArgument(0);
+        });
 
-        final ShopForm form = new ShopForm("updated-test-shop");
+        ShopForm form = new ShopForm("updated-test-shop");
 
-        final Shop shop = shopService.updateShop(existingShop.getId(), form);
+        Shop shop = shopService.updateShop(existingShop.getId(), form);
 
-        // Check that Service returns what was saved
-        final Shop savedShop = saveAndReturnShopAnswer.getShop();
+        ArgumentCaptor<Shop> captor = ArgumentCaptor.forClass(Shop.class);
+        verify(shopRepository).save(captor.capture());
+        Shop savedShop = captor.getValue();
+
         assertEquals(savedShop, shop);
-
-        // Check response content
         assertEquals(form.getName(), shop.getName());
     }
 
-    @Test(expected = ShopNotFoundException.class)
-    public void testUpdateNotExistingShop() {
+    @Test
+    public void updateShop_whenShopDoesNotExists_throwsException() {
+        assertThrows(ShopNotFoundException.class, () -> {
+            when(shopRepository.findById(any())).thenReturn(Optional.empty());
 
-        when(shopRepository.findById(any())).thenReturn(Optional.empty());
+            ShopForm form = new ShopForm("updated-test-shop");
 
-        final ShopForm form = new ShopForm("updated-test-shop");
-
-        shopService.updateShop(999L, form);
+            shopService.updateShop(999L, form);
+        });
     }
 
     @Test
-    public void testDeleteShop() {
-
+    public void deleteShop_deletesShop() {
         Shop existingShop = new Shop(1L, TEST_SHOP_NAME);
         when(shopRepository.findById(existingShop.getId())).thenReturn(Optional.of(existingShop));
 
@@ -217,11 +189,12 @@ public class ShopServiceTest {
         verify(shopRepository).delete(eq(existingShop));
     }
 
-    @Test(expected = ShopNotFoundException.class)
-    public void testDeleteNotExistingShop() {
+    @Test
+    public void deleteShop_whenShopDoesNotExist_throwsException() {
+        assertThrows(ShopNotFoundException.class, () -> {
+            when(shopRepository.findById(any())).thenReturn(Optional.empty());
 
-        when(shopRepository.findById(any())).thenReturn(Optional.empty());
-
-        shopService.deleteShop(999L);
+            shopService.deleteShop(999L);
+        });
     }
 }
