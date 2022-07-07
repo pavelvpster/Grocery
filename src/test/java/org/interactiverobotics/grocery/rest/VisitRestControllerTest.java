@@ -1,7 +1,7 @@
 /*
  * VisitRestControllerTest.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,9 +26,9 @@ import org.interactiverobotics.grocery.domain.Visit;
 import org.interactiverobotics.grocery.exception.ShopNotFoundException;
 import org.interactiverobotics.grocery.exception.VisitNotFoundException;
 import org.interactiverobotics.grocery.service.VisitService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,34 +38,28 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Visit REST controller test.
  * Tests Controller with mocked Service.
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebMvcTest(VisitRestController.class)
 @ImportAutoConfiguration(JsonConfiguration.class)
 public class VisitRestControllerTest {
@@ -83,21 +77,20 @@ public class VisitRestControllerTest {
     private Shop shop;
 
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() {
         shop = new Shop(1L, "test-shop");
     }
 
 
     @Test
-    public void testGetVisits() throws Exception {
-
-        final List<Visit> existingVisits = Arrays.asList(new Visit(1L, shop), new Visit(2L, shop));
+    public void getVisits_returnsVisits() throws Exception {
+        List<Visit> existingVisits = List.of(new Visit(1L, shop), new Visit(2L, shop));
         when(visitService.getVisits()).thenReturn(existingVisits);
 
-        mvc.perform(get(VISIT_ENDPOINT).accept(MediaType.APPLICATION_JSON_UTF8))
+        mvc.perform(get(VISIT_ENDPOINT).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].id", is(existingVisits.get(0).getId().intValue())))
                 .andExpect(jsonPath("$[0].shop.id", is(existingVisits.get(0).getShop().getId().intValue())))
@@ -106,67 +99,66 @@ public class VisitRestControllerTest {
     }
 
     @Test
-    public void testGetVisitsPage() throws Exception {
-
-        final List<Visit> existingVisits = new ArrayList<>();
+    public void getVisitsPage_returnsPageOfVisits() throws Exception {
+        List<Visit> existingVisits = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
             existingVisits.add(new Visit(i, shop));
         }
 
         when(visitService.getVisits(any(Pageable.class))).thenAnswer(invocation -> {
             assertEquals(1, invocation.getArguments().length);
-            final Pageable pageable = invocation.getArgument(0);
+            Pageable pageable = invocation.getArgument(0);
             return new PageImpl<>(existingVisits, pageable, existingVisits.size());
         });
 
-        mvc.perform(get(VISIT_ENDPOINT + "list?page=1&size=10").accept(MediaType.APPLICATION_JSON_UTF8))
+        mvc.perform(get(VISIT_ENDPOINT + "list?page=1&size=10").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.totalElements", is(existingVisits.size())))
                 .andExpect(jsonPath("$.totalPages", is(10)))
                 .andExpect(jsonPath("$.size", is(10)));
     }
 
     @Test
-    public void testGetVisitById() throws Exception {
-
-        final Visit existingVisit = new Visit(1L, shop);
+    public void getVisitById_returnsVisit() throws Exception {
+        Visit existingVisit = new Visit(1L, shop);
         when(visitService.getVisitById(existingVisit.getId())).thenReturn(existingVisit);
 
-        mvc.perform(get(VISIT_ENDPOINT + existingVisit.getId()).accept(MediaType.APPLICATION_JSON_UTF8))
+        mvc.perform(get(VISIT_ENDPOINT + existingVisit.getId()).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(existingVisit.getId().intValue())))
                 .andExpect(jsonPath(SHOP_ID_SELECTOR, is(existingVisit.getShop().getId().intValue())));
     }
 
-    @Test(expected = Exception.class)
-    public void testGetNotExistingVisitById() throws Exception {
+    @Test
+    public void getVisitById_whenVisitDoesNotExist_throwsException() {
+        assertThrows(Exception.class, () -> {
+            when(visitService.getVisitById(any())).thenThrow(new VisitNotFoundException(-1L));
 
-        when(visitService.getVisitById(any())).thenThrow(new VisitNotFoundException(-1L));
-
-        mvc.perform(get(VISIT_ENDPOINT + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
+            mvc.perform(get(VISIT_ENDPOINT + Long.valueOf(999L)).accept(MediaType.APPLICATION_JSON));
+        });
     }
 
     @Test
-    public void testGetVisitsByShopId() throws Exception {
-
-        final Visit existingVisit = new Visit(1L, shop);
+    public void getVisitsByShopId_returnsVisit() throws Exception {
+        Visit existingVisit = new Visit(1L, shop);
         when(visitService.getVisitsByShopId(shop.getId())).thenReturn(Collections.singletonList(existingVisit));
 
-        mvc.perform(get(VISIT_SHOP_ENDPOINT + shop.getId()).accept(MediaType.APPLICATION_JSON_UTF8))
+        mvc.perform(get(VISIT_SHOP_ENDPOINT + shop.getId()).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].shop.id", is(existingVisit.getShop().getId().intValue())));
     }
 
-    @Test(expected = Exception.class)
-    public void testGetVisitsByNotExistingShopId() throws Exception {
+    @Test
+    public void getVisitsByShopId_whenShopDoesNotExist_throwsException() {
+        assertThrows(Exception.class, () -> {
+            when(visitService.getVisitsByShopId(any())).thenThrow(new ShopNotFoundException(-1L));
 
-        when(visitService.getVisitsByShopId(any())).thenThrow(new ShopNotFoundException(-1L));
-
-        mvc.perform(get(VISIT_SHOP_ENDPOINT + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
+            mvc.perform(get(VISIT_SHOP_ENDPOINT + Long.valueOf(999L)).accept(MediaType.APPLICATION_JSON));
+        });
     }
 
 
@@ -185,11 +177,10 @@ public class VisitRestControllerTest {
         }
 
         @Override
-        public Visit answer(InvocationOnMock invocation) throws Throwable {
-
+        public Visit answer(InvocationOnMock invocation) {
             assertEquals(1, invocation.getArguments().length);
 
-            final Long shopId = invocation.getArgument(0);
+            Long shopId = invocation.getArgument(0);
             assertEquals(shop.getId(), shopId);
 
             visit = new Visit(1L, shop);
@@ -199,87 +190,93 @@ public class VisitRestControllerTest {
 
 
     @Test
-    public void testCreateVisit() throws Exception {
-
-        final CreateVisitAnswer createVisitAnswer = new CreateVisitAnswer(shop);
+    public void createVisit_createsAndReturnsVisit() throws Exception {
+        CreateVisitAnswer createVisitAnswer = new CreateVisitAnswer(shop);
         when(visitService.createVisit(any(Long.class))).thenAnswer(createVisitAnswer);
 
         mvc.perform(post(VISIT_SHOP_ENDPOINT + shop.getId())
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
                         .andExpect(status().isOk())
-                        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                         .andExpect(jsonPath(SHOP_ID_SELECTOR,
                                 is(createVisitAnswer.getVisit().getShop().getId().intValue())));
-    }
 
-    @Test(expected = Exception.class)
-    public void testCreateVisitForNotExistingShopId() throws Exception {
-
-        when(visitService.createVisit(any(Long.class))).thenThrow(new ShopNotFoundException(-1L));
-
-        mvc.perform(post(VISIT_SHOP_ENDPOINT + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
+        verify(visitService).createVisit(anyLong());
     }
 
     @Test
-    public void testStartVisit() throws Exception {
+    public void createVisit_whenShopDoesNotExist_throwsException() {
+        assertThrows(Exception.class, () -> {
+            when(visitService.createVisit(any(Long.class))).thenThrow(new ShopNotFoundException(-1L));
 
-        final Visit existingVisit = new Visit(1L, shop);
+            mvc.perform(post(VISIT_SHOP_ENDPOINT + Long.valueOf(999L)).accept(MediaType.APPLICATION_JSON));
+        });
+    }
+
+    @Test
+    public void startVisit_startsAndReturnsVisit() throws Exception {
+        Visit existingVisit = new Visit(1L, shop);
         when(visitService.startVisit(existingVisit.getId())).thenReturn(existingVisit);
 
         mvc.perform(post(VISIT_ENDPOINT + existingVisit.getId() + "/start")
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
                         .andExpect(status().isOk())
-                        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                         .andExpect(jsonPath(SHOP_ID_SELECTOR, is(existingVisit.getShop().getId().intValue())));
-    }
 
-    @Test(expected = Exception.class)
-    public void testStartNotExistingVisit() throws Exception {
-
-        when(visitService.startVisit(any(Long.class))).thenThrow(new VisitNotFoundException(-1L));
-
-        mvc.perform(post(VISIT_ENDPOINT + new Long(999L) + "/start").accept(MediaType.APPLICATION_JSON_UTF8));
+        verify(visitService).startVisit(eq(existingVisit.getId()));
     }
 
     @Test
-    public void testCompleteVisit() throws Exception {
+    public void startVisit_whenVisitDoesNotExist_throwsException() {
+        assertThrows(Exception.class, () -> {
+            when(visitService.startVisit(any(Long.class))).thenThrow(new VisitNotFoundException(-1L));
 
-        final Visit existingVisit = new Visit(1L, shop);
+            mvc.perform(post(VISIT_ENDPOINT + Long.valueOf(999L) + "/start").accept(MediaType.APPLICATION_JSON));
+        });
+    }
+
+    @Test
+    public void completeVisit_completesAndReturnsVisit() throws Exception {
+        Visit existingVisit = new Visit(1L, shop);
         when(visitService.completeVisit(existingVisit.getId())).thenReturn(existingVisit);
 
         mvc.perform(post(VISIT_ENDPOINT + existingVisit.getId() + "/complete")
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath(SHOP_ID_SELECTOR, is(existingVisit.getShop().getId().intValue())));
-    }
 
-    @Test(expected = Exception.class)
-    public void testCompleteNotExistingVisit() throws Exception {
-
-        when(visitService.completeVisit(any(Long.class))).thenThrow(new VisitNotFoundException(-1L));
-
-        mvc.perform(post(VISIT_ENDPOINT + new Long(999L) + "/complete").accept(MediaType.APPLICATION_JSON_UTF8));
+        verify(visitService).completeVisit(eq(existingVisit.getId()));
     }
 
     @Test
-    public void testDeleteVisit() throws Exception {
+    public void completeVisit_whenVisitDoesNotExist_throwsException() {
+        assertThrows(Exception.class, () -> {
+            when(visitService.completeVisit(any(Long.class))).thenThrow(new VisitNotFoundException(-1L));
 
-        final Long id = 1L;
+            mvc.perform(post(VISIT_ENDPOINT + Long.valueOf(999L) + "/complete").accept(MediaType.APPLICATION_JSON));
+        });
+    }
 
-        mvc.perform(delete(VISIT_ENDPOINT + id).accept(MediaType.APPLICATION_JSON_UTF8));
+    @Test
+    public void deleteVisit_deletesVisit() throws Exception {
+        Long id = 1L;
+
+        mvc.perform(delete(VISIT_ENDPOINT + id).accept(MediaType.APPLICATION_JSON));
 
         verify(visitService).deleteVisit(eq(id));
     }
 
-    @Test(expected = Exception.class)
-    public void testDeleteNotExistingVisit() throws Exception {
+    @Test
+    public void deleteVisit_whenVisitDoesNotExist_throwsException() {
+        assertThrows(Exception.class, () -> {
+            doThrow(new VisitNotFoundException(-1L)).when(visitService).deleteVisit(any());
 
-        doThrow(new VisitNotFoundException(-1L)).when(visitService).deleteVisit(any());
-
-        mvc.perform(delete(VISIT_ENDPOINT + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
+            mvc.perform(delete(VISIT_ENDPOINT + Long.valueOf(999L)).accept(MediaType.APPLICATION_JSON));
+        });
     }
 }

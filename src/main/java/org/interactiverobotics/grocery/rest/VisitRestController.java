@@ -1,7 +1,7 @@
 /*
  * VisitRestController.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ import java.util.List;
 /**
  * Visit REST controller.
  */
-@Api(value = "Visit", description = "Visit management endpoint")
+@Api(value = "Visit")
 @RestController
 @RequestMapping(value = "/api/v1/visit")
 public class VisitRestController {
@@ -51,55 +51,55 @@ public class VisitRestController {
         this.visitService = visitService;
     }
 
-    @ApiOperation(value = "Get all Visit(s)", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = {"", "/"}, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Get all Visit(s)", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = {"", "/"}, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Visit> getVisits() {
         return this.visitService.getVisits();
     }
 
-    @ApiOperation(value = "Get page of Visits", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Get page of Visits", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<Visit> getVisitsPage(@RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
                                      @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
         return this.visitService.getVisits(PageRequest.of(pageNumber - 1, pageSize));
     }
 
-    @ApiOperation(value = "Get Visit by Id", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Get Visit by Id", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public Visit getVisitById(@PathVariable Long id) {
         return this.visitService.getVisitById(id);
     }
 
-    @ApiOperation(value = "Get Visit(s) by Shop Id", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Get Visit(s) by Shop Id", produces = MediaType.APPLICATION_JSON_VALUE)
     @RequestMapping(value = "/shop/{shopId}", method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Visit> getVisitsByShopId(@PathVariable Long shopId) {
         return this.visitService.getVisitsByShopId(shopId);
     }
 
-    @ApiOperation(value = "Create Visit", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Create Visit", produces = MediaType.APPLICATION_JSON_VALUE)
     @RequestMapping(value = "/shop/{shopId}", method = RequestMethod.POST,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public Visit createVisit(@PathVariable Long shopId) {
         return this.visitService.createVisit(shopId);
     }
 
-    @ApiOperation(value = "Start Visit", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Start Visit", produces = MediaType.APPLICATION_JSON_VALUE)
     @RequestMapping(value = "/{id}/start", method = RequestMethod.POST,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public Visit startVisit(@PathVariable Long id) {
         return this.visitService.startVisit(id);
     }
 
-    @ApiOperation(value = "Complete Visit", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Complete Visit", produces = MediaType.APPLICATION_JSON_VALUE)
     @RequestMapping(value = "/{id}/complete", method = RequestMethod.POST,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public Visit completeVisit(@PathVariable Long id) {
         return this.visitService.completeVisit(id);
     }
 
-    @ApiOperation(value = "Delete Visit", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Delete Visit", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteVisit(@PathVariable Long id) {
         this.visitService.deleteVisit(id);
     }
