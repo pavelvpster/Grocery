@@ -1,7 +1,7 @@
 /*
  * PurchaseRestControllerIntegrationTest.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,10 +28,10 @@ import org.interactiverobotics.grocery.repository.ItemRepository;
 import org.interactiverobotics.grocery.repository.PurchaseRepository;
 import org.interactiverobotics.grocery.repository.ShopRepository;
 import org.interactiverobotics.grocery.repository.VisitRepository;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -39,23 +39,20 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Purchase REST controller integration test.
  * Performs queries to running instance of the application.
  * Requires database access.
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class PurchaseRestControllerIntegrationTest {
 
@@ -90,42 +87,34 @@ public class PurchaseRestControllerIntegrationTest {
     /**
      * Initializes test.
      */
-    @Before
-    public void setUp() throws Exception {
-
+    @BeforeEach
+    public void setUp() {
         purchaseRepository.deleteAll();
-
         shop = shopRepository.save(new Shop("test-shop"));
-
         visit = visitRepository.save(new Visit(shop));
-
         item = itemRepository.save(new Item("test-item"));
     }
 
     /**
      * Finalises test.
      */
-    @After
-    public void tearDown() throws Exception {
-
+    @AfterEach
+    public void tearDown() {
         itemRepository.delete(item);
-
         visitRepository.delete(visit);
-
         shopRepository.delete(shop);
     }
 
 
     @Test
-    public void testGetNotPurchasedItems() {
-
-        final List<Item> existingItems = new ArrayList<>();
-        itemRepository.saveAll(Arrays.asList(new Item("test-item-1"), new Item("test-item-2")))
+    public void getNotPurchasedItems_returnsItems() {
+        List<Item> existingItems = new ArrayList<>();
+        itemRepository.saveAll(List.of(new Item("test-item-1"), new Item("test-item-2")))
                 .forEach(item -> existingItems.add(item));
 
-        final Purchase purchase = purchaseRepository.save(new Purchase(visit, existingItems.get(0), 1L, null));
+        Purchase purchase = purchaseRepository.save(new Purchase(visit, existingItems.get(0), 1L, null));
 
-        final ResponseEntity<Item[]> response = restTemplate.getForEntity(PURCHASE_ENDPOINT + visit.getId()
+        ResponseEntity<Item[]> response = restTemplate.getForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + "/not_purchased_items", Item[].class);
 
         purchaseRepository.delete(purchase);
@@ -134,20 +123,19 @@ public class PurchaseRestControllerIntegrationTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
-        assertTrue(Arrays.asList(response.getBody()).contains(existingItems.get(1)));
+        assertTrue(List.of(response.getBody()).contains(existingItems.get(1)));
     }
 
     @Test
-    public void testGetPurchasesPage() {
-
-        final List<Purchase> existingPurchases = new ArrayList<>();
+    public void getPurchasesPage_returnsPageOfPurchases() {
+        List<Purchase> existingPurchases = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
             existingPurchases.add(purchaseRepository.save(new Purchase(visit, item, 1L, null)));
         }
 
-        final ParameterizedTypeReference<PageResponse<Purchase>> responseType =
-                new ParameterizedTypeReference<PageResponse<Purchase>>() {};
-        final ResponseEntity<PageResponse<Purchase>> response = restTemplate.exchange(PURCHASE_ENDPOINT
+        ParameterizedTypeReference<PageResponse<Purchase>> responseType =
+                new ParameterizedTypeReference<>() {};
+        ResponseEntity<PageResponse<Purchase>> response = restTemplate.exchange(PURCHASE_ENDPOINT
                         + visit.getId() + "/list?page=1&size=10", HttpMethod.GET, null, responseType);
 
         purchaseRepository.deleteAll(existingPurchases);
@@ -160,9 +148,8 @@ public class PurchaseRestControllerIntegrationTest {
     }
 
     @Test
-    public void testBuyItem() {
-
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
+    public void buyItem_createsAndReturnsPurchase() {
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + BUY_ACTION + item.getId() + QUANTITY_1, null, Purchase.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -176,11 +163,10 @@ public class PurchaseRestControllerIntegrationTest {
     }
 
     @Test
-    public void testBuyItemForExistingPurchase() {
+    public void buyItem_whenPurchaseExists_updatesAndReturnsPurchase() {
+        Purchase existingPurchase = purchaseRepository.save(new Purchase(visit, item, 1L, null));
 
-        final Purchase existingPurchase = purchaseRepository.save(new Purchase(visit, item, 1L, null));
-
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + BUY_ACTION + item.getId() + QUANTITY_1, null, Purchase.class);
 
         purchaseRepository.delete(existingPurchase);
@@ -193,45 +179,40 @@ public class PurchaseRestControllerIntegrationTest {
     }
 
     @Test
-    public void testBuyItemForWrongVisitId() {
-
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + new Long(999L)
+    public void buyItem_whenVisitDoesNotExist_returnsError() {
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + Long.valueOf(999L)
                 + BUY_ACTION + item.getId() + QUANTITY_1, null, Purchase.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
-    public void testBuyItemForWrongItemId() {
-
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
-                + BUY_ACTION + new Long(999L) + QUANTITY_1, null, Purchase.class);
+    public void buyItem_whenItemDoesNotExist_returnsError() {
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
+                + BUY_ACTION + Long.valueOf(999L) + QUANTITY_1, null, Purchase.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
-    public void testBuyItemForWrongQuantity() {
-
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
+    public void buyItem_whenQuantityLessOrEqualToZero_returnsError() {
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + BUY_ACTION + item.getId() + "?quantity=0", null, Purchase.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
-    public void testBuyItemForWrongPrice() {
-
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
+    public void buyItem_whenPriceLessOrEqualToZero_returnsError() {
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + BUY_ACTION + item.getId() + "?quantity=1&price=0", null, Purchase.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
-    public void testBuyItemSetPriceForNewPurchase() {
-
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
+    public void buyItem_whenPurchaseDoesNotExist_setPriceAndReturnsPurchase() {
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + BUY_ACTION + item.getId() + "?quantity=1&price=10", null, Purchase.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -243,11 +224,10 @@ public class PurchaseRestControllerIntegrationTest {
     }
 
     @Test
-    public void testBuyItemSetPriceForExistingPurchase() {
+    public void buyItem_whenPurchaseExists_updatesPriceAndReturnsPurchase() {
+        Purchase existingPurchase = purchaseRepository.save(new Purchase(visit, item, 1L, null));
 
-        final Purchase existingPurchase = purchaseRepository.save(new Purchase(visit, item, 1L, null));
-
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + BUY_ACTION + item.getId() + "?quantity=1&price=10", null, Purchase.class);
 
         purchaseRepository.delete(existingPurchase);
@@ -258,12 +238,11 @@ public class PurchaseRestControllerIntegrationTest {
     }
 
     @Test
-    public void testBuyItemUpdatePrice() {
-
-        final Purchase existingPurchase = purchaseRepository
+    public void buyItem_whenPurchaseExistsAndPriceSet_updatesPrice() {
+        Purchase existingPurchase = purchaseRepository
                 .save(new Purchase(visit, item, 1L, BigDecimal.valueOf(10L)));
 
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + BUY_ACTION + item.getId() + "?quantity=1&price=20", null, Purchase.class);
 
         purchaseRepository.delete(existingPurchase);
@@ -274,11 +253,10 @@ public class PurchaseRestControllerIntegrationTest {
     }
 
     @Test
-    public void testReturnItem() {
+    public void returnItem_updatesAndReturnsPurchase() {
+        Purchase existingPurchase = purchaseRepository.save(new Purchase(visit, item, 2L, null));
 
-        final Purchase existingPurchase = purchaseRepository.save(new Purchase(visit, item, 2L, null));
-
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + RETURN_ACTION + item.getId() + QUANTITY_1, null, Purchase.class);
 
         purchaseRepository.delete(existingPurchase);
@@ -291,47 +269,42 @@ public class PurchaseRestControllerIntegrationTest {
     }
 
     @Test
-    public void testReturnItemForWrongVisitId() {
-
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + new Long(999L)
+    public void returnItem_whenVisitDoesNotExist_returnsError() {
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + Long.valueOf(999L)
                 + RETURN_ACTION + item.getId() + QUANTITY_1, null, Purchase.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
-    public void testReturnItemForWrongItemId() {
-
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
-                + RETURN_ACTION + new Long(999L) + QUANTITY_1, null, Purchase.class);
+    public void returnItem_whenItemDoesNotExist_returnsError() {
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
+                + RETURN_ACTION + Long.valueOf(999L) + QUANTITY_1, null, Purchase.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
-    public void testReturnItemForNotExistingPurchase() {
-
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
+    public void returnItem_whenPurchaseDoesNotExist_returnsError() {
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + RETURN_ACTION + item.getId() + QUANTITY_1, null, Purchase.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
-    public void testReturnItemForWrongQuantity1() {
-
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
+    public void returnItem_whenQuantityLessOrEqualToZero_returnsError() {
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + RETURN_ACTION + item.getId() + "?quantity=0", null, Purchase.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
-    public void testReturnItemForWrongQuantity2() {
+    public void returnItem_whenQuantityIsGreaterThanQuantityOfPurchase_returnsError() {
+        Purchase existingPurchase = purchaseRepository.save(new Purchase(visit, item, 1L, null));
 
-        final Purchase existingPurchase = purchaseRepository.save(new Purchase(visit, item, 1L, null));
-
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + RETURN_ACTION + item.getId() + "?quantity=999", null, Purchase.class);
 
         purchaseRepository.delete(existingPurchase);
@@ -340,11 +313,10 @@ public class PurchaseRestControllerIntegrationTest {
     }
 
     @Test
-    public void testReturnItemAndDeletePurchase() {
+    public void returnItem_whenNewQuantityIsZero_deletesPurchase() {
+        Purchase existingPurchase = purchaseRepository.save(new Purchase(visit, item, 1L, null));
 
-        final Purchase existingPurchase = purchaseRepository.save(new Purchase(visit, item, 1L, null));
-
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + RETURN_ACTION + item.getId() + QUANTITY_1, null, Purchase.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -353,11 +325,10 @@ public class PurchaseRestControllerIntegrationTest {
     }
 
     @Test
-    public void testUpdatePrice() {
+    public void updatePrice_updatesAndReturnsPurchase() {
+        Purchase existingPurchase = purchaseRepository.save(new Purchase(visit, item, 1L, null));
 
-        final Purchase existingPurchase = purchaseRepository.save(new Purchase(visit, item, 1L, null));
-
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + PRICE_ACTION + item.getId() + "?price=10", null, Purchase.class);
 
         purchaseRepository.delete(existingPurchase);
@@ -368,27 +339,24 @@ public class PurchaseRestControllerIntegrationTest {
     }
 
     @Test
-    public void testUpdatePriceForWrongVisitId() {
-
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + new Long(999L)
+    public void updatePrice_whenVisitDoesNotExist_returnsError() {
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + Long.valueOf(999L)
                 + PRICE_ACTION + item.getId() + "?price=10", null, Purchase.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
-    public void testUpdatePriceForWrongItemId() {
-
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
-                + PRICE_ACTION + new Long(999L) + "?price=10", null, Purchase.class);
+    public void updatePrice_whenItemDoesNotExist_returnsError() {
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
+                + PRICE_ACTION + Long.valueOf(999L) + "?price=10", null, Purchase.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
-    public void testUpdatePriceForWrongPrice() {
-
-        final ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
+    public void updatePrice_whenPriceLessOrEqualToZero_returnsError() {
+        ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + PRICE_ACTION + item.getId() + "?price=0", null, Purchase.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());

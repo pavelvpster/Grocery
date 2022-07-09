@@ -1,7 +1,7 @@
 /*
  * ShopRestController.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ import java.util.List;
 /**
  * Shop REST controller.
  */
-@Api(value = "Shop", description = "Shop management endpoint")
+@Api(value = "Shop")
 @RestController
 @RequestMapping(value = "/api/v1/shop")
 public class ShopRestController {
@@ -53,45 +53,45 @@ public class ShopRestController {
         this.shopService = shopService;
     }
 
-    @ApiOperation(value = "Get all Shop(s)", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = {"", "/"}, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Get all Shop(s)", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = {"", "/"}, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Shop> getShops() {
         return this.shopService.getShops();
     }
 
-    @ApiOperation(value = "Get page of Shops", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Get page of Shops", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<Shop> getShopsPage(@RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
                                    @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
         return this.shopService.getShops(PageRequest.of(pageNumber - 1, pageSize));
     }
 
-    @ApiOperation(value = "Get Shop by Id", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Get Shop by Id", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public Shop getShopById(@PathVariable Long id) {
         return this.shopService.getShopById(id);
     }
 
-    @ApiOperation(value = "Get Shop by Name", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/search", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Get Shop by Name", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/search", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public Shop getShopByName(@RequestParam(value = "name") String name) {
         return this.shopService.getShopByName(name);
     }
 
-    @ApiOperation(value = "Create Shop", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Create Shop", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public Shop createShop(@RequestBody ShopForm form) {
         return this.shopService.createShop(form);
     }
 
-    @ApiOperation(value = "Update Shop", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Update Shop", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public Shop updateShop(@PathVariable Long id, @RequestBody ShopForm form) {
         return this.shopService.updateShop(id, form);
     }
 
-    @ApiOperation(value = "Delete Shop", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Delete Shop", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteShop(@PathVariable Long id) {
         this.shopService.deleteShop(id);
     }

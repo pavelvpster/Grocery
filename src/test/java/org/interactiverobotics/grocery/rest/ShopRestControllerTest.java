@@ -1,7 +1,7 @@
 /*
  * ShopRestControllerTest.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,8 @@ import org.interactiverobotics.grocery.domain.Shop;
 import org.interactiverobotics.grocery.exception.ShopNotFoundException;
 import org.interactiverobotics.grocery.form.ShopForm;
 import org.interactiverobotics.grocery.service.ShopService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,33 +34,27 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Shop REST controller test.
  * Tests Controller with mocked Service.
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebMvcTest(ShopRestController.class)
 public class ShopRestControllerTest {
 
@@ -76,14 +70,13 @@ public class ShopRestControllerTest {
 
 
     @Test
-    public void testGetShops() throws Exception {
-
-        final List<Shop> existingShops = Arrays.asList(new Shop(1L, "test-shop-1"), new Shop(2L, "test-shop-2"));
+    public void getShops_returnsShops() throws Exception {
+        List<Shop> existingShops = List.of(new Shop(1L, "test-shop-1"), new Shop(2L, "test-shop-2"));
         when(shopService.getShops()).thenReturn(existingShops);
 
-        mvc.perform(get(SHOP_ENDPOINT).accept(MediaType.APPLICATION_JSON_UTF8))
+        mvc.perform(get(SHOP_ENDPOINT).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].id", is(existingShops.get(0).getId().intValue())))
                 .andExpect(jsonPath("$[0].name", is(existingShops.get(0).getName())))
@@ -92,68 +85,67 @@ public class ShopRestControllerTest {
     }
 
     @Test
-    public void testGetShopsPage() throws Exception {
-
-        final List<Shop> existingShops = new ArrayList<>();
+    public void getShopsPage_returnsPageOfShops() throws Exception {
+        List<Shop> existingShops = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
             existingShops.add(new Shop(i, "test-shop-" + i));
         }
 
         when(shopService.getShops(any(Pageable.class))).thenAnswer(invocation -> {
             assertEquals(1, invocation.getArguments().length);
-            final Pageable pageable = invocation.getArgument(0);
+            Pageable pageable = invocation.getArgument(0);
             return new PageImpl<>(existingShops, pageable, existingShops.size());
         });
 
-        mvc.perform(get(SHOP_ENDPOINT + "list?page=1&size=10").accept(MediaType.APPLICATION_JSON_UTF8))
+        mvc.perform(get(SHOP_ENDPOINT + "list?page=1&size=10").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.totalElements", is(existingShops.size())))
                 .andExpect(jsonPath("$.totalPages", is(10)))
                 .andExpect(jsonPath("$.size", is(10)));
     }
 
     @Test
-    public void testGetShopById() throws Exception {
-
-        final Shop existingShop = new Shop(1L, "test-shop");
+    public void getShopById_returnsShop() throws Exception {
+        Shop existingShop = new Shop(1L, "test-shop");
         when(shopService.getShopById(existingShop.getId())).thenReturn(existingShop);
 
-        mvc.perform(get(SHOP_ENDPOINT + existingShop.getId()).accept(MediaType.APPLICATION_JSON_UTF8))
+        mvc.perform(get(SHOP_ENDPOINT + existingShop.getId()).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath(ID_SELECTOR, is(existingShop.getId().intValue())))
                 .andExpect(jsonPath(NAME_SELECTOR, is(existingShop.getName())));
-    }
-
-    @Test(expected = Exception.class)
-    public void testGetNotExistingShopById() throws Exception {
-
-        when(shopService.getShopById(any())).thenThrow(new ShopNotFoundException(-1L));
-
-        mvc.perform(get(SHOP_ENDPOINT + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
     }
 
     @Test
-    public void testGetShopByName() throws Exception {
+    public void getShopById_whenShopDoesNotExist_throwsException() {
+        assertThrows(Exception.class, () -> {
+            when(shopService.getShopById(any())).thenThrow(new ShopNotFoundException(-1L));
 
-        final Shop existingShop = new Shop(1L, "test-shop");
+            mvc.perform(get(SHOP_ENDPOINT + Long.valueOf(999L)).accept(MediaType.APPLICATION_JSON));
+        });
+    }
+
+    @Test
+    public void getShopByName_returnsShop() throws Exception {
+        Shop existingShop = new Shop(1L, "test-shop");
         when(shopService.getShopByName(existingShop.getName())).thenReturn(existingShop);
 
         mvc.perform(get(SHOP_ENDPOINT + "search?name=" + existingShop.getName())
-                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath(ID_SELECTOR, is(existingShop.getId().intValue())))
                 .andExpect(jsonPath(NAME_SELECTOR, is(existingShop.getName())));
     }
 
-    @Test(expected = Exception.class)
-    public void testGetNotExistingShopByName() throws Exception {
+    @Test
+    public void getShopByName_whenShopDoesNotExist_throwsException() {
+        assertThrows(Exception.class, () -> {
+            when(shopService.getShopByName(any())).thenThrow(new ShopNotFoundException(-1L));
 
-        when(shopService.getShopByName(any())).thenThrow(new ShopNotFoundException(-1L));
-
-        mvc.perform(get(SHOP_ENDPOINT + "search?name=test").accept(MediaType.APPLICATION_JSON_UTF8));
+            mvc.perform(get(SHOP_ENDPOINT + "search?name=test").accept(MediaType.APPLICATION_JSON));
+        });
     }
 
 
@@ -166,9 +158,9 @@ public class ShopRestControllerTest {
         }
 
         @Override
-        public Shop answer(InvocationOnMock invocation) throws Throwable {
+        public Shop answer(InvocationOnMock invocation) {
             assertEquals(1, invocation.getArguments().length);
-            final ShopForm form = invocation.getArgument(0);
+            ShopForm form = invocation.getArgument(0);
             shop = new Shop(1L, form.getName());
             return shop;
         }
@@ -176,19 +168,20 @@ public class ShopRestControllerTest {
 
 
     @Test
-    public void testCreateShop() throws Exception {
-
-        final CreateShopAnswer createShopAnswer = new CreateShopAnswer();
+    public void createShop_createsAndReturnsShop() throws Exception {
+        CreateShopAnswer createShopAnswer = new CreateShopAnswer();
         when(shopService.createShop(any(ShopForm.class))).then(createShopAnswer);
 
         mvc.perform(post(SHOP_ENDPOINT)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"test-shop\"}")
-                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath(ID_SELECTOR, is(createShopAnswer.getShop().getId().intValue())))
                 .andExpect(jsonPath(NAME_SELECTOR, is(createShopAnswer.getShop().getName())));
+
+        verify(shopService).createShop(any(ShopForm.class));
     }
 
 
@@ -205,14 +198,13 @@ public class ShopRestControllerTest {
         }
 
         @Override
-        public Shop answer(InvocationOnMock invocation) throws Throwable {
-
+        public Shop answer(InvocationOnMock invocation) {
             assertEquals(2, invocation.getArguments().length);
 
-            final Long id = invocation.getArgument(0);
+            Long id = invocation.getArgument(0);
             assertEquals(shop.getId(), id);
 
-            final ShopForm form = invocation.getArgument(1);
+            ShopForm form = invocation.getArgument(1);
             shop.setName(form.getName());
 
             return shop;
@@ -221,48 +213,50 @@ public class ShopRestControllerTest {
 
 
     @Test
-    public void testUpdateShop() throws Exception {
-
-        final Shop existingShop = new Shop(1L, "test-shop");
-        final UpdateShopAnswer updateShopAnswer = new UpdateShopAnswer(existingShop);
+    public void updateShop_updatesAndReturnsShop() throws Exception {
+        Shop existingShop = new Shop(1L, "test-shop");
+        UpdateShopAnswer updateShopAnswer = new UpdateShopAnswer(existingShop);
         when(shopService.updateShop(eq(existingShop.getId()), any(ShopForm.class))).then(updateShopAnswer);
 
         mvc.perform(post(SHOP_ENDPOINT + existingShop.getId())
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"updated-test-shop\"}")
-                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath(ID_SELECTOR, is(updateShopAnswer.getShop().getId().intValue())))
                 .andExpect(jsonPath(NAME_SELECTOR, is(updateShopAnswer.getShop().getName())));
-    }
 
-    @Test(expected = Exception.class)
-    public void testUpdateNotExistingShop() throws Exception {
-
-        when(shopService.updateShop(any(), any())).thenThrow(new ShopNotFoundException(-1L));
-
-        mvc.perform(post(SHOP_ENDPOINT + new Long(999L))
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content("{\"name\":\"updated-test-shop\"}")
-                .accept(MediaType.APPLICATION_JSON_UTF8));
+        verify(shopService).updateShop(eq(existingShop.getId()), any(ShopForm.class));
     }
 
     @Test
-    public void testDeleteShop() throws Exception {
+    public void updateShop_whenShopDoesNotExist_throwsException() {
+        assertThrows(Exception.class, () -> {
+            when(shopService.updateShop(any(), any())).thenThrow(new ShopNotFoundException(-1L));
 
-        final Long id = 1L;
+            mvc.perform(post(SHOP_ENDPOINT + Long.valueOf(999L))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"name\":\"updated-test-shop\"}")
+                    .accept(MediaType.APPLICATION_JSON));
+        });
+    }
 
-        mvc.perform(delete(SHOP_ENDPOINT + id).accept(MediaType.APPLICATION_JSON_UTF8));
+    @Test
+    public void deleteShop_deletesShop() throws Exception {
+        Long id = 1L;
+
+        mvc.perform(delete(SHOP_ENDPOINT + id).accept(MediaType.APPLICATION_JSON));
 
         verify(shopService).deleteShop(eq(id));
     }
 
-    @Test(expected = Exception.class)
-    public void testDeleteNotExistingShop() throws Exception {
+    @Test
+    public void deleteShop_whenShopDoesNotExist_throwsException() {
+        assertThrows(Exception.class, () -> {
+            doThrow(new ShopNotFoundException(-1L)).when(shopService).deleteShop(any());
 
-        doThrow(new ShopNotFoundException(-1L)).when(shopService).deleteShop(any());
-
-        mvc.perform(delete(SHOP_ENDPOINT + new Long(999L)).accept(MediaType.APPLICATION_JSON_UTF8));
+            mvc.perform(delete(SHOP_ENDPOINT + Long.valueOf(999L)).accept(MediaType.APPLICATION_JSON));
+        });
     }
 }

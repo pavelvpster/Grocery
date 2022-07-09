@@ -1,7 +1,7 @@
 /*
  * ShoppingListItemRestControllerIntegrationTest.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,27 +28,25 @@ import org.interactiverobotics.grocery.form.ShoppingListItemUpdateForm;
 import org.interactiverobotics.grocery.repository.ItemRepository;
 import org.interactiverobotics.grocery.repository.ShoppingListItemRepository;
 import org.interactiverobotics.grocery.repository.ShoppingListRepository;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * ShoppingListItem REST controller integration test.
  * Performs queries to running instance of the application.
  * Requires database access.
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ShoppingListItemRestControllerIntegrationTest {
 
@@ -69,23 +67,22 @@ public class ShoppingListItemRestControllerIntegrationTest {
     private ShoppingListItemRepository shoppingListItemRepository;
 
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() {
         shoppingListItemRepository.deleteAll();
     }
 
 
     @Test
-    public void testCreateShoppingListItem() {
-
-        final ShoppingList existingShoppingList = shoppingListRepository
+    public void createShoppingListItem_createsAndReturnsShoppingListItem() {
+        ShoppingList existingShoppingList = shoppingListRepository
                 .save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
-        final Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
+        Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
 
-        final ShoppingListItemCreateForm form =
+        ShoppingListItemCreateForm form =
                 new ShoppingListItemCreateForm(existingShoppingList.getId(), existingItem.getId(), 1L);
 
-        final ResponseEntity<ShoppingListItem> response = restTemplate
+        ResponseEntity<ShoppingListItem> response = restTemplate
                 .postForEntity(SHOPPING_LIST_ITEM_ENDPOINT, form, ShoppingListItem.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -101,14 +98,13 @@ public class ShoppingListItemRestControllerIntegrationTest {
     }
 
     @Test
-    public void testCreateShoppingListItemForWrongShoppingListId() {
+    public void createShoppingListItem_whenShoppingListDoesNotExist_returnsError() {
+        Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
 
-        final Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
-
-        final ShoppingListItemCreateForm form =
+        ShoppingListItemCreateForm form =
                 new ShoppingListItemCreateForm(999L, existingItem.getId(), 1L);
 
-        final ResponseEntity<ShoppingListItem> response = restTemplate
+        ResponseEntity<ShoppingListItem> response = restTemplate
                 .postForEntity(SHOPPING_LIST_ITEM_ENDPOINT, form, ShoppingListItem.class);
 
         itemRepository.delete(existingItem);
@@ -117,15 +113,14 @@ public class ShoppingListItemRestControllerIntegrationTest {
     }
 
     @Test
-    public void testCreateShoppingListItemForWrongItemId() {
-
-        final ShoppingList existingShoppingList = shoppingListRepository
+    public void createShoppingListItem_whenItemDoesNotExist_returnsError() {
+        ShoppingList existingShoppingList = shoppingListRepository
                 .save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
 
-        final ShoppingListItemCreateForm form =
+        ShoppingListItemCreateForm form =
                 new ShoppingListItemCreateForm(existingShoppingList.getId(), 999L, 1L);
 
-        final ResponseEntity<ShoppingListItem> response = restTemplate
+        ResponseEntity<ShoppingListItem> response = restTemplate
                 .postForEntity(SHOPPING_LIST_ITEM_ENDPOINT, form, ShoppingListItem.class);
 
         shoppingListRepository.delete(existingShoppingList);
@@ -134,16 +129,15 @@ public class ShoppingListItemRestControllerIntegrationTest {
     }
 
     @Test
-    public void testCreateShoppingListItemForWrongQuantity() {
-
-        final ShoppingList existingShoppingList = shoppingListRepository
+    public void createShoppingListItem_whenQuantityLessOrEqualToZero_returnsError() {
+        ShoppingList existingShoppingList = shoppingListRepository
                 .save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
-        final Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
+        Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
 
-        final ShoppingListItemCreateForm form =
+        ShoppingListItemCreateForm form =
                 new ShoppingListItemCreateForm(existingShoppingList.getId(), existingItem.getId(), 0L);
 
-        final ResponseEntity<ShoppingListItem> response = restTemplate
+        ResponseEntity<ShoppingListItem> response = restTemplate
                 .postForEntity(SHOPPING_LIST_ITEM_ENDPOINT, form, ShoppingListItem.class);
 
         itemRepository.delete(existingItem);
@@ -153,17 +147,16 @@ public class ShoppingListItemRestControllerIntegrationTest {
     }
 
     @Test
-    public void testUpdateShoppingListItem() {
-
-        final ShoppingList existingShoppingList = shoppingListRepository
+    public void updateShoppingListItem_updatesAndReturnsShoppingListItem() {
+        ShoppingList existingShoppingList = shoppingListRepository
                 .save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
-        final Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
-        final ShoppingListItem existingShoppingListItem = shoppingListItemRepository
+        Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
+        ShoppingListItem existingShoppingListItem = shoppingListItemRepository
                 .save(new ShoppingListItem(existingShoppingList, existingItem, 1L));
 
-        final ShoppingListItemUpdateForm form = new ShoppingListItemUpdateForm(2L);
+        ShoppingListItemUpdateForm form = new ShoppingListItemUpdateForm(2L);
 
-        final ResponseEntity<ShoppingListItem> response = restTemplate.postForEntity(SHOPPING_LIST_ITEM_ENDPOINT
+        ResponseEntity<ShoppingListItem> response = restTemplate.postForEntity(SHOPPING_LIST_ITEM_ENDPOINT
                         + existingShoppingListItem.getId(), form, ShoppingListItem.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -179,28 +172,26 @@ public class ShoppingListItemRestControllerIntegrationTest {
     }
 
     @Test
-    public void testUpdateShoppingListItemForWrongShoppingListItemId() {
+    public void updateShoppingListItem_whenShoppingListItemDoesNotExist_returnsError() {
+        ShoppingListItemUpdateForm form = new ShoppingListItemUpdateForm(2L);
 
-        final ShoppingListItemUpdateForm form = new ShoppingListItemUpdateForm(2L);
-
-        final ResponseEntity<ShoppingListItem> response = restTemplate.postForEntity(SHOPPING_LIST_ITEM_ENDPOINT
-                + new Long(999L), form, ShoppingListItem.class);
+        ResponseEntity<ShoppingListItem> response = restTemplate.postForEntity(SHOPPING_LIST_ITEM_ENDPOINT
+                + Long.valueOf(999L), form, ShoppingListItem.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
-    public void testUpdateShoppingListItemForWrongQuantity() {
-
-        final ShoppingList existingShoppingList = shoppingListRepository
+    public void updateShoppingListItem_whenQuantityLessOrEqualToZero_returnsError() {
+        ShoppingList existingShoppingList = shoppingListRepository
                 .save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
-        final Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
-        final ShoppingListItem existingShoppingListItem = shoppingListItemRepository
+        Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
+        ShoppingListItem existingShoppingListItem = shoppingListItemRepository
                 .save(new ShoppingListItem(existingShoppingList, existingItem, 1L));
 
-        final ShoppingListItemUpdateForm form = new ShoppingListItemUpdateForm(0L);
+        ShoppingListItemUpdateForm form = new ShoppingListItemUpdateForm(0L);
 
-        final ResponseEntity<ShoppingListItem> response = restTemplate.postForEntity(SHOPPING_LIST_ITEM_ENDPOINT
+        ResponseEntity<ShoppingListItem> response = restTemplate.postForEntity(SHOPPING_LIST_ITEM_ENDPOINT
                         + existingShoppingListItem.getId(), form, ShoppingListItem.class);
 
         shoppingListItemRepository.delete(existingShoppingListItem);
@@ -211,12 +202,11 @@ public class ShoppingListItemRestControllerIntegrationTest {
     }
 
     @Test
-    public void testDeleteShoppingListItem() {
-
-        final ShoppingList existingShoppingList = shoppingListRepository
+    public void deleteShoppingListItem_deletesShoppingListItem() {
+        ShoppingList existingShoppingList = shoppingListRepository
                 .save(new ShoppingList(TEST_SHOPPING_LIST_NAME));
-        final Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
-        final ShoppingListItem existingShoppingListItem = shoppingListItemRepository
+        Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
+        ShoppingListItem existingShoppingListItem = shoppingListItemRepository
                 .save(new ShoppingListItem(existingShoppingList, existingItem, 1L));
 
         restTemplate.delete(SHOPPING_LIST_ITEM_ENDPOINT + existingShoppingListItem.getId());
@@ -228,10 +218,9 @@ public class ShoppingListItemRestControllerIntegrationTest {
     }
 
     @Test
-    public void testDeleteShoppingListItemForWrongShoppingListItemId() {
-
-        final ResponseEntity<?> response = restTemplate
-                .exchange(SHOPPING_LIST_ITEM_ENDPOINT + new Long(999L),
+    public void deleteShoppingListItem_whenShoppingListItemDoesNotExist_returnsError() {
+        ResponseEntity<?> response = restTemplate
+                .exchange(SHOPPING_LIST_ITEM_ENDPOINT + Long.valueOf(999L),
                         HttpMethod.DELETE, null, Object.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());

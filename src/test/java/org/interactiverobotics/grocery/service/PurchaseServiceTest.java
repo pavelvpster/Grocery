@@ -1,7 +1,7 @@
 /*
  * PurchaseServiceTest.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,35 +30,32 @@ import org.interactiverobotics.grocery.exception.VisitNotFoundException;
 import org.interactiverobotics.grocery.repository.ItemRepository;
 import org.interactiverobotics.grocery.repository.PurchaseRepository;
 import org.interactiverobotics.grocery.repository.VisitRepository;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Purchase service test.
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PurchaseServiceTest {
 
     @Mock
@@ -70,6 +67,7 @@ public class PurchaseServiceTest {
     @Mock
     private PurchaseRepository purchaseRepository;
 
+    @InjectMocks
     private PurchaseService purchaseService;
 
     private Visit visit;
@@ -80,162 +78,122 @@ public class PurchaseServiceTest {
     /**
      * Initializes test.
      */
-    @Before
-    public void setUp() throws Exception {
-
-        purchaseService = new PurchaseService(visitRepository, itemRepository, purchaseRepository);
-
+    @BeforeEach
+    public void setUp() {
         visit = new Visit(1L, new Shop(1L, "test-shop"));
+        lenient().when(visitRepository.findById(visit.getId())).thenReturn(Optional.of(visit));
 
         item = new Item(1L, "test-item");
-
-        when(visitRepository.findById(visit.getId())).thenReturn(Optional.of(visit));
-        when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+        lenient().when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
     }
 
 
     @Test
-    public void testGetPurchases1() throws Exception {
-
-        List<Purchase> existingPurchases = Arrays.asList(
-                new Purchase(1L, visit, item, 1L, null), new Purchase(2L, visit, item, 1L, null));
+    public void getPurchases_givenVisitId_returnsPurchases() {
+        List<Purchase> existingPurchases = List.of(
+                new Purchase(1L, visit, item, 1L, null),
+                new Purchase(2L, visit, item, 1L, null));
         when(purchaseRepository.findAllByVisit(visit)).thenReturn(existingPurchases);
 
-        final List<Purchase> purchases = purchaseService.getPurchases(visit.getId());
+        List<Purchase> purchases = purchaseService.getPurchases(visit.getId());
 
         assertEquals(existingPurchases, purchases);
     }
 
     @Test
-    public void testGetPurchases2() throws Exception {
-
-        List<Purchase> existingPurchases = Arrays.asList(
-                new Purchase(1L, visit, item, 1L, null), new Purchase(2L, visit, item, 1L, null));
+    public void getPurchases_givenVisit_returnsPurchases() {
+        List<Purchase> existingPurchases = List.of(
+                new Purchase(1L, visit, item, 1L, null),
+                new Purchase(2L, visit, item, 1L, null));
         when(purchaseRepository.findAllByVisit(visit)).thenReturn(existingPurchases);
 
-        final List<Purchase> purchases = purchaseService.getPurchases(visit);
+        List<Purchase> purchases = purchaseService.getPurchases(visit);
 
         assertEquals(existingPurchases, purchases);
     }
 
     @Test
-    public void testGetNotPurchasedItems1() throws Exception {
-
-        final List<Item> existingItems = Arrays.asList(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
+    public void getNotPurchasedItems_givenVisitId_returnsItems() {
+        List<Item> existingItems = List.of(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
         when(itemRepository.findAll()).thenReturn(existingItems);
 
         when(purchaseRepository.findOneByVisitAndItem(visit, existingItems.get(0)))
                 .thenReturn(new Purchase(visit, existingItems.get(0), 1L, null));
 
-        final List<Item> items = purchaseService.getNotPurchasedItems(visit.getId());
+        List<Item> items = purchaseService.getNotPurchasedItems(visit.getId());
 
         assertEquals(1, items.size());
         assertEquals(existingItems.get(1), items.get(0));
     }
 
     @Test
-    public void testGetNotPurchasedItems2() throws Exception {
-
-        final List<Item> existingItems = Arrays.asList(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
+    public void getNotPurchasedItems_givenVisit_returnsItems() {
+        List<Item> existingItems = List.of(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
         when(itemRepository.findAll()).thenReturn(existingItems);
 
         when(purchaseRepository.findOneByVisitAndItem(visit, existingItems.get(0)))
                 .thenReturn(new Purchase(visit, existingItems.get(0), 1L, null));
 
-        final List<Item> items = purchaseService.getNotPurchasedItems(visit);
+        List<Item> items = purchaseService.getNotPurchasedItems(visit);
 
         assertEquals(1, items.size());
         assertEquals(existingItems.get(1), items.get(0));
     }
 
-
-    public static class PurchasePageAnswer implements Answer<Page<Purchase>> {
-
-        private final List<Purchase> purchases;
-
-        public PurchasePageAnswer(final List<Purchase> purchases) {
-            this.purchases = purchases;
+    @Test
+    public void getPurchase_givenPageRequestAndVisitId_returnsPageOfPurchases() {
+        List<Purchase> existingPurchases = new ArrayList<>();
+        for (long i = 0; i < 100; i ++) {
+            existingPurchases.add(new Purchase(i, visit, item, 1L, null));
         }
 
-        @Override
-        public Page<Purchase> answer(InvocationOnMock invocation) throws Throwable {
+        when(purchaseRepository.findAllByVisit(any(Pageable.class), eq(visit))).then(invocation -> {
             assertEquals(2, invocation.getArguments().length);
-            final Pageable pageable = invocation.getArgument(0);
-            return new PageImpl<>(purchases, pageable, purchases.size());
-        }
-    }
+            Pageable pageable = invocation.getArgument(0);
+            return new PageImpl<>(existingPurchases, pageable, existingPurchases.size());
+        });
 
-
-    @Test
-    public void testGetPurchasePage1() throws Exception {
-
-        final List<Purchase> existingPurchases = new ArrayList<>();
-        for (long i = 0; i < 100; i ++) {
-            existingPurchases.add(new Purchase(i, visit, item, 1L, null));
-        }
-
-        final PurchasePageAnswer purchasePageAnswer = new PurchasePageAnswer(existingPurchases);
-        when(purchaseRepository.findAllByVisit(any(Pageable.class), eq(visit))).thenAnswer(purchasePageAnswer);
-
-        final Page<Purchase> purchases = purchaseService.getPurchases(PageRequest.of(0, 10), visit.getId());
+        Page<Purchase> purchases = purchaseService.getPurchases(PageRequest.of(0, 10), visit.getId());
 
         assertEquals(existingPurchases.size(), purchases.getTotalElements());
         assertEquals(10, purchases.getTotalPages());
     }
 
     @Test
-    public void testGetPurchasePage2() throws Exception {
-
-        final List<Purchase> existingPurchases = new ArrayList<>();
+    public void getPurchase_givenPageRequestAndVisit_returnsPageOfPurchases() {
+        List<Purchase> existingPurchases = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
             existingPurchases.add(new Purchase(i, visit, item, 1L, null));
         }
 
-        final PurchasePageAnswer purchasePageAnswer = new PurchasePageAnswer(existingPurchases);
-        when(purchaseRepository.findAllByVisit(any(Pageable.class), eq(visit))).thenAnswer(purchasePageAnswer);
+        when(purchaseRepository.findAllByVisit(any(Pageable.class), eq(visit))).then(invocation -> {
+            assertEquals(2, invocation.getArguments().length);
+            Pageable pageable = invocation.getArgument(0);
+            return new PageImpl<>(existingPurchases, pageable, existingPurchases.size());
+        });
 
-        final Page<Purchase> purchases = purchaseService.getPurchases(PageRequest.of(0, 10), visit);
+        Page<Purchase> purchases = purchaseService.getPurchases(PageRequest.of(0, 10), visit);
 
         assertEquals(existingPurchases.size(), purchases.getTotalElements());
         assertEquals(10, purchases.getTotalPages());
     }
 
-
-    public static class SaveAndReturnPurchaseAnswer implements Answer<Purchase> {
-
-        private Purchase purchase;
-
-        public Purchase getPurchase() {
-            return purchase;
-        }
-
-        @Override
-        public Purchase answer(InvocationOnMock invocation) throws Throwable {
+    @Test
+    public void buyItem_givenVisitIdAndItemId_returnsPurchase() {
+        when(purchaseRepository.save(any(Purchase.class))).then(invocation -> {
             assertEquals(1, invocation.getArguments().length);
-            purchase = invocation.getArgument(0);
-            if (purchase.getId() == null) {
-                purchase.setId(1L);
-            }
-            return purchase;
-        }
-    }
+            return invocation.getArgument(0);
+        });
 
+        Long quantity = 1L;
 
-    @Test
-    public void testBuyItem1() throws Exception {
+        Purchase purchase = purchaseService.buyItem(visit.getId(), item.getId(), quantity, null);
 
-        final SaveAndReturnPurchaseAnswer saveAndReturnPurchaseAnswer = new SaveAndReturnPurchaseAnswer();
-        when(purchaseRepository.save(any(Purchase.class))).then(saveAndReturnPurchaseAnswer);
+        ArgumentCaptor<Purchase> captor = ArgumentCaptor.forClass(Purchase.class);
+        verify(purchaseRepository).save(captor.capture());
+        Purchase savedPurchase = captor.getValue();
 
-        final Long quantity = 1L;
-
-        final Purchase purchase = purchaseService.buyItem(visit.getId(), item.getId(), quantity, null);
-
-        // Check that Service returns what was saved
-        final Purchase savedPurchase = saveAndReturnPurchaseAnswer.getPurchase();
         assertEquals(savedPurchase, purchase);
-
-        // Check response content
         assertEquals(visit, purchase.getVisit());
         assertEquals(item, purchase.getItem());
         assertEquals(quantity, purchase.getQuantity());
@@ -243,20 +201,21 @@ public class PurchaseServiceTest {
     }
 
     @Test
-    public void testBuyItem2() {
+    public void buyItem_givenVisitAndItem_returnsPurchase() {
+        when(purchaseRepository.save(any(Purchase.class))).then(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            return invocation.getArgument(0);
+        });
 
-        final SaveAndReturnPurchaseAnswer saveAndReturnPurchaseAnswer = new SaveAndReturnPurchaseAnswer();
-        when(purchaseRepository.save(any(Purchase.class))).then(saveAndReturnPurchaseAnswer);
+        Long quantity = 1L;
 
-        final Long quantity = 1L;
+        Purchase purchase = purchaseService.buyItem(visit, item, quantity, null);
 
-        final Purchase purchase = purchaseService.buyItem(visit, item, quantity, null);
+        ArgumentCaptor<Purchase> captor = ArgumentCaptor.forClass(Purchase.class);
+        verify(purchaseRepository).save(captor.capture());
+        Purchase savedPurchase = captor.getValue();
 
-        // Check that Service returns what was saved
-        final Purchase savedPurchase = saveAndReturnPurchaseAnswer.getPurchase();
         assertEquals(savedPurchase, purchase);
-
-        // Check response content
         assertEquals(visit, purchase.getVisit());
         assertEquals(item, purchase.getItem());
         assertEquals(quantity, purchase.getQuantity());
@@ -264,117 +223,126 @@ public class PurchaseServiceTest {
     }
 
     @Test
-    public void testBuyItemForExistingPurchase() {
-
-        final Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
+    public void buyItem_increasesQuantityAndReturnsPurchase() {
+        Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
         when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
-        final SaveAndReturnPurchaseAnswer saveAndReturnPurchaseAnswer = new SaveAndReturnPurchaseAnswer();
-        when(purchaseRepository.save(any(Purchase.class))).then(saveAndReturnPurchaseAnswer);
+        when(purchaseRepository.save(any(Purchase.class))).then(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            return invocation.getArgument(0);
+        });
 
-        final Purchase purchase = purchaseService.buyItem(visit, item, 1L, null);
+        Purchase purchase = purchaseService.buyItem(visit, item, 1L, null);
 
-        // Check that Service returns what was saved
-        final Purchase savedPurchase = saveAndReturnPurchaseAnswer.getPurchase();
+        ArgumentCaptor<Purchase> captor = ArgumentCaptor.forClass(Purchase.class);
+        verify(purchaseRepository).save(captor.capture());
+        Purchase savedPurchase = captor.getValue();
+
         assertEquals(savedPurchase, purchase);
-
-        // Check response content
         assertEquals(visit, purchase.getVisit());
         assertEquals(item, purchase.getItem());
         assertEquals(Long.valueOf(2), purchase.getQuantity());
         assertNull(purchase.getPrice());
     }
 
-    @Test(expected = VisitNotFoundException.class)
-    public void testBuyItemForWrongVisitId() throws Exception {
-        purchaseService.buyItem(999L, item.getId(), 1L, null);
-    }
-
-    @Test(expected = ItemNotFoundException.class)
-    public void testBuyItemForWrongItemId() throws Exception {
-        purchaseService.buyItem(visit.getId(), 999L, 1L, null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testBuyItemForWrongQuantity() throws Exception {
-        purchaseService.buyItem(visit, item, 0L, null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testBuyItemForWrongPrice() throws Exception {
-        purchaseService.buyItem(visit, item, 1L, BigDecimal.ZERO);
+    @Test
+    public void buyItem_whenVisitDoesNotExist_throwsException() {
+        assertThrows(VisitNotFoundException.class, () ->
+                purchaseService.buyItem(999L, item.getId(), 1L, null));
     }
 
     @Test
-    public void testBuyItemSetPriceForNewPurchase() {
+    public void buyItem_whenItemDoesNotExist_throwsException() {
+        assertThrows(ItemNotFoundException.class, () ->
+                purchaseService.buyItem(visit.getId(), 999L, 1L, null));
+    }
 
-        final SaveAndReturnPurchaseAnswer saveAndReturnPurchaseAnswer = new SaveAndReturnPurchaseAnswer();
-        when(purchaseRepository.save(any(Purchase.class))).then(saveAndReturnPurchaseAnswer);
+    @Test
+    public void buyItem_whenQuantityLessOrEqualToZero_throwsException() {
+        assertThrows(IllegalArgumentException.class, () ->
+                purchaseService.buyItem(visit, item, 0L, null));
+    }
 
-        final Purchase purchase = purchaseService.buyItem(visit, item, 1L, BigDecimal.valueOf(10L));
+    @Test
+    public void buyItem_whenPriceLessOrEqualToZero_throwsException() {
+        assertThrows(IllegalArgumentException.class, () ->
+                purchaseService.buyItem(visit, item, 1L, BigDecimal.ZERO));
+    }
 
-        // Check that Service returns what was saved
-        final Purchase savedPurchase = saveAndReturnPurchaseAnswer.getPurchase();
+    @Test
+    public void buyItem_setPriceForNewPurchase() {
+        when(purchaseRepository.save(any(Purchase.class))).then(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            return invocation.getArgument(0);
+        });
+
+        Purchase purchase = purchaseService.buyItem(visit, item, 1L, BigDecimal.valueOf(10L));
+
+        ArgumentCaptor<Purchase> captor = ArgumentCaptor.forClass(Purchase.class);
+        verify(purchaseRepository).save(captor.capture());
+        Purchase savedPurchase = captor.getValue();
+
         assertEquals(savedPurchase, purchase);
-
-        // Check response content
         assertEquals(BigDecimal.valueOf(10L), purchase.getPrice());
     }
 
     @Test
-    public void testBuyItemSetPriceForExistingPurchase() {
-
-        final Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
+    public void buyItem_whenPriceIsNull_setPriceForPurchase() {
+        Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
         when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
-        final SaveAndReturnPurchaseAnswer saveAndReturnPurchaseAnswer = new SaveAndReturnPurchaseAnswer();
-        when(purchaseRepository.save(any(Purchase.class))).then(saveAndReturnPurchaseAnswer);
+        when(purchaseRepository.save(any(Purchase.class))).then(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            return invocation.getArgument(0);
+        });
 
-        final Purchase purchase = purchaseService.buyItem(visit, item, 1L, BigDecimal.valueOf(10L));
+        Purchase purchase = purchaseService.buyItem(visit, item, 1L, BigDecimal.valueOf(10L));
 
-        // Check that Service returns what was saved
-        final Purchase savedPurchase = saveAndReturnPurchaseAnswer.getPurchase();
+        ArgumentCaptor<Purchase> captor = ArgumentCaptor.forClass(Purchase.class);
+        verify(purchaseRepository).save(captor.capture());
+        Purchase savedPurchase = captor.getValue();
+
         assertEquals(savedPurchase, purchase);
-
-        // Check response content
         assertEquals(BigDecimal.valueOf(10L), purchase.getPrice());
     }
 
     @Test
-    public void testBuyItemUpdatePrice() {
-
-        final Purchase existingPurchase = new Purchase(1L, visit, item, 1L, BigDecimal.valueOf(10L));
+    public void buyItem_updatesPriceOfPurchase() {
+        Purchase existingPurchase = new Purchase(1L, visit, item, 1L, BigDecimal.valueOf(10L));
         when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
-        final SaveAndReturnPurchaseAnswer saveAndReturnPurchaseAnswer = new SaveAndReturnPurchaseAnswer();
-        when(purchaseRepository.save(any(Purchase.class))).then(saveAndReturnPurchaseAnswer);
+        when(purchaseRepository.save(any(Purchase.class))).then(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            return invocation.getArgument(0);
+        });
 
-        final Purchase purchase = purchaseService.buyItem(visit, item, 1L, BigDecimal.valueOf(20L));
+        Purchase purchase = purchaseService.buyItem(visit, item, 1L, BigDecimal.valueOf(20L));
 
-        // Check that Service returns what was saved
-        final Purchase savedPurchase = saveAndReturnPurchaseAnswer.getPurchase();
+        ArgumentCaptor<Purchase> captor = ArgumentCaptor.forClass(Purchase.class);
+        verify(purchaseRepository).save(captor.capture());
+        Purchase savedPurchase = captor.getValue();
+
         assertEquals(savedPurchase, purchase);
-
-        // Check response content
         assertEquals(BigDecimal.valueOf(15L), purchase.getPrice());
     }
 
     @Test
-    public void testReturnItem1() {
-
-        final Purchase existingPurchase = new Purchase(1L, visit, item, 2L, null);
+    public void returnItem_givenVisitIdAndItemId_decreasesQuantityAndReturnsPurchase() {
+        Purchase existingPurchase = new Purchase(1L, visit, item, 2L, null);
         when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
-        final SaveAndReturnPurchaseAnswer saveAndReturnPurchaseAnswer = new SaveAndReturnPurchaseAnswer();
-        when(purchaseRepository.save(any(Purchase.class))).then(saveAndReturnPurchaseAnswer);
+        when(purchaseRepository.save(any(Purchase.class))).then(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            return invocation.getArgument(0);
+        });
 
-        final Purchase purchase = purchaseService.returnItem(visit.getId(), item.getId(), 1L);
+        Purchase purchase = purchaseService.returnItem(visit.getId(), item.getId(), 1L);
 
-        // Check that Service returns what was saved
-        final Purchase savedPurchase = saveAndReturnPurchaseAnswer.getPurchase();
+        ArgumentCaptor<Purchase> captor = ArgumentCaptor.forClass(Purchase.class);
+        verify(purchaseRepository).save(captor.capture());
+        Purchase savedPurchase = captor.getValue();
+
         assertEquals(savedPurchase, purchase);
-
-        // Check response content
         assertEquals(visit, purchase.getVisit());
         assertEquals(item, purchase.getItem());
         assertEquals(Long.valueOf(1L), purchase.getQuantity());
@@ -382,67 +350,72 @@ public class PurchaseServiceTest {
     }
 
     @Test
-    public void testReturnItem2() {
-
-        final Purchase existingPurchase = new Purchase(1L, visit, item, 2L, null);
+    public void returnItem_givenVisitAndItem_decreasesQuantityAndReturnsPurchase() {
+        Purchase existingPurchase = new Purchase(1L, visit, item, 2L, null);
         when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
-        final SaveAndReturnPurchaseAnswer saveAndReturnPurchaseAnswer = new SaveAndReturnPurchaseAnswer();
-        when(purchaseRepository.save(any(Purchase.class))).then(saveAndReturnPurchaseAnswer);
+        when(purchaseRepository.save(any(Purchase.class))).then(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            return invocation.getArgument(0);
+        });
 
-        final Purchase purchase = purchaseService.returnItem(visit, item, 1L);
+        Purchase purchase = purchaseService.returnItem(visit, item, 1L);
 
-        // Check that Service returns what was saved
-        final Purchase savedPurchase = saveAndReturnPurchaseAnswer.getPurchase();
+        ArgumentCaptor<Purchase> captor = ArgumentCaptor.forClass(Purchase.class);
+        verify(purchaseRepository).save(captor.capture());
+        Purchase savedPurchase = captor.getValue();
+
         assertEquals(savedPurchase, purchase);
-
-        // Check response content
         assertEquals(visit, purchase.getVisit());
         assertEquals(item, purchase.getItem());
         assertEquals(Long.valueOf(1L), purchase.getQuantity());
         assertNull(purchase.getPrice());
     }
 
-    @Test(expected = VisitNotFoundException.class)
-    public void testReturnItemForWrongVisitId() throws Exception {
-        purchaseService.returnItem(999L, item.getId(), 1L);
-    }
-
-    @Test(expected = ItemNotFoundException.class)
-    public void testReturnItemForWrongItemId() throws Exception {
-        purchaseService.returnItem(visit.getId(), 999L, 1L);
-    }
-
-    @Test(expected = PurchaseNotFoundException.class)
-    public void testReturnItemForNotExistingPurchase() throws Exception {
-        purchaseService.returnItem(visit, item, 1L);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testReturnItemForWrongQuantity1() throws Exception {
-
-        final Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
-        when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
-
-        purchaseService.returnItem(visit, item, 0L);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testReturnItemForWrongQuantity2() throws Exception {
-
-        final Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
-        when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
-
-        purchaseService.returnItem(visit, item, 999L);
+    @Test
+    public void returnItem_whenVisitDoesNotExist_throwsException() {
+        assertThrows(VisitNotFoundException.class, () ->
+                purchaseService.returnItem(999L, item.getId(), 1L));
     }
 
     @Test
-    public void testReturnItemAndDeletePurchase() {
+    public void returnItem_whenItemDoesNotExist_throwsException() {
+        assertThrows(ItemNotFoundException.class, () ->
+                purchaseService.returnItem(visit.getId(), 999L, 1L));
+    }
 
-        final Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
+    @Test
+    public void returnItem_whenPurchaseDoesNotExist_throwsException() {
+        assertThrows(PurchaseNotFoundException.class, () ->
+                purchaseService.returnItem(visit, item, 1L));
+    }
+
+    @Test
+    public void returnItem_whenQuantityLessOrEqualToZero_throwsException() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
+            when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
+
+            purchaseService.returnItem(visit, item, 0L);
+        });
+    }
+
+    @Test
+    public void returnItem_whenQuantityGreaterThanQuantityOfPurchase_throwsException() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
+            when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
+
+            purchaseService.returnItem(visit, item, 999L);
+        });
+    }
+
+    @Test
+    public void returnItem_whenQuantityDecreasesToZero_deletesPurchase() {
+        Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
         when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
-        final Purchase purchase = purchaseService.returnItem(visit, item, 1L);
+        Purchase purchase = purchaseService.returnItem(visit, item, 1L);
 
         verify(purchaseRepository).delete(eq(existingPurchase));
 
@@ -450,59 +423,64 @@ public class PurchaseServiceTest {
     }
 
     @Test
-    public void testUpdatePrice1() {
-
-        final Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
+    public void updatePrice_givenVisitIdAndItemId_updatesPriceAndReturnsPurchase() {
+        Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
         when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
-        final SaveAndReturnPurchaseAnswer saveAndReturnPurchaseAnswer = new SaveAndReturnPurchaseAnswer();
-        when(purchaseRepository.save(any(Purchase.class))).then(saveAndReturnPurchaseAnswer);
+        when(purchaseRepository.save(any(Purchase.class))).then(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            return invocation.getArgument(0);
+        });
 
-        final Purchase purchase = purchaseService.updatePrice(visit.getId(), item.getId(), BigDecimal.valueOf(10L));
+        Purchase purchase = purchaseService.updatePrice(visit.getId(), item.getId(), BigDecimal.valueOf(10L));
 
-        // Check that Service returns what was saved
-        final Purchase savedPurchase = saveAndReturnPurchaseAnswer.getPurchase();
+        ArgumentCaptor<Purchase> captor = ArgumentCaptor.forClass(Purchase.class);
+        verify(purchaseRepository).save(captor.capture());
+        Purchase savedPurchase = captor.getValue();
+
         assertEquals(savedPurchase, purchase);
-
-        // Check response content
         assertEquals(BigDecimal.valueOf(10L), purchase.getPrice());
     }
 
     @Test
-    public void testUpdatePrice2() {
-
-        final Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
+    public void updatePrice_givenVisitAndItem_updatesPriceAndReturnsPurchase() {
+        Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
         when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
-        final SaveAndReturnPurchaseAnswer saveAndReturnPurchaseAnswer = new SaveAndReturnPurchaseAnswer();
-        when(purchaseRepository.save(any(Purchase.class))).then(saveAndReturnPurchaseAnswer);
+        when(purchaseRepository.save(any(Purchase.class))).then(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            return invocation.getArgument(0);
+        });
 
-        final Purchase purchase = purchaseService.updatePrice(visit, item, BigDecimal.valueOf(10L));
+        Purchase purchase = purchaseService.updatePrice(visit, item, BigDecimal.valueOf(10L));
 
-        // Check that Service returns what was saved
-        final Purchase savedPurchase = saveAndReturnPurchaseAnswer.getPurchase();
+        ArgumentCaptor<Purchase> captor = ArgumentCaptor.forClass(Purchase.class);
+        verify(purchaseRepository).save(captor.capture());
+        Purchase savedPurchase = captor.getValue();
+
         assertEquals(savedPurchase, purchase);
-
-        // Check response content
         assertEquals(BigDecimal.valueOf(10L), purchase.getPrice());
     }
 
-    @Test(expected = VisitNotFoundException.class)
-    public void testUpdatePriceForWrongVisitId() throws Exception {
-        purchaseService.updatePrice(999L, item.getId(), BigDecimal.valueOf(10L));
+    @Test
+    public void updatePrice_whenVisitIdDoesNotExist_throwsException() {
+        assertThrows(VisitNotFoundException.class, () ->
+                purchaseService.updatePrice(999L, item.getId(), BigDecimal.valueOf(10L)));
     }
 
-    @Test(expected = ItemNotFoundException.class)
-    public void testUpdatePriceForWrongItemId() throws Exception {
-        purchaseService.updatePrice(visit.getId(), 999L, BigDecimal.valueOf(10L));
+    @Test
+    public void updatePrice_whenItemIdDoesNotExist_throwsException() {
+        assertThrows(ItemNotFoundException.class, () ->
+                purchaseService.updatePrice(visit.getId(), 999L, BigDecimal.valueOf(10L)));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testUpdatePriceForWrongPrice() throws Exception {
+    @Test
+    public void updatePrice_whenPriceLessOrEqualToZero_throwsException() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
+            when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
-        final Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
-        when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
-
-        purchaseService.updatePrice(visit, item, BigDecimal.ZERO);
+            purchaseService.updatePrice(visit, item, BigDecimal.ZERO);
+        });
     }
 }

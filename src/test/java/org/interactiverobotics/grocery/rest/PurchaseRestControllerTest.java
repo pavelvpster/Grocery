@@ -1,7 +1,7 @@
 /*
  * PurchaseRestControllerTest.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,9 +26,9 @@ import org.interactiverobotics.grocery.domain.Purchase;
 import org.interactiverobotics.grocery.domain.Shop;
 import org.interactiverobotics.grocery.domain.Visit;
 import org.interactiverobotics.grocery.service.PurchaseService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,31 +38,29 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Purchase REST controller test.
  * Tests Controller with mocked Service.
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebMvcTest(PurchaseRestController.class)
 @ImportAutoConfiguration(JsonConfiguration.class)
 public class PurchaseRestControllerTest {
@@ -84,25 +82,22 @@ public class PurchaseRestControllerTest {
     /**
      * Initializes test.
      */
-    @Before
-    public void setUp() throws Exception {
-
+    @BeforeEach
+    public void setUp() {
         visit = new Visit(1L, new Shop(1L, "test-shop"));
-
         item = new Item(1L, "test-item");
     }
 
 
     @Test
-    public void testGetNotPurchasedItems() throws Exception {
-
-        final List<Item> notPurchasedItems = Arrays.asList(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
+    public void getNotPurchasedItems_returnsItems() throws Exception {
+        List<Item> notPurchasedItems = List.of(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
         when(purchaseService.getNotPurchasedItems(visit.getId())).thenReturn(notPurchasedItems);
 
         mvc.perform(get(PURCHASE_ENDPOINT + visit.getId() + "/not_purchased_items")
-                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].id", is(notPurchasedItems.get(0).getId().intValue())))
                 .andExpect(jsonPath("$[0].name", is(notPurchasedItems.get(0).getName())))
@@ -111,23 +106,32 @@ public class PurchaseRestControllerTest {
     }
 
     @Test
-    public void testGetPurchasesPage() throws Exception {
+    public void getNotPurchasedItems_whenVisitDoesNotExist_throwsException() {
+        assertThrows(Exception.class, () -> {
+            when(purchaseService.getNotPurchasedItems(anyLong())).thenThrow(new Exception());
 
-        final List<Purchase> existingPurchases = new ArrayList<>();
+            mvc.perform(get(PURCHASE_ENDPOINT + Long.valueOf(999L) + "/not_purchased_items")
+                            .accept(MediaType.APPLICATION_JSON));
+        });
+    }
+
+    @Test
+    public void getPurchasesPage_returnsPageOfPurchases() throws Exception {
+        List<Purchase> existingPurchases = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
             existingPurchases.add(new Purchase(i, visit, item, 1L, null));
         }
 
         when(purchaseService.getPurchases(any(Pageable.class), eq(visit.getId()))).thenAnswer(invocation -> {
             assertEquals(2, invocation.getArguments().length);
-            final Pageable pageable = invocation.getArgument(0);
+            Pageable pageable = invocation.getArgument(0);
             return new PageImpl<>(existingPurchases, pageable, existingPurchases.size());
         });
 
         mvc.perform(get(PURCHASE_ENDPOINT + visit.getId() + "/list?page=1&size=10")
-                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.totalElements", is(existingPurchases.size())))
                 .andExpect(jsonPath("$.totalPages", is(10)))
                 .andExpect(jsonPath("$.size", is(10)));
@@ -152,19 +156,17 @@ public class PurchaseRestControllerTest {
         }
 
         @Override
-        public Purchase answer(InvocationOnMock invocation) throws Throwable {
-
+        public Purchase answer(InvocationOnMock invocation) {
             assertEquals(4, invocation.getArguments().length);
 
-            final Long visitId = invocation.getArgument(0);
+            Long visitId = invocation.getArgument(0);
             assertEquals(visit.getId(), visitId);
 
-            final Long itemId = invocation.getArgument(1);
+            Long itemId = invocation.getArgument(1);
             assertEquals(item.getId(), itemId);
 
-            final Long quantity = invocation.getArgument(2);
-
-            final BigDecimal price = invocation.getArgument(3);
+            Long quantity = invocation.getArgument(2);
+            BigDecimal price = invocation.getArgument(3);
 
             purchase = new Purchase();
             purchase.setId(1L);
@@ -172,54 +174,39 @@ public class PurchaseRestControllerTest {
             purchase.setItem(item);
             purchase.setQuantity(quantity);
             purchase.setPrice(price);
-
             return purchase;
         }
     }
 
 
     @Test
-    public void testBuyItem() throws Exception {
-
-        final BuyItemAnswer buyItemAnswer = new BuyItemAnswer(visit, item);
+    public void buyItem_createsAndReturnsPurchase() throws Exception {
+        BuyItemAnswer buyItemAnswer = new BuyItemAnswer(visit, item);
         when(purchaseService.buyItem(eq(visit.getId()), eq(item.getId()), any(Long.class), any()))
                 .thenAnswer(buyItemAnswer);
 
         mvc.perform(post(PURCHASE_ENDPOINT + visit.getId() + "/buy/" + item.getId())
                 .param(QUANTITY_PARAM, "1")
-                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.visit.id", is(visit.getId().intValue())))
                 .andExpect(jsonPath("$.item.id", is(item.getId().intValue())))
                 .andExpect(jsonPath("$.quantity", is(1)));
-    }
 
-    @Test(expected = Exception.class)
-    public void testBuyItemForWrongParams() throws Exception {
-
-        when(purchaseService.buyItem(any(Long.class), any(Long.class), any(Long.class), any(BigDecimal.class)))
-                .thenThrow(new Exception());
-
-        mvc.perform(post(PURCHASE_ENDPOINT + new Long(999L) + "/buy/" + new Long(999L))
-                .param(QUANTITY_PARAM, "-1")
-                .accept(MediaType.APPLICATION_JSON_UTF8));
+        verify(purchaseService).buyItem(eq(visit.getId()), eq(item.getId()), eq(1L), isNull());
     }
 
     @Test
-    public void testBuyItemSetPrice() throws Exception {
+    public void buyItem_whenVisitAndItemDoNotExist_throwsException() {
+        assertThrows(Exception.class, () -> {
+            when(purchaseService.buyItem(any(Long.class), any(Long.class), any(Long.class), any(BigDecimal.class)))
+                    .thenThrow(new Exception());
 
-        final BuyItemAnswer buyItemAnswer = new BuyItemAnswer(visit, item);
-        when(purchaseService.buyItem(eq(visit.getId()), eq(item.getId()), any(Long.class), any(BigDecimal.class)))
-                .thenAnswer(buyItemAnswer);
-
-        mvc.perform(post(PURCHASE_ENDPOINT + visit.getId() + "/buy/" + item.getId())
-                .param(QUANTITY_PARAM, "1")
-                .param("price", "10")
-                .accept(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("$.price", is(10)));
+            mvc.perform(post(PURCHASE_ENDPOINT + Long.valueOf(999L) + "/buy/" + Long.valueOf(999L))
+                    .param(QUANTITY_PARAM, "-1")
+                    .accept(MediaType.APPLICATION_JSON));
+        });
     }
 
 
@@ -241,54 +228,54 @@ public class PurchaseRestControllerTest {
         }
 
         @Override
-        public Purchase answer(InvocationOnMock invocation) throws Throwable {
-
+        public Purchase answer(InvocationOnMock invocation) {
             assertEquals(3, invocation.getArguments().length);
 
-            final Long visitId = invocation.getArgument(0);
+            Long visitId = invocation.getArgument(0);
             assertEquals(visit.getId(), visitId);
 
-            final Long itemId = invocation.getArgument(1);
+            Long itemId = invocation.getArgument(1);
             assertEquals(item.getId(), itemId);
 
-            final Long quantity = invocation.getArgument(2);
+            Long quantity = invocation.getArgument(2);
 
             purchase = new Purchase();
             purchase.setId(1L);
             purchase.setVisit(visit);
             purchase.setItem(item);
             purchase.setQuantity(quantity);
-
             return purchase;
         }
     }
 
 
     @Test
-    public void testReturnItem() throws Exception {
-
-        final ReturnItemAnswer returnItemAnswer = new ReturnItemAnswer(visit, item);
+    public void returnItem_updatesAndReturnsPurchase() throws Exception {
+        ReturnItemAnswer returnItemAnswer = new ReturnItemAnswer(visit, item);
         when(purchaseService.returnItem(eq(visit.getId()), eq(item.getId()), any(Long.class)))
                 .thenAnswer(returnItemAnswer);
 
         mvc.perform(post(PURCHASE_ENDPOINT + visit.getId() + "/return/" + item.getId())
                 .param(QUANTITY_PARAM, "1")
-                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.visit.id", is(visit.getId().intValue())))
                 .andExpect(jsonPath("$.item.id", is(item.getId().intValue())))
                 .andExpect(jsonPath("$.quantity", is(1)));
+
+        verify(purchaseService).returnItem(eq(visit.getId()), eq(item.getId()), eq(1L));
     }
 
-    @Test(expected = Exception.class)
-    public void testReturnItemForWrongParams() throws Exception {
+    @Test
+    public void returnItem_whenVisitAndItemDoNotExist_throwsException() {
+        assertThrows(Exception.class, () -> {
+            when(purchaseService.returnItem(any(Long.class), any(Long.class), any(Long.class))).thenThrow(new Exception());
 
-        when(purchaseService.returnItem(any(Long.class), any(Long.class), any(Long.class))).thenThrow(new Exception());
-
-        mvc.perform(post(PURCHASE_ENDPOINT + new Long(999L) + "/return/" + new Long(999L))
-                .param(QUANTITY_PARAM, "-1")
-                .accept(MediaType.APPLICATION_JSON_UTF8));
+            mvc.perform(post(PURCHASE_ENDPOINT + Long.valueOf(999L) + "/return/" + Long.valueOf(999L))
+                    .param(QUANTITY_PARAM, "-1")
+                    .accept(MediaType.APPLICATION_JSON));
+        });
     }
 
 
@@ -305,17 +292,16 @@ public class PurchaseRestControllerTest {
         }
 
         @Override
-        public Purchase answer(InvocationOnMock invocation) throws Throwable {
-
+        public Purchase answer(InvocationOnMock invocation) {
             assertEquals(3, invocation.getArguments().length);
 
-            final Long visitId = invocation.getArgument(0);
+            Long visitId = invocation.getArgument(0);
             assertEquals(purchase.getVisit().getId(), visitId);
 
-            final Long itemId = invocation.getArgument(1);
+            Long itemId = invocation.getArgument(1);
             assertEquals(purchase.getItem().getId(), itemId);
 
-            final BigDecimal price = invocation.getArgument(2);
+            BigDecimal price = invocation.getArgument(2);
             purchase.setPrice(price);
 
             return purchase;
@@ -324,31 +310,33 @@ public class PurchaseRestControllerTest {
 
 
     @Test
-    public void testUpdatePrice() throws Exception {
-
-        final Purchase existingPurchase = new Purchase(1L, visit, item, 1L, BigDecimal.valueOf(10L));
-        final UpdatePriceAnswer updatePriceAnswer = new UpdatePriceAnswer(existingPurchase);
+    public void updatePrice_updatesAndReturnsPurchase() throws Exception {
+        Purchase existingPurchase = new Purchase(1L, visit, item, 1L, BigDecimal.valueOf(10L));
+        UpdatePriceAnswer updatePriceAnswer = new UpdatePriceAnswer(existingPurchase);
         when(purchaseService.updatePrice(eq(visit.getId()), eq(item.getId()), any(BigDecimal.class)))
                 .thenAnswer(updatePriceAnswer);
 
         mvc.perform(post(PURCHASE_ENDPOINT + visit.getId() + "/price/" + item.getId())
                 .param("price", "10")
-                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.visit.id", is(existingPurchase.getVisit().getId().intValue())))
                 .andExpect(jsonPath("$.item.id", is(existingPurchase.getItem().getId().intValue())))
                 .andExpect(jsonPath("$.price", is(existingPurchase.getPrice().intValue())));
+
+        verify(purchaseService).updatePrice(eq(visit.getId()), eq(item.getId()), eq(BigDecimal.valueOf(10L)));
     }
 
-    @Test(expected = Exception.class)
-    public void testUpdatePriceForWrongParams() throws Exception {
+    @Test
+    public void updatePrice_whenVisitAndItemDoNotExist_throwsException() {
+        assertThrows(Exception.class, () -> {
+            when(purchaseService.updatePrice(any(Long.class), any(Long.class), any(BigDecimal.class)))
+                    .thenThrow(new Exception());
 
-        when(purchaseService.updatePrice(any(Long.class), any(Long.class), any(BigDecimal.class)))
-                .thenThrow(new Exception());
-
-        mvc.perform(post(PURCHASE_ENDPOINT + new Long(999L) + "/price/" + new Long(999L))
-                .param("price", "-1")
-                .accept(MediaType.APPLICATION_JSON_UTF8));
+            mvc.perform(post(PURCHASE_ENDPOINT + Long.valueOf(999L) + "/price/" + Long.valueOf(999L))
+                    .param("price", "-1")
+                    .accept(MediaType.APPLICATION_JSON));
+        });
     }
 }

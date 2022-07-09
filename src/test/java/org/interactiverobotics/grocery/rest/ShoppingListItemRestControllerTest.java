@@ -1,7 +1,7 @@
 /*
  * ShoppingListItemRestControllerTest.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,42 +27,35 @@ import org.interactiverobotics.grocery.exception.ShoppingListNotFoundException;
 import org.interactiverobotics.grocery.form.ShoppingListItemCreateForm;
 import org.interactiverobotics.grocery.form.ShoppingListItemUpdateForm;
 import org.interactiverobotics.grocery.service.ShoppingListItemService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * ShoppingListItem REST controller test.
  * Tests Controller with mocked Service.
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebMvcTest(ShoppingListItemRestController.class)
 public class ShoppingListItemRestControllerTest {
 
@@ -76,20 +69,19 @@ public class ShoppingListItemRestControllerTest {
 
 
     @Test
-    public void testGetShoppingListItems() throws Exception {
-
-        final ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
-        final Item existingItem = new Item(1L, "test-item");
-        final List<ShoppingListItem> existingShoppingListItems = Arrays.asList(
+    public void getShoppingListItems_returnsItems() throws Exception {
+        ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
+        Item existingItem = new Item(1L, "test-item");
+        List<ShoppingListItem> existingShoppingListItems = List.of(
                 new ShoppingListItem(1L, existingShoppingList, existingItem, 1L),
                 new ShoppingListItem(2L, existingShoppingList, existingItem, 2L));
         when(shoppingListItemService.getShoppingListItems(existingShoppingList.getId()))
                 .thenReturn(existingShoppingListItems);
 
         mvc.perform(get(SHOPPING_LIST_ITEM_ENDPOINT + existingShoppingList.getId())
-                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].id", is(existingShoppingListItems.get(0).getId().intValue())))
                 .andExpect(jsonPath("$[0].shoppingList.id",
@@ -103,13 +95,47 @@ public class ShoppingListItemRestControllerTest {
                 .andExpect(jsonPath("$[1].quantity", is(existingShoppingListItems.get(1).getQuantity().intValue())));
     }
 
-    @Test(expected = Exception.class)
-    public void testGetShoppingListItemsForWrongShoppingListId() throws Exception {
+    @Test
+    public void getShoppingListItems_whenShoppingListDoesNotExist_throwsException() {
+        assertThrows(Exception.class, () -> {
+            when(shoppingListItemService.getShoppingListItems(anyLong())).thenThrow(new ShoppingListNotFoundException(-1L));
 
-        when(shoppingListItemService.getShoppingListItems(anyLong())).thenThrow(new ShoppingListNotFoundException(-1L));
+            mvc.perform(get(SHOPPING_LIST_ITEM_ENDPOINT + Long.valueOf(999L))
+                    .accept(MediaType.APPLICATION_JSON));
+        });
+    }
 
-        mvc.perform(get(SHOPPING_LIST_ITEM_ENDPOINT + new Long(999L))
-                .accept(MediaType.APPLICATION_JSON_UTF8));
+    @Test
+    public void getShoppingListItemsPage_returnsPageOfItems() throws Exception {
+        ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
+        Item existingItem = new Item(1L, "test-item");
+        List<ShoppingListItem> existingShoppingListItems = new ArrayList<>();
+        for (long i = 0; i < 100; i ++) {
+            existingShoppingListItems.add(new ShoppingListItem(i, existingShoppingList, existingItem, 1L));
+        }
+
+        when(shoppingListItemService.getShoppingListItems(any(Pageable.class), anyLong())).thenAnswer(invocation -> {
+            assertEquals(2, invocation.getArguments().length);
+            Pageable pageable = invocation.getArgument(0);
+            return new PageImpl<>(existingShoppingListItems, pageable, existingShoppingListItems.size());
+        });
+
+        mvc.perform(get(SHOPPING_LIST_ITEM_ENDPOINT + existingShoppingList.getId() + "/list?page=1&size=10").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.totalElements", is(existingShoppingListItems.size())))
+                .andExpect(jsonPath("$.totalPages", is(10)))
+                .andExpect(jsonPath("$.size", is(10)));
+    }
+
+    @Test
+    public void getShoppingListItemsPage_whenShoppingListDoesNotExist_throwsException() {
+        assertThrows(Exception.class, () -> {
+            when(shoppingListItemService.getShoppingListItems(any(Pageable.class), anyLong()))
+                    .thenThrow(new ShoppingListNotFoundException(-1L));
+
+            mvc.perform(get(SHOPPING_LIST_ITEM_ENDPOINT + Long.valueOf(999L) + "/list?page=1&size=10").accept(MediaType.APPLICATION_JSON));
+        });
     }
 
 
@@ -130,20 +156,19 @@ public class ShoppingListItemRestControllerTest {
         }
 
         @Override
-        public ShoppingListItem answer(InvocationOnMock invocation) throws Throwable {
-
+        public ShoppingListItem answer(InvocationOnMock invocation) {
             assertEquals(1, invocation.getArguments().length);
 
-            final ShoppingListItemCreateForm form = invocation.getArgument(0);
+            ShoppingListItemCreateForm form = invocation.getArgument(0);
             assertNotNull(form);
 
-            final Long shoppingListId = form.getShoppingList();
+            Long shoppingListId = form.getShoppingList();
             assertEquals(shoppingList.getId(), shoppingListId);
 
-            final Long itemId = form.getItem();
+            Long itemId = form.getItem();
             assertEquals(item.getId(), itemId);
 
-            final Long quantity = form.getQuantity();
+            Long quantity = form.getQuantity();
 
             shoppingListItem = new ShoppingListItem();
             shoppingListItem.setId(1L);
@@ -157,24 +182,23 @@ public class ShoppingListItemRestControllerTest {
 
 
     @Test
-    public void testCreateShoppingListItem() throws Exception {
+    public void createShoppingListItem_createsAndReturnsShoppingListItem() throws Exception {
+        ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
+        Item existingItem = new Item(1L, "test-item");
 
-        final ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
-        final Item existingItem = new Item(1L, "test-item");
-
-        final CreateShoppingListItemAnswer createShoppingListItemAnswer =
+        CreateShoppingListItemAnswer createShoppingListItemAnswer =
                 new CreateShoppingListItemAnswer(existingShoppingList, existingItem);
 
         when(shoppingListItemService.createShoppingListItem(any(ShoppingListItemCreateForm.class)))
                 .thenAnswer(createShoppingListItemAnswer);
 
         mvc.perform(post(SHOPPING_LIST_ITEM_ENDPOINT)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"shoppingList\":" + existingShoppingList.getId() + ",\"item\":" + existingItem.getId()
                         + ",\"quantity\":1}")
-                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(createShoppingListItemAnswer.getShoppingListItem().getId().intValue())))
                 .andExpect(jsonPath("$.shoppingList.id", is(createShoppingListItemAnswer.getShoppingListItem()
                         .getShoppingList().getId().intValue())))
@@ -182,18 +206,21 @@ public class ShoppingListItemRestControllerTest {
                         .getItem().getId().intValue())))
                 .andExpect(jsonPath("$.quantity", is(createShoppingListItemAnswer.getShoppingListItem()
                         .getQuantity().intValue())));
+
+        verify(shoppingListItemService).createShoppingListItem(any(ShoppingListItemCreateForm.class));
     }
 
-    @Test(expected = Exception.class)
-    public void testCreateShoppingListItemForWrongParams() throws Exception {
+    @Test
+    public void createShoppingListItem_whenShoppingListAndItemDoNotExist_throwsException() {
+        assertThrows(Exception.class, () -> {
+            when(shoppingListItemService.createShoppingListItem(any(ShoppingListItemCreateForm.class)))
+                    .thenThrow(new Exception());
 
-        when(shoppingListItemService.createShoppingListItem(any(ShoppingListItemCreateForm.class)))
-                .thenThrow(new Exception());
-
-        mvc.perform(post(SHOPPING_LIST_ITEM_ENDPOINT)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content("{\"shoppingList\":999,\"item\":999,\"quantity\":-1}")
-                .accept(MediaType.APPLICATION_JSON_UTF8));
+            mvc.perform(post(SHOPPING_LIST_ITEM_ENDPOINT)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"shoppingList\":999,\"item\":999,\"quantity\":-1}")
+                    .accept(MediaType.APPLICATION_JSON));
+        });
     }
 
 
@@ -206,7 +233,7 @@ public class ShoppingListItemRestControllerTest {
         }
 
         @Override
-        public ShoppingListItem answer(InvocationOnMock invocation) throws Throwable {
+        public ShoppingListItem answer(InvocationOnMock invocation) {
 
             assertEquals(2, invocation.getArguments().length);
 
@@ -225,64 +252,66 @@ public class ShoppingListItemRestControllerTest {
 
 
     @Test
-    public void testUpdateShoppingListItem() throws Exception {
-
-        final ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
-        final Item existingItem = new Item(1L, "test-item");
-        final ShoppingListItem existingShoppingListItem =
+    public void updateShoppingListItem_updatesAndReturnsShoppingListItem() throws Exception {
+        ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
+        Item existingItem = new Item(1L, "test-item");
+        ShoppingListItem existingShoppingListItem =
                 new ShoppingListItem(1L, existingShoppingList, existingItem, 1L);
 
-        final UpdateShoppingListItemAnswer updateShoppingListItemAnswer =
+        UpdateShoppingListItemAnswer updateShoppingListItemAnswer =
                 new UpdateShoppingListItemAnswer(existingShoppingListItem);
 
         when(shoppingListItemService.updateShoppingListItem(eq(existingShoppingListItem.getId()),
                 any(ShoppingListItemUpdateForm.class))).thenAnswer(updateShoppingListItemAnswer);
 
-        final Long quantity = 2L;
+        Long quantity = 2L;
 
         mvc.perform(post(SHOPPING_LIST_ITEM_ENDPOINT + existingShoppingListItem.getId())
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"quantity\":" + quantity + "}")
-                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(existingShoppingListItem.getId().intValue())))
                 .andExpect(jsonPath("$.shoppingList.id", is(existingShoppingListItem
                         .getShoppingList().getId().intValue())))
                 .andExpect(jsonPath("$.item.id", is(existingShoppingListItem.getItem().getId().intValue())))
                 .andExpect(jsonPath("$.quantity", is(quantity.intValue())));
-    }
 
-    @Test(expected = Exception.class)
-    public void testUpdateShoppingListItemForWrongParams() throws Exception {
-
-        when(shoppingListItemService.updateShoppingListItem(anyLong(), any(ShoppingListItemUpdateForm.class)))
-                .thenThrow(new Exception());
-
-        mvc.perform(post(SHOPPING_LIST_ITEM_ENDPOINT + new Long(999L))
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content("{\"quantity\":-1}")
-                .accept(MediaType.APPLICATION_JSON_UTF8));
+        verify(shoppingListItemService).updateShoppingListItem(eq(existingShoppingListItem.getId()), any(ShoppingListItemUpdateForm.class));
     }
 
     @Test
-    public void testDeleteShoppingListItem() throws Exception {
+    public void updateShoppingListItem_whenShoppingListDoesNotExist_throwsException() {
+        assertThrows(Exception.class, () -> {
+            when(shoppingListItemService.updateShoppingListItem(anyLong(), any(ShoppingListItemUpdateForm.class)))
+                    .thenThrow(new ShoppingListNotFoundException(-1L));
 
-        final Long shoppingListItemId = 1L;
+            mvc.perform(post(SHOPPING_LIST_ITEM_ENDPOINT + Long.valueOf(999L))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"quantity\":-1}")
+                    .accept(MediaType.APPLICATION_JSON));
+        });
+    }
+
+    @Test
+    public void deleteShoppingListItem_deletesShoppingListItem() throws Exception {
+        Long shoppingListItemId = 1L;
 
         mvc.perform(delete(SHOPPING_LIST_ITEM_ENDPOINT + shoppingListItemId)
-                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
         verify(shoppingListItemService).deleteShoppingListItem(eq(shoppingListItemId));
     }
 
-    @Test(expected = Exception.class)
-    public void testDeleteShoppingListItemForWrongParams() throws Exception {
+    @Test
+    public void deleteShoppingListItem_whenShoppingListItemDoesNotExist_throwsException() {
+        assertThrows(Exception.class, () -> {
+            doThrow(new Exception()).when(shoppingListItemService).deleteShoppingListItem(anyLong());
 
-        doThrow(new Exception()).when(shoppingListItemService).deleteShoppingListItem(anyLong());
-
-        mvc.perform(delete(SHOPPING_LIST_ITEM_ENDPOINT + new Long(999L))
-                .accept(MediaType.APPLICATION_JSON_UTF8));
+            mvc.perform(delete(SHOPPING_LIST_ITEM_ENDPOINT + Long.valueOf(999L))
+                    .accept(MediaType.APPLICATION_JSON));
+        });
     }
 }

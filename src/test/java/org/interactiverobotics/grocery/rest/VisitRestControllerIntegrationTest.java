@@ -1,7 +1,7 @@
 /*
  * VisitRestControllerIntegrationTest.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,10 +24,10 @@ import org.interactiverobotics.grocery.domain.Shop;
 import org.interactiverobotics.grocery.domain.Visit;
 import org.interactiverobotics.grocery.repository.ShopRepository;
 import org.interactiverobotics.grocery.repository.VisitRepository;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -35,23 +35,19 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Visit REST controller integration test.
  * Performs queries to running instance of the application.
  * Requires database access.
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class VisitRestControllerIntegrationTest {
 
@@ -70,45 +66,43 @@ public class VisitRestControllerIntegrationTest {
     private Shop shop;
 
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() {
         visitRepository.deleteAll();
         shop = shopRepository.save(new Shop("test-shop"));
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    public void tearDown() {
         shopRepository.delete(shop);
     }
 
 
     @Test
-    public void testGetVisits() {
-
-        final List<Visit> existingVisits = new ArrayList<>();
-        visitRepository.saveAll(Arrays.asList(new Visit(shop), new Visit(shop)))
+    public void getVisits_returnsVisits() {
+        List<Visit> existingVisits = new ArrayList<>();
+        visitRepository.saveAll(List.of(new Visit(shop), new Visit(shop)))
                 .forEach(visit -> existingVisits.add(visit));
 
-        final ResponseEntity<Visit[]> response = restTemplate.getForEntity(VISIT_ENDPOINT, Visit[].class);
+        ResponseEntity<Visit[]> response = restTemplate.getForEntity(VISIT_ENDPOINT, Visit[].class);
 
         visitRepository.deleteAll(existingVisits);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
-        assertEquals(existingVisits, Arrays.asList(response.getBody()));
+        assertEquals(existingVisits, List.of(response.getBody()));
     }
 
     @Test
-    public void testGetVisitsPage() {
-
-        final List<Visit> existingVisits = new ArrayList<>();
+    public void getVisitsPage_returnsPageOfVisits() {
+        List<Visit> existingVisits = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
             existingVisits.add(visitRepository.save(new Visit(shop)));
         }
 
-        final ParameterizedTypeReference<PageResponse<Visit>> responseType =
-                new ParameterizedTypeReference<PageResponse<Visit>>() {};
-        final ResponseEntity<PageResponse<Visit>> response = restTemplate
+        ParameterizedTypeReference<PageResponse<Visit>> responseType =
+                new ParameterizedTypeReference<>() {};
+        ResponseEntity<PageResponse<Visit>> response = restTemplate
                 .exchange(VISIT_ENDPOINT + "list?page=1&size=10",
                 HttpMethod.GET, null, responseType);
 
@@ -122,11 +116,10 @@ public class VisitRestControllerIntegrationTest {
     }
 
     @Test
-    public void testGetVisitById() {
+    public void getVisitById_returnsVisit() {
+        Visit existingVisit = visitRepository.save(new Visit(shop));
 
-        final Visit existingVisit = visitRepository.save(new Visit(shop));
-
-        final ResponseEntity<Visit> response = restTemplate
+        ResponseEntity<Visit> response = restTemplate
                 .getForEntity(VISIT_ENDPOINT + existingVisit.getId(), Visit.class);
 
         visitRepository.delete(existingVisit);
@@ -137,44 +130,40 @@ public class VisitRestControllerIntegrationTest {
     }
 
     @Test
-    public void testGetNotExistingVisitById() {
-
-        final ResponseEntity<Visit> response = restTemplate
-                .getForEntity(VISIT_ENDPOINT + new Long(999L), Visit.class);
+    public void getVisitById_whenVisitDoesNotExist_returnsError() {
+        ResponseEntity<Visit> response = restTemplate
+                .getForEntity(VISIT_ENDPOINT + Long.valueOf(999L), Visit.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
-    public void testGetVisitsByShopId() {
-
-        final List<Visit> existingVisits = new ArrayList<>();
-        visitRepository.saveAll(Arrays.asList(new Visit(shop), new Visit(shop)))
+    public void getVisitsByShopId_returnsVisits() {
+        List<Visit> existingVisits = new ArrayList<>();
+        visitRepository.saveAll(List.of(new Visit(shop), new Visit(shop)))
                 .forEach(visit -> existingVisits.add(visit));
 
-        final ResponseEntity<Visit[]> response = restTemplate
+        ResponseEntity<Visit[]> response = restTemplate
                 .getForEntity(VISIT_SHOP_ENDPOINT + shop.getId(), Visit[].class);
 
         visitRepository.deleteAll(existingVisits);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.hasBody());
-        assertEquals(existingVisits, Arrays.asList(response.getBody()));
+        assertEquals(existingVisits, List.of(response.getBody()));
     }
 
     @Test
-    public void testGetVisitsByNotExistingShopId() {
-
-        final ResponseEntity<Object> response = restTemplate
-                .getForEntity(VISIT_SHOP_ENDPOINT + new Long(999L), Object.class);
+    public void getVisitsByShopId_whenShopDoesNotExist_returnsError() {
+        ResponseEntity<Object> response = restTemplate
+                .getForEntity(VISIT_SHOP_ENDPOINT + Long.valueOf(999L), Object.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
-    public void testCreateVisit() {
-
-        final ResponseEntity<Visit> response = restTemplate
+    public void createVisit_createsAndReturnsVisit() {
+        ResponseEntity<Visit> response = restTemplate
                 .postForEntity(VISIT_SHOP_ENDPOINT + shop.getId(), null, Visit.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -184,20 +173,18 @@ public class VisitRestControllerIntegrationTest {
     }
 
     @Test
-    public void testCreateVisitsForNotExistingShop() {
-
-        final ResponseEntity<Object> response = restTemplate
-                .postForEntity(VISIT_SHOP_ENDPOINT + new Long(999L), null, Object.class);
+    public void createVisit_whenShopDoesNotExist_returnsError() {
+        ResponseEntity<Object> response = restTemplate
+                .postForEntity(VISIT_SHOP_ENDPOINT + Long.valueOf(999L), null, Object.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
-    public void testStartVisit() {
+    public void startVisit_startsAndReturnsVisit() {
+        Visit existingVisit = visitRepository.save(new Visit(shop));
 
-        final Visit existingVisit = visitRepository.save(new Visit(shop));
-
-        final ResponseEntity<Visit> response = restTemplate
+        ResponseEntity<Visit> response = restTemplate
                 .postForEntity(VISIT_ENDPOINT + existingVisit.getId() + "/start", null, Visit.class);
 
         visitRepository.delete(existingVisit);
@@ -209,20 +196,18 @@ public class VisitRestControllerIntegrationTest {
     }
 
     @Test
-    public void testStartNotExistingVisit() {
-
-        final ResponseEntity<Object> response = restTemplate
-                .postForEntity(VISIT_ENDPOINT + new Long(999L) + "/start", null, Object.class);
+    public void startVisit_whenVisitDoesNotExist_returnsError() {
+        ResponseEntity<Object> response = restTemplate
+                .postForEntity(VISIT_ENDPOINT + Long.valueOf(999L) + "/start", null, Object.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
-    public void testCompleteVisit() {
+    public void completeVisit_completesAndReturnsVisit() {
+        Visit existingVisit = visitRepository.save(new Visit(shop));
 
-        final Visit existingVisit = visitRepository.save(new Visit(shop));
-
-        final ResponseEntity<Visit> response = restTemplate
+        ResponseEntity<Visit> response = restTemplate
                 .postForEntity(VISIT_ENDPOINT + existingVisit.getId() + "/complete", null, Visit.class);
 
         visitRepository.delete(existingVisit);
@@ -235,18 +220,16 @@ public class VisitRestControllerIntegrationTest {
     }
 
     @Test
-    public void testCompleteNotExistingVisit() {
-
-        final ResponseEntity<Object> response = restTemplate
-                .postForEntity(VISIT_ENDPOINT + new Long(999L) + "/complete", null, Object.class);
+    public void completeVisit_whenVisitDoesNotExist_returnsError() {
+        ResponseEntity<Object> response = restTemplate
+                .postForEntity(VISIT_ENDPOINT + Long.valueOf(999L) + "/complete", null, Object.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
-    public void testDeleteVisit() {
-
-        final Visit existingVisit = visitRepository.save(new Visit(shop));
+    public void deleteVisit_deletesVisit() {
+        Visit existingVisit = visitRepository.save(new Visit(shop));
 
         restTemplate.delete(VISIT_ENDPOINT + existingVisit.getId());
 
@@ -254,10 +237,9 @@ public class VisitRestControllerIntegrationTest {
     }
 
     @Test
-    public void testDeleteNotExistingVisit() {
-
-        final ResponseEntity<?> response = restTemplate
-                .exchange(VISIT_ENDPOINT + new Long(999L), HttpMethod.DELETE, null, Object.class);
+    public void deleteVisit_whenVisitDoesNotExist_returnsError() {
+        ResponseEntity<?> response = restTemplate
+                .exchange(VISIT_ENDPOINT + Long.valueOf(999L), HttpMethod.DELETE, null, Object.class);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }

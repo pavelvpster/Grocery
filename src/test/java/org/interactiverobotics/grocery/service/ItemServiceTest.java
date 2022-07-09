@@ -1,7 +1,7 @@
 /*
  * ItemServiceTest.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,26 +24,24 @@ import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.exception.ItemNotFoundException;
 import org.interactiverobotics.grocery.form.ItemForm;
 import org.interactiverobotics.grocery.repository.ItemRepository;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -51,7 +49,7 @@ import static org.mockito.Mockito.when;
  * Item service test.
  * Tests Service class with mocked Repository.
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ItemServiceTest {
 
     private static final String TEST_ITEM_NAME = "test-item";
@@ -59,157 +57,130 @@ public class ItemServiceTest {
     @Mock
     private ItemRepository itemRepository;
 
+    @InjectMocks
     private ItemService itemService;
 
-
-    @Before
-    public void setUp() throws Exception {
-        itemService = new ItemService(itemRepository);
-    }
-
-
     @Test
-    public void testGetItems() {
-
-        final List<Item> existingItems = Arrays.asList(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
+    public void getItems_returnsItems() {
+        List<Item> existingItems = List.of(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
         when(itemRepository.findAll()).thenReturn(existingItems);
 
-        final List<Item> items = itemService.getItems();
+        List<Item> items = itemService.getItems();
 
         assertEquals(existingItems, items);
     }
 
     @Test
-    public void testGetItemsPage() {
-
-        final List<Item> existingItems = new ArrayList<>();
+    public void getItems_givenPageRequest_returnsPageOfItems() {
+        List<Item> existingItems = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
             existingItems.add(new Item(i, "test-item-" + i));
         }
 
-        when(itemRepository.findAll(any(Pageable.class))).thenAnswer(invocation -> {
+        when(itemRepository.findAll(any(Pageable.class))).then(invocation -> {
             assertEquals(1, invocation.getArguments().length);
-            final Pageable pageable = invocation.getArgument(0);
+            Pageable pageable = invocation.getArgument(0);
             return new PageImpl<>(existingItems, pageable, existingItems.size());
         });
 
-        final Page<Item> items = itemService.getItems(PageRequest.of(0, 10));
+        Page<Item> items = itemService.getItems(PageRequest.of(0, 10));
 
         assertEquals(existingItems.size(), items.getTotalElements());
         assertEquals(10, items.getTotalPages());
     }
 
     @Test
-    public void testGetItemById() {
-
+    public void getItemById_returnsItem() {
         Item existingItem = new Item(1L, TEST_ITEM_NAME);
         when(itemRepository.findById(existingItem.getId())).thenReturn(Optional.of(existingItem));
 
-        final Item item = itemService.getItemById(existingItem.getId());
+        Item item = itemService.getItemById(existingItem.getId());
 
         assertEquals(existingItem, item);
     }
 
-    @Test(expected = ItemNotFoundException.class)
-    public void testGetNotExistingItemById() {
+    @Test
+    public void getItemById_whenItemDoesNotExist_throwsException() {
+        assertThrows(ItemNotFoundException.class, () -> {
+            when(itemRepository.findById(any())).thenReturn(Optional.empty());
 
-        when(itemRepository.findById(any())).thenReturn(Optional.empty());
-
-        itemService.getItemById(1L);
+            itemService.getItemById(1L);
+        });
     }
 
     @Test
-    public void testGetItemByName() {
-
+    public void getItemByName_returnsItem() {
         Item existingItem = new Item(1L, TEST_ITEM_NAME);
         when(itemRepository.findOneByName(existingItem.getName())).thenReturn(existingItem);
 
-        final Item item = itemService.getItemByName(TEST_ITEM_NAME);
+        Item item = itemService.getItemByName(TEST_ITEM_NAME);
 
         assertEquals(existingItem, item);
     }
 
-    @Test(expected = ItemNotFoundException.class)
-    public void testGetNotExistingItemByName() {
+    @Test
+    public void getItemByName_whenItemDoesNotExist_throwsException() {
+        assertThrows(ItemNotFoundException.class, () -> {
+            when(itemRepository.findOneByName(anyString())).thenReturn(null);
 
-        when(itemRepository.findById(any())).thenReturn(Optional.empty());
-
-        itemService.getItemByName(TEST_ITEM_NAME);
+            itemService.getItemByName(TEST_ITEM_NAME);
+        });
     }
-
-
-    public static class SaveAndReturnItemAnswer implements Answer<Item> {
-
-        private Item item;
-
-        public Item getItem() {
-            return item;
-        }
-
-        @Override
-        public Item answer(InvocationOnMock invocation) throws Throwable {
-            assertEquals(1, invocation.getArguments().length);
-            item = invocation.getArgument(0);
-            if (item.getId() == null) {
-                item.setId(1L);
-            }
-            return item;
-        }
-    }
-
 
     @Test
-    public void testCreateItem() {
+    public void createItem_createsAndReturnsItem() {
+        when(itemRepository.save(any(Item.class))).then(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            return invocation.getArgument(0);
+        });
 
-        final SaveAndReturnItemAnswer saveAndReturnItemAnswer = new SaveAndReturnItemAnswer();
-        when(itemRepository.save(any(Item.class))).then(saveAndReturnItemAnswer);
+        ItemForm form = new ItemForm(TEST_ITEM_NAME);
 
-        final ItemForm form = new ItemForm(TEST_ITEM_NAME);
+        Item item = itemService.createItem(form);
 
-        final Item item = itemService.createItem(form);
+        ArgumentCaptor<Item> captor = ArgumentCaptor.forClass(Item.class);
+        verify(itemRepository).save(captor.capture());
+        Item savedItem = captor.getValue();
 
-        // Check that Service returns what was saved
-        final Item savedItem = saveAndReturnItemAnswer.getItem();
         assertEquals(savedItem, item);
-
-        // Check response content
         assertEquals(form.getName(), item.getName());
     }
 
     @Test
-    public void testUpdateItem() {
-
+    public void updateItem_updatesAndReturnsItem() {
         Item existingItem = new Item(1L, TEST_ITEM_NAME);
         when(itemRepository.findById(existingItem.getId())).thenReturn(Optional.of(existingItem));
 
-        final SaveAndReturnItemAnswer saveAndReturnItemAnswer = new SaveAndReturnItemAnswer();
-        when(itemRepository.save(any(Item.class))).then(saveAndReturnItemAnswer);
+        when(itemRepository.save(any(Item.class))).then(invocation -> {
+            assertEquals(1, invocation.getArguments().length);
+            return invocation.getArgument(0);
+        });
 
-        final ItemForm form = new ItemForm("updated-test-item");
+        ItemForm form = new ItemForm("updated-test-item");
 
-        final Item item = itemService.updateItem(existingItem.getId(), form);
+        Item item = itemService.updateItem(existingItem.getId(), form);
 
-        // Check that Service returns what was saved
-        final Item savedItem = saveAndReturnItemAnswer.getItem();
+        ArgumentCaptor<Item> captor = ArgumentCaptor.forClass(Item.class);
+        verify(itemRepository).save(captor.capture());
+        Item savedItem = captor.getValue();
+
         assertEquals(savedItem, item);
-
-        // Check response content
         assertEquals(form.getName(), item.getName());
     }
 
-    @Test(expected = ItemNotFoundException.class)
-    public void testUpdateNotExistingItem() {
+    @Test
+    public void updateItem_whenItemDoesNotExist_throwsException() {
+        assertThrows(ItemNotFoundException.class, () -> {
+            when(itemRepository.findById(any())).thenReturn(Optional.empty());
 
-        when(itemRepository.findById(any())).thenReturn(Optional.empty());
+            ItemForm form = new ItemForm("updated-test-item");
 
-        final ItemForm form = new ItemForm("updated-test-item");
-
-        itemService.updateItem(999L, form);
+            itemService.updateItem(999L, form);
+        });
     }
 
     @Test
-    public void testDeleteItem() {
-
+    public void deleteItem_deletesItem() {
         Item existingItem = new Item(1L, TEST_ITEM_NAME);
         when(itemRepository.findById(existingItem.getId())).thenReturn(Optional.of(existingItem));
 
@@ -218,11 +189,12 @@ public class ItemServiceTest {
         verify(itemRepository).delete(eq(existingItem));
     }
 
-    @Test(expected = ItemNotFoundException.class)
-    public void testDeleteNotExistingItem() {
+    @Test
+    public void deleteItem_whenItemDoesNotExist_throwsException() {
+        assertThrows(ItemNotFoundException.class, () -> {
+            when(itemRepository.findById(any())).thenReturn(Optional.empty());
 
-        when(itemRepository.findById(any())).thenReturn(Optional.empty());
-
-        itemService.deleteItem(999L);
+            itemService.deleteItem(999L);
+        });
     }
 }

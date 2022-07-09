@@ -1,7 +1,7 @@
 /*
  * ShoppingListRestController.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ import java.util.List;
 /**
  * ShoppingList REST controller.
  */
-@Api(value = "ShoppingList", description = "Shopping list management endpoint")
+@Api(value = "ShoppingList")
 @RestController
 @RequestMapping(value = "/api/v1/shopping_list")
 public class ShoppingListRestController {
@@ -53,46 +53,46 @@ public class ShoppingListRestController {
         this.shoppingListService = shoppingListService;
     }
 
-    @ApiOperation(value = "Get all ShoppingList(s)", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = {"", "/"}, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Get all ShoppingList(s)", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = {"", "/"}, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ShoppingList> getShoppingLists() {
         return this.shoppingListService.getShoppingLists();
     }
 
-    @ApiOperation(value = "Get page of ShoppingLists", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Get page of ShoppingLists", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<ShoppingList> getShoppingListsPage(
             @RequestParam(value = "page", defaultValue = "1") Integer pageNumber,
             @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
         return this.shoppingListService.getShoppingLists(PageRequest.of(pageNumber - 1, pageSize));
     }
 
-    @ApiOperation(value = "Get ShoppingList by Id", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Get ShoppingList by Id", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ShoppingList getShoppingListById(@PathVariable Long id) {
         return this.shoppingListService.getShoppingListById(id);
     }
 
-    @ApiOperation(value = "Get ShoppingList by Name", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/search", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Get ShoppingList by Name", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/search", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ShoppingList getShoppingListByName(@RequestParam(value = "name") String name) {
         return this.shoppingListService.getShoppingListByName(name);
     }
 
-    @ApiOperation(value = "Create ShoppingList", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Create ShoppingList", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public ShoppingList createShoppingList(@RequestBody ShoppingListForm form) {
         return this.shoppingListService.createShoppingList(form);
     }
 
-    @ApiOperation(value = "Update ShoppingList", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Update ShoppingList", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public ShoppingList updateShoppingList(@PathVariable Long id, @RequestBody ShoppingListForm form) {
         return this.shoppingListService.updateShoppingList(id, form);
     }
 
-    @ApiOperation(value = "Delete ShoppingList", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(value = "Delete ShoppingList", produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteShoppingList(@PathVariable Long id) {
         this.shoppingListService.deleteShoppingList(id);
     }
