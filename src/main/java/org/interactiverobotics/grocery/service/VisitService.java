@@ -20,6 +20,7 @@
 
 package org.interactiverobotics.grocery.service;
 
+import lombok.AllArgsConstructor;
 import org.interactiverobotics.grocery.domain.Shop;
 import org.interactiverobotics.grocery.domain.Visit;
 import org.interactiverobotics.grocery.exception.ShopNotFoundException;
@@ -41,6 +42,7 @@ import java.util.Optional;
 /**
  * Visit service.
  */
+@AllArgsConstructor
 @Service
 public class VisitService {
 
@@ -49,16 +51,6 @@ public class VisitService {
     private final VisitRepository visitRepository;
 
     private final ShopRepository shopRepository;
-
-    /**
-     * Parametrized constructor.
-     */
-    @Autowired
-    public VisitService(VisitRepository visitRepository,
-                        ShopRepository shopRepository) {
-        this.visitRepository = visitRepository;
-        this.shopRepository = shopRepository;
-    }
 
     /**
      * Return Visit(s).

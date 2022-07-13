@@ -22,6 +22,7 @@ package org.interactiverobotics.grocery.rest;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.AllArgsConstructor;
 import org.interactiverobotics.grocery.domain.ShoppingListItem;
 import org.interactiverobotics.grocery.form.ShoppingListItemCreateForm;
 import org.interactiverobotics.grocery.form.ShoppingListItemUpdateForm;
@@ -42,17 +43,13 @@ import java.util.List;
 /**
  * ShoppingListItem REST controller.
  */
+@AllArgsConstructor
 @Api(value = "ShoppingListItem")
 @RestController
 @RequestMapping(value = "/api/v1/shopping_list_item")
 public class ShoppingListItemRestController {
 
     private final ShoppingListItemService shoppingListItemService;
-
-    @Autowired
-    public ShoppingListItemRestController(final ShoppingListItemService shoppingListItemService) {
-        this.shoppingListItemService = shoppingListItemService;
-    }
 
     @ApiOperation(value = "Get all ShoppingListItem(s)", produces = MediaType.APPLICATION_JSON_VALUE)
     @RequestMapping(value = "/{shoppingListId}", method = RequestMethod.GET,

@@ -22,6 +22,7 @@ package org.interactiverobotics.grocery.rest;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.AllArgsConstructor;
 import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.form.ItemForm;
 import org.interactiverobotics.grocery.service.ItemService;
@@ -41,17 +42,13 @@ import java.util.List;
 /**
  * Item REST controller.
  */
+@AllArgsConstructor
 @Api(value = "Item")
 @RestController
 @RequestMapping(value = "/api/v1/item")
 public class ItemRestController {
 
     private final ItemService itemService;
-
-    @Autowired
-    public ItemRestController(final ItemService itemService) {
-        this.itemService = itemService;
-    }
 
     @ApiOperation(value = "Get all Item(s)", produces = MediaType.APPLICATION_JSON_VALUE)
     @RequestMapping(value = {"", "/"}, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

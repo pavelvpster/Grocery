@@ -22,6 +22,7 @@ package org.interactiverobotics.grocery.rest;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.AllArgsConstructor;
 import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.domain.Purchase;
 import org.interactiverobotics.grocery.service.PurchaseService;
@@ -41,17 +42,13 @@ import java.util.List;
 /**
  * Purchase REST controller.
  */
+@AllArgsConstructor
 @Api(value = "Purchase")
 @RestController
 @RequestMapping(value = "/api/v1/purchase")
 public class PurchaseRestController {
 
     private final PurchaseService purchaseService;
-
-    @Autowired
-    public PurchaseRestController(final PurchaseService purchaseService) {
-        this.purchaseService = purchaseService;
-    }
 
     @ApiOperation(value = "Get Items that not existing in Purchases", produces = MediaType.APPLICATION_JSON_VALUE)
     @RequestMapping(value = "/{visitId}/not_purchased_items", method = RequestMethod.GET,
