@@ -1,7 +1,7 @@
 /*
  * Visit.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,32 +21,22 @@
 package org.interactiverobotics.grocery.domain;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import lombok.*;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 
 /**
  * Visit domain class.
  */
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@EqualsAndHashCode
+@ToString
+@Builder
 @Entity
 @Table(name = "visits")
 @JsonFilter("jpaFilter")
@@ -76,92 +66,4 @@ public class Visit {
     @Transient
     @OneToMany(mappedBy = "visit", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private List<Purchase> purchases;
-
-    public Visit() {
-    }
-
-    public Visit(final Shop shop) {
-        this.shop = shop;
-    }
-
-    public Visit(final Long id, final Shop shop) {
-        this.id = id;
-        this.shop = shop;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Shop getShop() {
-        return shop;
-    }
-
-    public void setShop(Shop shop) {
-        this.shop = shop;
-    }
-
-    public Date getStarted() {
-        return copyDate(started);
-    }
-
-    public void setStarted(Date started) {
-        this.started = copyDate(started);
-    }
-
-    public Date getCompleted() {
-        return copyDate(completed);
-    }
-
-    public void setCompleted(Date completed) {
-        this.completed = copyDate(completed);
-    }
-
-    public ShoppingList getShoppingList() {
-        return shoppingList;
-    }
-
-    public void setShoppingList(ShoppingList shoppingList) {
-        this.shoppingList = shoppingList;
-    }
-
-    public List<Purchase> getPurchases() {
-        return purchases;
-    }
-
-    public void setPurchases(List<Purchase> purchases) {
-        this.purchases = purchases;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        return EqualsBuilder.reflectionEquals(this, object);
-    }
-
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this);
-    }
-
-    /**
-     * Returns copy of given date or null if source is null.
-     *
-     * @param source source (date)
-     * @return Date
-     */
-    private static Date copyDate(final Date source) {
-        if (source == null) {
-            return null;
-        }
-        return new Date(source.getTime());
-    }
 }

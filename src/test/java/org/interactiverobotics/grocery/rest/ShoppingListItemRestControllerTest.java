@@ -70,11 +70,13 @@ public class ShoppingListItemRestControllerTest {
 
     @Test
     public void getShoppingListItems_returnsItems() throws Exception {
-        ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
-        Item existingItem = new Item(1L, "test-item");
+        ShoppingList existingShoppingList = ShoppingList.builder().id(1L).name("test-shopping-list").build();
+        Item existingItem = Item.builder().id(1L).name("test-item").build();
         List<ShoppingListItem> existingShoppingListItems = List.of(
-                new ShoppingListItem(1L, existingShoppingList, existingItem, 1L),
-                new ShoppingListItem(2L, existingShoppingList, existingItem, 2L));
+                ShoppingListItem.builder()
+                        .id(1L).shoppingList(existingShoppingList).item(existingItem).quantity(1L).build(),
+                ShoppingListItem.builder()
+                        .id(2L).shoppingList(existingShoppingList).item(existingItem).quantity(2L).build());
         when(shoppingListItemService.getShoppingListItems(existingShoppingList.getId()))
                 .thenReturn(existingShoppingListItems);
 
@@ -107,11 +109,12 @@ public class ShoppingListItemRestControllerTest {
 
     @Test
     public void getShoppingListItemsPage_returnsPageOfItems() throws Exception {
-        ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
-        Item existingItem = new Item(1L, "test-item");
+        ShoppingList existingShoppingList = ShoppingList.builder().id(1L).name("test-shopping-list").build();
+        Item existingItem = Item.builder().id(1L).name("test-item").build();
         List<ShoppingListItem> existingShoppingListItems = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
-            existingShoppingListItems.add(new ShoppingListItem(i, existingShoppingList, existingItem, 1L));
+            existingShoppingListItems.add(ShoppingListItem.builder()
+                    .id(i).shoppingList(existingShoppingList).item(existingItem).quantity(1L).build());
         }
 
         when(shoppingListItemService.getShoppingListItems(any(Pageable.class), anyLong())).thenAnswer(invocation -> {
@@ -144,7 +147,7 @@ public class ShoppingListItemRestControllerTest {
         private final ShoppingList shoppingList;
         private final Item item;
 
-        public CreateShoppingListItemAnswer(final ShoppingList shoppingList, final Item item) {
+        public CreateShoppingListItemAnswer(ShoppingList shoppingList, Item item) {
             this.shoppingList = shoppingList;
             this.item = item;
         }
@@ -170,11 +173,12 @@ public class ShoppingListItemRestControllerTest {
 
             Long quantity = form.getQuantity();
 
-            shoppingListItem = new ShoppingListItem();
-            shoppingListItem.setId(1L);
-            shoppingListItem.setShoppingList(shoppingList);
-            shoppingListItem.setItem(item);
-            shoppingListItem.setQuantity(quantity);
+            shoppingListItem = ShoppingListItem.builder()
+                    .id(1L)
+                    .shoppingList(shoppingList)
+                    .item(item)
+                    .quantity(quantity)
+                    .build();
 
             return shoppingListItem;
         }
@@ -183,8 +187,8 @@ public class ShoppingListItemRestControllerTest {
 
     @Test
     public void createShoppingListItem_createsAndReturnsShoppingListItem() throws Exception {
-        ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
-        Item existingItem = new Item(1L, "test-item");
+        ShoppingList existingShoppingList = ShoppingList.builder().id(1L).name("test-shopping-list").build();
+        Item existingItem = Item.builder().id(1L).name("test-item").build();
 
         CreateShoppingListItemAnswer createShoppingListItemAnswer =
                 new CreateShoppingListItemAnswer(existingShoppingList, existingItem);
@@ -228,7 +232,7 @@ public class ShoppingListItemRestControllerTest {
 
         private final ShoppingListItem shoppingListItem;
 
-        public UpdateShoppingListItemAnswer(final ShoppingListItem shoppingListItem) {
+        public UpdateShoppingListItemAnswer(ShoppingListItem shoppingListItem) {
             this.shoppingListItem = shoppingListItem;
         }
 
@@ -253,10 +257,10 @@ public class ShoppingListItemRestControllerTest {
 
     @Test
     public void updateShoppingListItem_updatesAndReturnsShoppingListItem() throws Exception {
-        ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
-        Item existingItem = new Item(1L, "test-item");
-        ShoppingListItem existingShoppingListItem =
-                new ShoppingListItem(1L, existingShoppingList, existingItem, 1L);
+        ShoppingList existingShoppingList = ShoppingList.builder().id(1L).name("test-shopping-list").build();
+        Item existingItem = Item.builder().id(1L).name("test-item").build();
+        ShoppingListItem existingShoppingListItem = ShoppingListItem.builder()
+                .id(1L).shoppingList(existingShoppingList).item(existingItem).quantity(1L).build();
 
         UpdateShoppingListItemAnswer updateShoppingListItemAnswer =
                 new UpdateShoppingListItemAnswer(existingShoppingListItem);

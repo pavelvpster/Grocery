@@ -1,7 +1,7 @@
 /*
  * VisitService.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,9 +54,8 @@ public class VisitService {
      * Parametrized constructor.
      */
     @Autowired
-    public VisitService(final VisitRepository visitRepository,
-                        final ShopRepository shopRepository) {
-
+    public VisitService(VisitRepository visitRepository,
+                        ShopRepository shopRepository) {
         this.visitRepository = visitRepository;
         this.shopRepository = shopRepository;
     }
@@ -65,7 +64,7 @@ public class VisitService {
      * Return Visit(s).
      */
     public List<Visit> getVisits() {
-        final List<Visit> visits = new ArrayList<>();
+        List<Visit> visits = new ArrayList<>();
         visitRepository.findAll().forEach(visit -> visits.add(visit));
         LOG.debug("{} Visit(s) found", visits.size());
         return visits;
@@ -75,7 +74,7 @@ public class VisitService {
      * Returns page of Visit(s).
      */
     public Page<Visit> getVisits(Pageable pageable) {
-        final Page<Visit> visits = visitRepository.findAll(pageable);
+        Page<Visit> visits = visitRepository.findAll(pageable);
         LOG.debug("{} Visit(s) found for {}", visits.getNumberOfElements(), pageable);
         return visits;
     }
@@ -83,8 +82,8 @@ public class VisitService {
     /**
      * Returns Visit by Id.
      */
-    public Visit getVisitById(final Long visitId) {
-        final Visit visit = visitRepository.findById(visitId)
+    public Visit getVisitById(Long visitId) {
+        Visit visit = visitRepository.findById(visitId)
                 .orElseThrow(() -> new VisitNotFoundException(visitId));
         LOG.debug("Visit found by Id #{}", visitId);
         return visit;
@@ -93,7 +92,7 @@ public class VisitService {
     /**
      * Returns Visit(s) by Shop Id.
      */
-    public List<Visit> getVisitsByShopId(final Long shopId) {
+    public List<Visit> getVisitsByShopId(Long shopId) {
         return getVisitsByShop(shopRepository.findById(shopId)
                 .orElseThrow(() -> new ShopNotFoundException(shopId)));
     }
@@ -101,7 +100,7 @@ public class VisitService {
     /**
      * Returns Visit(s) by Shop Name.
      */
-    public List<Visit> getVisitsByShopName(final String shopName) {
+    public List<Visit> getVisitsByShopName(String shopName) {
         return getVisitsByShop(Optional.ofNullable(shopRepository.findOneByName(shopName))
                 .orElseThrow(() -> new ShopNotFoundException(-1L)));
     }
@@ -109,8 +108,8 @@ public class VisitService {
     /**
      * Returns Visit(s) by Shop.
      */
-    public List<Visit> getVisitsByShop(final Shop shop) {
-        final List<Visit> visits = new ArrayList<>();
+    public List<Visit> getVisitsByShop(Shop shop) {
+        List<Visit> visits = new ArrayList<>();
         visitRepository.findAllByShop(shop).forEach(visit -> visits.add(visit));
         LOG.debug("{} Visit(s) found for Shop {}", visits.size(), shop);
         return visits;
@@ -119,7 +118,7 @@ public class VisitService {
     /**
      * Creates Visit.
      */
-    public Visit createVisit(final Long shopId) {
+    public Visit createVisit(Long shopId) {
         return createVisit(shopRepository.findById(shopId)
                 .orElseThrow(() -> new ShopNotFoundException(shopId)));
     }
@@ -127,7 +126,7 @@ public class VisitService {
     /**
      * Creates Visit.
      */
-    public Visit createVisit(final String shopName) {
+    public Visit createVisit(String shopName) {
         return createVisit(Optional.ofNullable(shopRepository.findOneByName(shopName))
                 .orElseThrow(() -> new ShopNotFoundException(-1L)));
     }
@@ -135,8 +134,8 @@ public class VisitService {
     /**
      * Creates Visit.
      */
-    public Visit createVisit(final Shop shop) {
-        final Visit visit = visitRepository.save(new Visit(shop));
+    public Visit createVisit(Shop shop) {
+        Visit visit = visitRepository.save(Visit.builder().shop(shop).build());
         LOG.info("Visit created: {}", visit);
         return visit;
     }
@@ -144,11 +143,11 @@ public class VisitService {
     /**
      * Starts Visit.
      */
-    public Visit startVisit(final Long visitId) {
-        final Visit visit = visitRepository.findById(visitId)
+    public Visit startVisit(Long visitId) {
+        Visit visit = visitRepository.findById(visitId)
                 .orElseThrow(() -> new VisitNotFoundException(visitId));
         visit.setStarted(new Date());
-        final Visit updatedVisit = visitRepository.save(visit);
+        Visit updatedVisit = visitRepository.save(visit);
         LOG.info("Visit started: {}", updatedVisit);
         return updatedVisit;
     }
@@ -156,15 +155,15 @@ public class VisitService {
     /**
      * Completes Visit.
      */
-    public Visit completeVisit(final Long visitId) {
-        final Visit visit = visitRepository.findById(visitId)
+    public Visit completeVisit(Long visitId) {
+        Visit visit = visitRepository.findById(visitId)
                 .orElseThrow(() -> new VisitNotFoundException(visitId));
-        final Date now = new Date();
+        Date now = new Date();
         if (visit.getStarted() == null) {
             visit.setStarted(now);
         }
         visit.setCompleted(now);
-        final Visit updatedVisit = visitRepository.save(visit);
+        Visit updatedVisit = visitRepository.save(visit);
         LOG.info("Visit completed: {}", updatedVisit);
         return updatedVisit;
     }
@@ -172,8 +171,8 @@ public class VisitService {
     /**
      * Deletes Visit.
      */
-    public void deleteVisit(final Long visitId) {
-        final Visit visit = visitRepository.findById(visitId)
+    public void deleteVisit(Long visitId) {
+        Visit visit = visitRepository.findById(visitId)
                 .orElseThrow(() -> new VisitNotFoundException(visitId));
         this.visitRepository.delete(visit);
         LOG.info("Visit deleted: {}", visit);

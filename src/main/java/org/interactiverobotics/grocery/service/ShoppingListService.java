@@ -1,7 +1,7 @@
 /*
  * ShoppingListService.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,11 +20,11 @@
 
 package org.interactiverobotics.grocery.service;
 
+import lombok.AllArgsConstructor;
 import org.interactiverobotics.grocery.domain.ShoppingList;
 import org.interactiverobotics.grocery.exception.ShoppingListNotFoundException;
 import org.interactiverobotics.grocery.form.ShoppingListForm;
 import org.interactiverobotics.grocery.repository.ShoppingListRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -36,21 +36,17 @@ import java.util.Optional;
 /**
  * ShoppingList service.
  */
+@AllArgsConstructor
 @Service
 public class ShoppingListService {
 
     private final ShoppingListRepository shoppingListRepository;
 
-    @Autowired
-    public ShoppingListService(final ShoppingListRepository shoppingListRepository) {
-        this.shoppingListRepository = shoppingListRepository;
-    }
-
     /**
      * Returns ShoppingList(s).
      */
     public List<ShoppingList> getShoppingLists() {
-        final List<ShoppingList> shoppingLists = new ArrayList<>();
+        List<ShoppingList> shoppingLists = new ArrayList<>();
         shoppingListRepository.findAll().forEach(shoppingList -> shoppingLists.add(shoppingList));
         return shoppingLists;
     }
@@ -65,7 +61,7 @@ public class ShoppingListService {
     /**
      * Returns ShoppingList by Id.
      */
-    public ShoppingList getShoppingListById(final Long shoppingListId) {
+    public ShoppingList getShoppingListById(Long shoppingListId) {
         return shoppingListRepository.findById(shoppingListId)
                 .orElseThrow(() -> new ShoppingListNotFoundException(shoppingListId));
     }
@@ -73,7 +69,7 @@ public class ShoppingListService {
     /**
      * Returns ShoppingList by Name.
      */
-    public ShoppingList getShoppingListByName(final String name) {
+    public ShoppingList getShoppingListByName(String name) {
         return Optional.ofNullable(shoppingListRepository.findOneByName(name))
                 .orElseThrow(() -> new ShoppingListNotFoundException(-1L));
     }
@@ -81,15 +77,15 @@ public class ShoppingListService {
     /**
      * Creates ShoppingList.
      */
-    public ShoppingList createShoppingList(final ShoppingListForm form) {
-        return shoppingListRepository.save(new ShoppingList(form.getName()));
+    public ShoppingList createShoppingList(ShoppingListForm form) {
+        return shoppingListRepository.save(ShoppingList.builder().name(form.getName()).build());
     }
 
     /**
      * Updates ShoppingList.
      */
-    public ShoppingList updateShoppingList(final Long shoppingListId, final ShoppingListForm form) {
-        final ShoppingList shoppingList = shoppingListRepository.findById(shoppingListId)
+    public ShoppingList updateShoppingList(Long shoppingListId, ShoppingListForm form) {
+        ShoppingList shoppingList = shoppingListRepository.findById(shoppingListId)
                 .orElseThrow(() -> new ShoppingListNotFoundException(shoppingListId));
         shoppingList.setName(form.getName());
         return shoppingListRepository.save(shoppingList);
@@ -98,8 +94,8 @@ public class ShoppingListService {
     /**
      * Deletes ShoppingList.
      */
-    public void deleteShoppingList(final Long itemId) {
-        final ShoppingList shoppingList = shoppingListRepository.findById(itemId)
+    public void deleteShoppingList(Long itemId) {
+        ShoppingList shoppingList = shoppingListRepository.findById(itemId)
                 .orElseThrow(() -> new ShoppingListNotFoundException(itemId));
         shoppingListRepository.delete(shoppingList);
     }

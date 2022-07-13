@@ -1,7 +1,7 @@
 /*
  * ShoppingListItemService.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 
 package org.interactiverobotics.grocery.service;
 
+import lombok.AllArgsConstructor;
 import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.domain.ShoppingList;
 import org.interactiverobotics.grocery.domain.ShoppingListItem;
@@ -33,7 +34,6 @@ import org.interactiverobotics.grocery.repository.ShoppingListItemRepository;
 import org.interactiverobotics.grocery.repository.ShoppingListRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -45,6 +45,7 @@ import java.util.stream.StreamSupport;
 /**
  * ShoppingListItem service.
  */
+@AllArgsConstructor
 @Service
 public class ShoppingListItemService {
 
@@ -55,23 +56,10 @@ public class ShoppingListItemService {
     private final ShoppingListItemRepository shoppingListItemRepository;
 
     /**
-     * Parametrized constructor.
-     */
-    @Autowired
-    public ShoppingListItemService(final ShoppingListRepository shoppingListRepository,
-                                   final ItemRepository itemRepository,
-                                   final ShoppingListItemRepository shoppingListItemRepository) {
-
-        this.shoppingListRepository = shoppingListRepository;
-        this.itemRepository = itemRepository;
-        this.shoppingListItemRepository = shoppingListItemRepository;
-    }
-
-    /**
      * Returns ShoppingListItem(s).
      */
-    public List<ShoppingListItem> getShoppingListItems(final Long shoppingListId) {
-        final List<ShoppingListItem> shoppingListItems = shoppingListItemRepository.findAllByShoppingList(
+    public List<ShoppingListItem> getShoppingListItems(Long shoppingListId) {
+        List<ShoppingListItem> shoppingListItems = shoppingListItemRepository.findAllByShoppingList(
                 shoppingListRepository.findById(shoppingListId)
                         .orElseThrow(() -> new ShoppingListNotFoundException(shoppingListId)));
         LOG.debug("{} ShoppingListItem(s) found", shoppingListItems.size());
@@ -81,8 +69,8 @@ public class ShoppingListItemService {
     /**
      * Returns page of ShoppingListItem(s).
      */
-    public Page<ShoppingListItem> getShoppingListItems(Pageable pageable, final Long shoppingListId) {
-        final Page<ShoppingListItem> shoppingListItems = shoppingListItemRepository.findAllByShoppingList(pageable,
+    public Page<ShoppingListItem> getShoppingListItems(Pageable pageable, Long shoppingListId) {
+        Page<ShoppingListItem> shoppingListItems = shoppingListItemRepository.findAllByShoppingList(pageable,
                 shoppingListRepository.findById(shoppingListId)
                         .orElseThrow(() -> new ShoppingListNotFoundException(shoppingListId)));
         LOG.debug("{} ShoppingListItem(s) found for {}", shoppingListItems.getNumberOfElements(), pageable);
@@ -92,8 +80,8 @@ public class ShoppingListItemService {
     /**
      * Returns ShoppingListItem by Id.
      */
-    public ShoppingListItem getShoppingListItemById(final Long shoppingListItemId) {
-        final ShoppingListItem shoppingListItem =
+    public ShoppingListItem getShoppingListItemById(Long shoppingListItemId) {
+        ShoppingListItem shoppingListItem =
                 shoppingListItemRepository.findById(shoppingListItemId)
                         .orElseThrow(() -> new ShoppingListItemNotFoundException(shoppingListItemId));
         LOG.debug("ShoppingListItem found by Id #{}", shoppingListItemId);
@@ -103,8 +91,8 @@ public class ShoppingListItemService {
     /**
      * Returns Item(s) not included to ShoppingList.
      */
-    public List<Item> getNotAddedItems(final Long shoppingListId) {
-        final ShoppingList shoppingList = shoppingListRepository.findById(shoppingListId)
+    public List<Item> getNotAddedItems(Long shoppingListId) {
+        ShoppingList shoppingList = shoppingListRepository.findById(shoppingListId)
                 .orElseThrow(() -> new ShoppingListNotFoundException(shoppingListId));
         return StreamSupport.stream(itemRepository.findAll().spliterator(), false)
                 .filter(item ->
@@ -115,23 +103,24 @@ public class ShoppingListItemService {
     /**
      * Creates ShoppingListItem.
      */
-    public ShoppingListItem createShoppingListItem(final ShoppingListItemCreateForm form) {
+    public ShoppingListItem createShoppingListItem(ShoppingListItemCreateForm form) {
 
-        final ShoppingList shoppingList =
+        ShoppingList shoppingList =
                 shoppingListRepository.findById(form.getShoppingList())
                         .orElseThrow(() -> new ShoppingListNotFoundException(form.getShoppingList()));
 
-        final Item item = itemRepository.findById(form.getItem())
+        Item item = itemRepository.findById(form.getItem())
                 .orElseThrow(() -> new ItemNotFoundException(form.getItem()));
 
         // Quantity must be > 0
-        final Long quantity = form.getQuantity();
+        Long quantity = form.getQuantity();
         if (quantity == null || quantity <= 0) {
             throw new IllegalArgumentException("Quantity must be > 0!");
         }
 
-        final ShoppingListItem shoppingListItem =
-                shoppingListItemRepository.save(new ShoppingListItem(shoppingList, item, quantity));
+        ShoppingListItem shoppingListItem =
+                shoppingListItemRepository.save(ShoppingListItem.builder()
+                        .shoppingList(shoppingList).item(item).quantity(quantity).build());
 
         LOG.info("ShoppingListItem created: {}", shoppingListItem);
         return shoppingListItem;
@@ -140,21 +129,21 @@ public class ShoppingListItemService {
     /**
      * Updates ShoppingListItem.
      */
-    public ShoppingListItem updateShoppingListItem(final Long shoppingListItemId,
-                                                   final ShoppingListItemUpdateForm form) {
+    public ShoppingListItem updateShoppingListItem(Long shoppingListItemId,
+                                                   ShoppingListItemUpdateForm form) {
 
-        final ShoppingListItem shoppingListItem =
+        ShoppingListItem shoppingListItem =
                 shoppingListItemRepository.findById(shoppingListItemId)
                         .orElseThrow(() -> new ShoppingListItemNotFoundException(shoppingListItemId));
 
         // Quantity must be > 0
-        final Long quantity = form.getQuantity();
+        Long quantity = form.getQuantity();
         if (quantity == null || quantity <= 0) {
             throw new IllegalArgumentException("Quantity must be > 0!");
         }
         shoppingListItem.setQuantity(quantity);
 
-        final ShoppingListItem updatedShoppingListItem = shoppingListItemRepository.save(shoppingListItem);
+        ShoppingListItem updatedShoppingListItem = shoppingListItemRepository.save(shoppingListItem);
 
         LOG.info("ShoppingListItem updated: {}", updatedShoppingListItem);
         return updatedShoppingListItem;
@@ -163,8 +152,8 @@ public class ShoppingListItemService {
     /**
      * Deletes ShoppingListItem.
      */
-    public void deleteShoppingListItem(final Long shoppingListItemId) {
-        final ShoppingListItem shoppingListItem =
+    public void deleteShoppingListItem(Long shoppingListItemId) {
+        ShoppingListItem shoppingListItem =
                 shoppingListItemRepository.findById(shoppingListItemId)
                         .orElseThrow(() -> new ShoppingListItemNotFoundException(shoppingListItemId));
         shoppingListItemRepository.delete(shoppingListItem);

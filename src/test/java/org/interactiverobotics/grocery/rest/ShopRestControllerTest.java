@@ -71,7 +71,9 @@ public class ShopRestControllerTest {
 
     @Test
     public void getShops_returnsShops() throws Exception {
-        List<Shop> existingShops = List.of(new Shop(1L, "test-shop-1"), new Shop(2L, "test-shop-2"));
+        List<Shop> existingShops = List.of(
+                Shop.builder().id(1L).name("test-shop-1").build(),
+                Shop.builder().id(2L).name("test-shop-2").build());
         when(shopService.getShops()).thenReturn(existingShops);
 
         mvc.perform(get(SHOP_ENDPOINT).accept(MediaType.APPLICATION_JSON))
@@ -88,7 +90,7 @@ public class ShopRestControllerTest {
     public void getShopsPage_returnsPageOfShops() throws Exception {
         List<Shop> existingShops = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
-            existingShops.add(new Shop(i, "test-shop-" + i));
+            existingShops.add(Shop.builder().id(i).name("test-shop-" + i).build());
         }
 
         when(shopService.getShops(any(Pageable.class))).thenAnswer(invocation -> {
@@ -107,7 +109,7 @@ public class ShopRestControllerTest {
 
     @Test
     public void getShopById_returnsShop() throws Exception {
-        Shop existingShop = new Shop(1L, "test-shop");
+        Shop existingShop = Shop.builder().id(1L).name("test-shop").build();
         when(shopService.getShopById(existingShop.getId())).thenReturn(existingShop);
 
         mvc.perform(get(SHOP_ENDPOINT + existingShop.getId()).accept(MediaType.APPLICATION_JSON))
@@ -128,7 +130,7 @@ public class ShopRestControllerTest {
 
     @Test
     public void getShopByName_returnsShop() throws Exception {
-        Shop existingShop = new Shop(1L, "test-shop");
+        Shop existingShop = Shop.builder().id(1L).name("test-shop").build();
         when(shopService.getShopByName(existingShop.getName())).thenReturn(existingShop);
 
         mvc.perform(get(SHOP_ENDPOINT + "search?name=" + existingShop.getName())
@@ -161,7 +163,7 @@ public class ShopRestControllerTest {
         public Shop answer(InvocationOnMock invocation) {
             assertEquals(1, invocation.getArguments().length);
             ShopForm form = invocation.getArgument(0);
-            shop = new Shop(1L, form.getName());
+            shop = Shop.builder().id(1L).name(form.getName()).build();
             return shop;
         }
     }
@@ -189,7 +191,7 @@ public class ShopRestControllerTest {
 
         private final Shop shop;
 
-        public UpdateShopAnswer(final Shop shop) {
+        public UpdateShopAnswer(Shop shop) {
             this.shop = shop;
         }
 
@@ -214,7 +216,7 @@ public class ShopRestControllerTest {
 
     @Test
     public void updateShop_updatesAndReturnsShop() throws Exception {
-        Shop existingShop = new Shop(1L, "test-shop");
+        Shop existingShop = Shop.builder().id(1L).name("test-shop").build();
         UpdateShopAnswer updateShopAnswer = new UpdateShopAnswer(existingShop);
         when(shopService.updateShop(eq(existingShop.getId()), any(ShopForm.class))).then(updateShopAnswer);
 

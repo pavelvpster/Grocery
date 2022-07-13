@@ -71,7 +71,9 @@ public class ItemRestControllerTest {
 
     @Test
     public void getItems_returnsItems() throws Exception {
-        List<Item> existingItems = List.of(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
+        List<Item> existingItems = List.of(
+                Item.builder().id(1L).name("test-item-1").build(),
+                Item.builder().id(2L).name("test-item-2").build());
         when(itemService.getItems()).thenReturn(existingItems);
 
         mvc.perform(get(ITEM_ENDPOINT).accept(MediaType.APPLICATION_JSON))
@@ -88,7 +90,7 @@ public class ItemRestControllerTest {
     public void getItemsPage_returnsPageOfItems() throws Exception {
         List<Item> existingItems = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
-            existingItems.add(new Item(i, "test-item-" + i));
+            existingItems.add(Item.builder().id(i).name("test-item-" + i).build());
         }
 
         when(itemService.getItems(any(Pageable.class))).thenAnswer(invocation -> {
@@ -107,7 +109,7 @@ public class ItemRestControllerTest {
 
     @Test
     public void getItemById_returnsItem() throws Exception {
-        Item existingItem = new Item(1L, "test-item");
+        Item existingItem = Item.builder().id(1L).name("test-item").build();
         when(itemService.getItemById(existingItem.getId())).thenReturn(existingItem);
 
         mvc.perform(get(ITEM_ENDPOINT + existingItem.getId()).accept(MediaType.APPLICATION_JSON))
@@ -128,7 +130,7 @@ public class ItemRestControllerTest {
 
     @Test
     public void getItemByName_returnsItem() throws Exception {
-        Item existingItem = new Item(1L, "test-item");
+        Item existingItem = Item.builder().id(1L).name("test-item").build();
         when(itemService.getItemByName(existingItem.getName())).thenReturn(existingItem);
 
         mvc.perform(get(ITEM_ENDPOINT + "search?name=" + existingItem.getName())
@@ -161,7 +163,7 @@ public class ItemRestControllerTest {
         public Item answer(InvocationOnMock invocation) {
             assertEquals(1, invocation.getArguments().length);
             ItemForm form = invocation.getArgument(0);
-            item = new Item(1L, form.getName());
+            item = Item.builder().id(1L).name(form.getName()).build();
             return item;
         }
     }
@@ -189,7 +191,7 @@ public class ItemRestControllerTest {
 
         private final Item item;
 
-        public UpdateItemAnswer(final Item item) {
+        public UpdateItemAnswer(Item item) {
             this.item = item;
         }
 
@@ -214,7 +216,7 @@ public class ItemRestControllerTest {
 
     @Test
     public void updateItem_updatesAndReturnsItem() throws Exception {
-        Item existingItem = new Item(1L, "test-item");
+        Item existingItem = Item.builder().id(1L).name("test-item").build();
         UpdateItemAnswer updateItemAnswer = new UpdateItemAnswer(existingItem);
         when(itemService.updateItem(eq(existingItem.getId()), any(ItemForm.class))).then(updateItemAnswer);
 

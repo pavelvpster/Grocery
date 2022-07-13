@@ -1,7 +1,7 @@
 /*
  * Purchase.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,26 +20,21 @@
 
 package org.interactiverobotics.grocery.domain;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigDecimal;
 
 /**
  * Purchase domain class.
  */
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@EqualsAndHashCode
+@ToString
+@Builder
 @Entity
 @Table(name = "purchases")
 public class Purchase {
@@ -62,92 +57,4 @@ public class Purchase {
 
     @Column
     private BigDecimal price;
-
-    public Purchase() {
-    }
-
-    /**
-     * Parametrized constructor.
-     */
-    public Purchase(final Visit visit, final Item item) {
-        this.visit = visit;
-        this.item = item;
-        this.quantity = 0L;
-    }
-
-    /**
-     * Parametrized constructor.
-     */
-    public Purchase(final Visit visit, final Item item, final Long quantity, final BigDecimal price) {
-        this.visit = visit;
-        this.item = item;
-        this.quantity = quantity;
-        this.price = price;
-    }
-
-    /**
-     * Parametrized constructor.
-     */
-    public Purchase(final Long id, final Visit visit, final Item item, final Long quantity, final BigDecimal price) {
-        this.id = id;
-        this.visit = visit;
-        this.item = item;
-        this.quantity = quantity;
-        this.price = price;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Visit getVisit() {
-        return visit;
-    }
-
-    public void setVisit(Visit visit) {
-        this.visit = visit;
-    }
-
-    public Item getItem() {
-        return item;
-    }
-
-    public void setItem(Item item) {
-        this.item = item;
-    }
-
-    public Long getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Long quantity) {
-        this.quantity = quantity;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        return EqualsBuilder.reflectionEquals(this, object);
-    }
-
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this);
-    }
 }

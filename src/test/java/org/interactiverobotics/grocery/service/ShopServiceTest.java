@@ -62,7 +62,9 @@ public class ShopServiceTest {
 
     @Test
     public void getShops_returnsShops() {
-        List<Shop> existingShops = List.of(new Shop(1L, "test-shop-1"), new Shop(2L, "test-shop-2"));
+        List<Shop> existingShops = List.of(
+                Shop.builder().id(1L).name("test-shop-1").build(),
+                Shop.builder().id(2L).name("test-shop-2").build());
         when(shopRepository.findAll()).thenReturn(existingShops);
 
         List<Shop> shops = shopService.getShops();
@@ -74,7 +76,7 @@ public class ShopServiceTest {
     public void getShops_givenPageRequest_returnsPageOfShops() {
         List<Shop> existingShops = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
-            existingShops.add(new Shop(i, "test-shop-" + i));
+            existingShops.add(Shop.builder().id(i).name("test-shop-" + i).build());
         }
 
         when(shopRepository.findAll(any(Pageable.class))).thenAnswer(invocation -> {
@@ -91,7 +93,7 @@ public class ShopServiceTest {
 
     @Test
     public void getShopById_returnsShop() {
-        Shop existingShop = new Shop(1L, TEST_SHOP_NAME);
+        Shop existingShop = Shop.builder().id(1L).name(TEST_SHOP_NAME).build();
         when(shopRepository.findById(existingShop.getId())).thenReturn(Optional.of(existingShop));
 
         Shop shop = shopService.getShopById(existingShop.getId());
@@ -110,7 +112,7 @@ public class ShopServiceTest {
 
     @Test
     public void getShopByName_returnsShop() {
-        Shop existingShop = new Shop(1L, TEST_SHOP_NAME);
+        Shop existingShop = Shop.builder().id(1L).name(TEST_SHOP_NAME).build();
         when(shopRepository.findOneByName(existingShop.getName())).thenReturn(existingShop);
 
         Shop shop = shopService.getShopByName(TEST_SHOP_NAME);
@@ -148,7 +150,7 @@ public class ShopServiceTest {
 
     @Test
     public void updateShop_updatesAndReturnsShop() {
-        Shop existingShop = new Shop(1L, TEST_SHOP_NAME);
+        Shop existingShop = Shop.builder().id(1L).name(TEST_SHOP_NAME).build();
         when(shopRepository.findById(existingShop.getId())).thenReturn(Optional.of(existingShop));
 
         when(shopRepository.save(any(Shop.class))).then(invocation -> {
@@ -181,7 +183,7 @@ public class ShopServiceTest {
 
     @Test
     public void deleteShop_deletesShop() {
-        Shop existingShop = new Shop(1L, TEST_SHOP_NAME);
+        Shop existingShop = Shop.builder().id(1L).name(TEST_SHOP_NAME).build();
         when(shopRepository.findById(existingShop.getId())).thenReturn(Optional.of(existingShop));
 
         shopService.deleteShop(existingShop.getId());

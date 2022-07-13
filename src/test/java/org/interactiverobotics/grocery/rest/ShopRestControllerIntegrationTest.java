@@ -68,7 +68,7 @@ public class ShopRestControllerIntegrationTest {
     @Test
     public void getShops_returnsShops() {
         List<Shop> existingShops = new ArrayList<>();
-        shopRepository.saveAll(List.of(new Shop("test-shop-1"), new Shop("test-shop-2")))
+        shopRepository.saveAll(List.of(Shop.builder().name("test-shop-1").build(), Shop.builder().name("test-shop-2").build()))
                 .forEach(shop -> existingShops.add(shop));
 
         final ResponseEntity<Shop[]> response = restTemplate.getForEntity(SHOP_ENDPOINT, Shop[].class);
@@ -84,7 +84,7 @@ public class ShopRestControllerIntegrationTest {
     public void getShopsPage_returnsPageOfShops() {
         List<Shop> existingShops = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
-            existingShops.add(shopRepository.save(new Shop("test-shop-" + i)));
+            existingShops.add(shopRepository.save(Shop.builder().name("test-shop-" + i).build()));
         }
 
         ParameterizedTypeReference<PageResponse<Shop>> responseType =
@@ -103,7 +103,7 @@ public class ShopRestControllerIntegrationTest {
 
     @Test
     public void getShopById_returnsShop() {
-        Shop existingShop = shopRepository.save(new Shop(TEST_SHOP_NAME));
+        Shop existingShop = shopRepository.save(Shop.builder().name(TEST_SHOP_NAME).build());
 
         ResponseEntity<Shop> response = restTemplate
                 .getForEntity(SHOP_ENDPOINT + existingShop.getId(), Shop.class);
@@ -124,7 +124,7 @@ public class ShopRestControllerIntegrationTest {
 
     @Test
     public void getShopByName_returnsShop() {
-        Shop existingShop = shopRepository.save(new Shop(TEST_SHOP_NAME));
+        Shop existingShop = shopRepository.save(Shop.builder().name(TEST_SHOP_NAME).build());
 
         ResponseEntity<Shop> response = restTemplate
                 .getForEntity(SHOP_ENDPOINT + "search?name=" + existingShop.getName(), Shop.class);
@@ -160,7 +160,7 @@ public class ShopRestControllerIntegrationTest {
 
     @Test
     public void updateShop_updatesAndReturnsShop() {
-        Shop existingShop = shopRepository.save(new Shop(TEST_SHOP_NAME));
+        Shop existingShop = shopRepository.save(Shop.builder().name(TEST_SHOP_NAME).build());
 
         ShopForm form = new ShopForm();
         form.setName("updated-test-shop");
@@ -189,7 +189,7 @@ public class ShopRestControllerIntegrationTest {
 
     @Test
     public void deleteShop_deletesShop() {
-        Shop existingShop = shopRepository.save(new Shop(TEST_SHOP_NAME));
+        Shop existingShop = shopRepository.save(Shop.builder().name(TEST_SHOP_NAME).build());
 
         restTemplate.delete(SHOP_ENDPOINT + existingShop.getId());
 

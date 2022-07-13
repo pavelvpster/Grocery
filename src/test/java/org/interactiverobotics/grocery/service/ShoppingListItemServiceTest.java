@@ -81,10 +81,10 @@ public class ShoppingListItemServiceTest {
      */
     @BeforeEach
     public void setUp() {
-        shoppingList = new ShoppingList(1L, "test-shopping-list");
+        shoppingList = ShoppingList.builder().id(1L).name("test-shopping-list").build();
         lenient().when(shoppingListRepository.findById(shoppingList.getId())).thenReturn(Optional.of(shoppingList));
 
-        item = new Item(1L, "test-item");
+        item = Item.builder().id(1L).name("test-item").build();
         lenient().when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
     }
 
@@ -92,8 +92,8 @@ public class ShoppingListItemServiceTest {
     @Test
     public void getShoppingListItems_returnsShoppingListItems() {
         List<ShoppingListItem> existingShoppingListItems = List.of(
-                new ShoppingListItem(shoppingList, item, 1L),
-                new ShoppingListItem(shoppingList, item, 2L));
+                ShoppingListItem.builder().shoppingList(shoppingList).item(item).quantity(1L).build(),
+                ShoppingListItem.builder().shoppingList(shoppingList).item(item).quantity(2L).build());
         when(shoppingListItemRepository.findAllByShoppingList(shoppingList)).thenReturn(existingShoppingListItems);
 
         List<ShoppingListItem> shoppingListItems =
@@ -112,7 +112,8 @@ public class ShoppingListItemServiceTest {
     public void getShoppingListItems_givenPageRequest_returnsPageOfShoppingListItems() {
         List<ShoppingListItem> existingShoppingListItems = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
-            existingShoppingListItems.add(new ShoppingListItem(i + 1, shoppingList, item, 1L));
+            existingShoppingListItems.add(ShoppingListItem.builder()
+                    .id(i + 1).shoppingList(shoppingList).item(item).quantity(1L).build());
         }
 
         when(shoppingListItemRepository.findAllByShoppingList(any(Pageable.class), eq(shoppingList)))
@@ -137,7 +138,8 @@ public class ShoppingListItemServiceTest {
 
     @Test
     public void getShoppingListItemById_returnsShoppingListItem() {
-        ShoppingListItem existingShoppingListItem = new ShoppingListItem(1L, shoppingList, item, 1L);
+        ShoppingListItem existingShoppingListItem = ShoppingListItem.builder()
+                .id(1L).shoppingList(shoppingList).item(item).quantity(1L).build();
         when(shoppingListItemRepository.findById(existingShoppingListItem.getId()))
                 .thenReturn(Optional.of(existingShoppingListItem));
 
@@ -158,12 +160,13 @@ public class ShoppingListItemServiceTest {
 
     @Test
     public void getNotAddedItems_returnsItems() {
-        List<Item> existingItems = List.of(new Item(1L, "test-item-1"),
-                new Item(2L, "test-item-2"));
+        List<Item> existingItems = List.of(
+                Item.builder().id(1L).name("test-item-1").build(),
+                Item.builder().id(2L).name("test-item-2").build());
         when(itemRepository.findAll()).thenReturn(existingItems);
 
-        ShoppingListItem existingShoppingListItem =
-                new ShoppingListItem(1L, shoppingList, existingItems.get(0), 1L);
+        ShoppingListItem existingShoppingListItem = ShoppingListItem.builder()
+                .id(1L).shoppingList(shoppingList).item(existingItems.get(0)).quantity(1L).build();
 
         when(shoppingListItemRepository.findOneByShoppingListAndItem(shoppingList, existingItems.get(0)))
                 .thenReturn(existingShoppingListItem);
@@ -219,7 +222,8 @@ public class ShoppingListItemServiceTest {
 
     @Test
     public void updateShoppingListItem_updatesAndReturnsShoppingListItem() {
-        ShoppingListItem existingShoppingListItem = new ShoppingListItem(1L, shoppingList, item, 1L);
+        ShoppingListItem existingShoppingListItem = ShoppingListItem.builder()
+                .id(1L).shoppingList(shoppingList).item(item).quantity(1L).build();
         when(shoppingListItemRepository.findById(existingShoppingListItem.getId()))
                 .thenReturn(Optional.of(existingShoppingListItem));
 
@@ -264,7 +268,8 @@ public class ShoppingListItemServiceTest {
 
     @Test
     public void deleteShoppingListItem_deletesShoppingListItem() {
-        ShoppingListItem existingShoppingListItem = new ShoppingListItem(1L, shoppingList, item, 1L);
+        ShoppingListItem existingShoppingListItem = ShoppingListItem.builder()
+                .id(1L).shoppingList(shoppingList).item(item).quantity(1L).build();
         when(shoppingListItemRepository.findById(existingShoppingListItem.getId()))
                 .thenReturn(Optional.of(existingShoppingListItem));
 

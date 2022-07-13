@@ -69,7 +69,7 @@ public class VisitRestControllerIntegrationTest {
     @BeforeEach
     public void setUp() {
         visitRepository.deleteAll();
-        shop = shopRepository.save(new Shop("test-shop"));
+        shop = shopRepository.save(Shop.builder().name("test-shop").build());
     }
 
     @AfterEach
@@ -81,7 +81,7 @@ public class VisitRestControllerIntegrationTest {
     @Test
     public void getVisits_returnsVisits() {
         List<Visit> existingVisits = new ArrayList<>();
-        visitRepository.saveAll(List.of(new Visit(shop), new Visit(shop)))
+        visitRepository.saveAll(List.of(Visit.builder().shop(shop).build(), Visit.builder().shop(shop).build()))
                 .forEach(visit -> existingVisits.add(visit));
 
         ResponseEntity<Visit[]> response = restTemplate.getForEntity(VISIT_ENDPOINT, Visit[].class);
@@ -97,7 +97,7 @@ public class VisitRestControllerIntegrationTest {
     public void getVisitsPage_returnsPageOfVisits() {
         List<Visit> existingVisits = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
-            existingVisits.add(visitRepository.save(new Visit(shop)));
+            existingVisits.add(visitRepository.save(Visit.builder().shop(shop).build()));
         }
 
         ParameterizedTypeReference<PageResponse<Visit>> responseType =
@@ -117,7 +117,7 @@ public class VisitRestControllerIntegrationTest {
 
     @Test
     public void getVisitById_returnsVisit() {
-        Visit existingVisit = visitRepository.save(new Visit(shop));
+        Visit existingVisit = visitRepository.save(Visit.builder().shop(shop).build());
 
         ResponseEntity<Visit> response = restTemplate
                 .getForEntity(VISIT_ENDPOINT + existingVisit.getId(), Visit.class);
@@ -140,7 +140,7 @@ public class VisitRestControllerIntegrationTest {
     @Test
     public void getVisitsByShopId_returnsVisits() {
         List<Visit> existingVisits = new ArrayList<>();
-        visitRepository.saveAll(List.of(new Visit(shop), new Visit(shop)))
+        visitRepository.saveAll(List.of(Visit.builder().shop(shop).build(), Visit.builder().shop(shop).build()))
                 .forEach(visit -> existingVisits.add(visit));
 
         ResponseEntity<Visit[]> response = restTemplate
@@ -182,7 +182,7 @@ public class VisitRestControllerIntegrationTest {
 
     @Test
     public void startVisit_startsAndReturnsVisit() {
-        Visit existingVisit = visitRepository.save(new Visit(shop));
+        Visit existingVisit = visitRepository.save(Visit.builder().shop(shop).build());
 
         ResponseEntity<Visit> response = restTemplate
                 .postForEntity(VISIT_ENDPOINT + existingVisit.getId() + "/start", null, Visit.class);
@@ -205,7 +205,7 @@ public class VisitRestControllerIntegrationTest {
 
     @Test
     public void completeVisit_completesAndReturnsVisit() {
-        Visit existingVisit = visitRepository.save(new Visit(shop));
+        Visit existingVisit = visitRepository.save(Visit.builder().shop(shop).build());
 
         ResponseEntity<Visit> response = restTemplate
                 .postForEntity(VISIT_ENDPOINT + existingVisit.getId() + "/complete", null, Visit.class);
@@ -229,7 +229,7 @@ public class VisitRestControllerIntegrationTest {
 
     @Test
     public void deleteVisit_deletesVisit() {
-        Visit existingVisit = visitRepository.save(new Visit(shop));
+        Visit existingVisit = visitRepository.save(Visit.builder().shop(shop).build());
 
         restTemplate.delete(VISIT_ENDPOINT + existingVisit.getId());
 

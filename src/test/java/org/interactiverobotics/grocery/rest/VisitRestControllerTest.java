@@ -85,7 +85,9 @@ public class VisitRestControllerTest {
 
     @Test
     public void getVisits_returnsVisits() throws Exception {
-        List<Visit> existingVisits = List.of(new Visit(1L, shop), new Visit(2L, shop));
+        List<Visit> existingVisits = List.of(
+                Visit.builder().id(1L).shop(shop).build(),
+                Visit.builder().id(2L).shop(shop).build());
         when(visitService.getVisits()).thenReturn(existingVisits);
 
         mvc.perform(get(VISIT_ENDPOINT).accept(MediaType.APPLICATION_JSON))
@@ -102,7 +104,7 @@ public class VisitRestControllerTest {
     public void getVisitsPage_returnsPageOfVisits() throws Exception {
         List<Visit> existingVisits = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
-            existingVisits.add(new Visit(i, shop));
+            existingVisits.add(Visit.builder().id(i).shop(shop).build());
         }
 
         when(visitService.getVisits(any(Pageable.class))).thenAnswer(invocation -> {
@@ -121,7 +123,7 @@ public class VisitRestControllerTest {
 
     @Test
     public void getVisitById_returnsVisit() throws Exception {
-        Visit existingVisit = new Visit(1L, shop);
+        Visit existingVisit = Visit.builder().id(1L).shop(shop).build();
         when(visitService.getVisitById(existingVisit.getId())).thenReturn(existingVisit);
 
         mvc.perform(get(VISIT_ENDPOINT + existingVisit.getId()).accept(MediaType.APPLICATION_JSON))
@@ -142,7 +144,7 @@ public class VisitRestControllerTest {
 
     @Test
     public void getVisitsByShopId_returnsVisit() throws Exception {
-        Visit existingVisit = new Visit(1L, shop);
+        Visit existingVisit = Visit.builder().id(1L).shop(shop).build();
         when(visitService.getVisitsByShopId(shop.getId())).thenReturn(Collections.singletonList(existingVisit));
 
         mvc.perform(get(VISIT_SHOP_ENDPOINT + shop.getId()).accept(MediaType.APPLICATION_JSON))
@@ -166,7 +168,7 @@ public class VisitRestControllerTest {
 
         private final Shop shop;
 
-        public CreateVisitAnswer(final Shop shop) {
+        public CreateVisitAnswer(Shop shop) {
             this.shop = shop;
         }
 
@@ -183,7 +185,7 @@ public class VisitRestControllerTest {
             Long shopId = invocation.getArgument(0);
             assertEquals(shop.getId(), shopId);
 
-            visit = new Visit(1L, shop);
+            visit = Visit.builder().id(1L).shop(shop).build();
             return visit;
         }
     }
@@ -216,7 +218,7 @@ public class VisitRestControllerTest {
 
     @Test
     public void startVisit_startsAndReturnsVisit() throws Exception {
-        Visit existingVisit = new Visit(1L, shop);
+        Visit existingVisit = Visit.builder().id(1L).shop(shop).build();
         when(visitService.startVisit(existingVisit.getId())).thenReturn(existingVisit);
 
         mvc.perform(post(VISIT_ENDPOINT + existingVisit.getId() + "/start")
@@ -240,7 +242,7 @@ public class VisitRestControllerTest {
 
     @Test
     public void completeVisit_completesAndReturnsVisit() throws Exception {
-        Visit existingVisit = new Visit(1L, shop);
+        Visit existingVisit = Visit.builder().id(1L).shop(shop).build();
         when(visitService.completeVisit(existingVisit.getId())).thenReturn(existingVisit);
 
         mvc.perform(post(VISIT_ENDPOINT + existingVisit.getId() + "/complete")
