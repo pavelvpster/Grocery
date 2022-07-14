@@ -145,8 +145,7 @@ public class ShopRestControllerIntegrationTest {
 
     @Test
     public void createShop_createsAndReturnsShop() {
-        ShopForm form = new ShopForm();
-        form.setName(TEST_SHOP_NAME);
+        ShopForm form = ShopForm.builder().name(TEST_SHOP_NAME).build();
 
         ResponseEntity<Shop> response = restTemplate.postForEntity(SHOP_ENDPOINT, form, Shop.class);
 
@@ -162,8 +161,7 @@ public class ShopRestControllerIntegrationTest {
     public void updateShop_updatesAndReturnsShop() {
         Shop existingShop = shopRepository.save(Shop.builder().name(TEST_SHOP_NAME).build());
 
-        ShopForm form = new ShopForm();
-        form.setName("updated-test-shop");
+        ShopForm form = ShopForm.builder().name("updated-test-shop").build();
 
         ResponseEntity<Shop> response = restTemplate
                 .postForEntity(SHOP_ENDPOINT + existingShop.getId(), form, Shop.class);
@@ -178,8 +176,7 @@ public class ShopRestControllerIntegrationTest {
 
     @Test
     public void updateShop_whenShopDoesNotExist_returnsError() {
-        ShopForm form = new ShopForm();
-        form.setName("updated-test-shop");
+        ShopForm form = ShopForm.builder().name("updated-test-shop").build();
 
         ResponseEntity<Shop> response = restTemplate
                 .postForEntity(SHOP_ENDPOINT + Long.valueOf(999L), form, Shop.class);

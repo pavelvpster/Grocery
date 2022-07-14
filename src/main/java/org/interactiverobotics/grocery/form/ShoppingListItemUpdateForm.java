@@ -1,7 +1,7 @@
 /*
  * ShoppingListItemUpdateForm.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,30 +20,22 @@
 
 package org.interactiverobotics.grocery.form;
 
+import lombok.*;
+
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 /**
  * Form to update ShoppingListItem.
  */
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@Builder
 public class ShoppingListItemUpdateForm {
 
     @NotNull
     @Min(1)
     private Long quantity;
-
-    public ShoppingListItemUpdateForm() {
-    }
-
-    public ShoppingListItemUpdateForm(final Long quantity) {
-        this.quantity = quantity;
-    }
-
-    public Long getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(final Long quantity) {
-        this.quantity = quantity;
-    }
 }

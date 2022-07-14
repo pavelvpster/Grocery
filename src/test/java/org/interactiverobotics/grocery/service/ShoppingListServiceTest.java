@@ -137,7 +137,7 @@ public class ShoppingListServiceTest {
             return invocation.getArgument(0);
         });
 
-        ShoppingListForm form = new ShoppingListForm(TEST_SHOPPING_LIST_NAME);
+        ShoppingListForm form = ShoppingListForm.builder().name(TEST_SHOPPING_LIST_NAME).build();
 
         ShoppingList shoppingList = shoppingListService.createShoppingList(form);
 
@@ -160,7 +160,7 @@ public class ShoppingListServiceTest {
             return invocation.getArgument(0);
         });
 
-        ShoppingListForm form = new ShoppingListForm("updated-test-shopping-list");
+        ShoppingListForm form = ShoppingListForm.builder().name("updated-test-shopping-list").build();
 
         ShoppingList shoppingList = shoppingListService.updateShoppingList(existingShoppingList.getId(), form);
 
@@ -177,7 +177,7 @@ public class ShoppingListServiceTest {
         assertThrows(ShoppingListNotFoundException.class, () -> {
             when(shoppingListRepository.findById(any())).thenReturn(Optional.empty());
 
-            ShoppingListForm form = new ShoppingListForm("updated-test-shopping-list");
+            ShoppingListForm form = ShoppingListForm.builder().name("updated-test-shopping-list").build();
 
             shoppingListService.updateShoppingList(999L, form);
         });

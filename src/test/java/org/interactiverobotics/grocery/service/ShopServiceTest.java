@@ -136,7 +136,7 @@ public class ShopServiceTest {
             return invocation.getArgument(0);
         });
 
-        ShopForm form = new ShopForm(TEST_SHOP_NAME);
+        ShopForm form = ShopForm.builder().name(TEST_SHOP_NAME).build();
 
         Shop shop = shopService.createShop(form);
 
@@ -158,7 +158,7 @@ public class ShopServiceTest {
             return invocation.getArgument(0);
         });
 
-        ShopForm form = new ShopForm("updated-test-shop");
+        ShopForm form = ShopForm.builder().name("updated-test-shop").build();
 
         Shop shop = shopService.updateShop(existingShop.getId(), form);
 
@@ -175,7 +175,7 @@ public class ShopServiceTest {
         assertThrows(ShopNotFoundException.class, () -> {
             when(shopRepository.findById(any())).thenReturn(Optional.empty());
 
-            ShopForm form = new ShopForm("updated-test-shop");
+            ShopForm form = ShopForm.builder().name("updated-test-shop").build();
 
             shopService.updateShop(999L, form);
         });

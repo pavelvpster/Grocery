@@ -136,7 +136,7 @@ public class ItemServiceTest {
             return invocation.getArgument(0);
         });
 
-        ItemForm form = new ItemForm(TEST_ITEM_NAME);
+        ItemForm form = ItemForm.builder().name(TEST_ITEM_NAME).build();
 
         Item item = itemService.createItem(form);
 
@@ -158,7 +158,7 @@ public class ItemServiceTest {
             return invocation.getArgument(0);
         });
 
-        ItemForm form = new ItemForm("updated-test-item");
+        ItemForm form = ItemForm.builder().name("updated-test-item").build();
 
         Item item = itemService.updateItem(existingItem.getId(), form);
 
@@ -175,7 +175,7 @@ public class ItemServiceTest {
         assertThrows(ItemNotFoundException.class, () -> {
             when(itemRepository.findById(any())).thenReturn(Optional.empty());
 
-            ItemForm form = new ItemForm("updated-test-item");
+            ItemForm form = ItemForm.builder().name("updated-test-item").build();
 
             itemService.updateItem(999L, form);
         });

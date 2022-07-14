@@ -186,8 +186,8 @@ public class ShoppingListItemServiceTest {
 
         Long quantity = 1L;
 
-        ShoppingListItem shoppingListItem = shoppingListItemService
-                .createShoppingListItem(new ShoppingListItemCreateForm(shoppingList.getId(), item.getId(), quantity));
+        ShoppingListItem shoppingListItem = shoppingListItemService.createShoppingListItem(ShoppingListItemCreateForm.builder()
+                .shoppingList(shoppingList.getId()).item(item.getId()).quantity(quantity).build());
 
         ArgumentCaptor<ShoppingListItem> captor = ArgumentCaptor.forClass(ShoppingListItem.class);
         verify(shoppingListItemRepository).save(captor.capture());
@@ -203,21 +203,21 @@ public class ShoppingListItemServiceTest {
     public void createShoppingListItem_whenShoppingListDoesNotExist_throwsException() {
         assertThrows(ShoppingListNotFoundException.class, () ->
                 shoppingListItemService.createShoppingListItem(
-                        new ShoppingListItemCreateForm(999L, item.getId(), 1L)));
+                        ShoppingListItemCreateForm.builder().shoppingList(999L).item(item.getId()).quantity(1L).build()));
     }
 
     @Test
     public void createShoppingListItem_whenItemDoesNotExist_throwsExceptions() {
         assertThrows(ItemNotFoundException.class, () ->
                 shoppingListItemService.createShoppingListItem(
-                        new ShoppingListItemCreateForm(shoppingList.getId(),999L, 1L)));
+                        ShoppingListItemCreateForm.builder().shoppingList(shoppingList.getId()).item(999L).quantity(1L).build()));
     }
 
     @Test
     public void createShoppingListItem_whenQuantityLessOrEqualToZero_throwsExceptions() {
         assertThrows(IllegalArgumentException.class, () ->
                 shoppingListItemService.createShoppingListItem(
-                        new ShoppingListItemCreateForm(shoppingList.getId(), item.getId(), 0L)));
+                        ShoppingListItemCreateForm.builder().shoppingList(shoppingList.getId()).item(item.getId()).quantity(0L).build()));
     }
 
     @Test
@@ -235,7 +235,8 @@ public class ShoppingListItemServiceTest {
         Long quantity = 2L;
 
         ShoppingListItem shoppingListItem = shoppingListItemService
-                .updateShoppingListItem(existingShoppingListItem.getId(), new ShoppingListItemUpdateForm(quantity));
+                .updateShoppingListItem(existingShoppingListItem.getId(),
+                        ShoppingListItemUpdateForm.builder().quantity(quantity).build());
 
         ArgumentCaptor<ShoppingListItem> captor = ArgumentCaptor.forClass(ShoppingListItem.class);
         verify(shoppingListItemRepository).save(captor.capture());
@@ -251,7 +252,7 @@ public class ShoppingListItemServiceTest {
     public void updateShoppingListItem_whenShoppingListItemDoesNotExist_throwsException() {
         assertThrows(ShoppingListItemNotFoundException.class, () ->
                 shoppingListItemService.updateShoppingListItem(999L,
-                        new ShoppingListItemUpdateForm(1L)));
+                        ShoppingListItemUpdateForm.builder().quantity(1L).build()));
     }
 
     @Test
@@ -262,7 +263,7 @@ public class ShoppingListItemServiceTest {
                     .thenReturn(Optional.of(existingShoppingListItem));
 
             shoppingListItemService.updateShoppingListItem(existingShoppingListItem.getId(),
-                    new ShoppingListItemUpdateForm(0L));
+                    ShoppingListItemUpdateForm.builder().quantity(0L).build());
         });
     }
 

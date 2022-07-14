@@ -145,8 +145,7 @@ public class ItemRestControllerIntegrationTest {
 
     @Test
     public void createItem_createsAndReturnsItem() {
-        ItemForm form = new ItemForm();
-        form.setName("test-item");
+        ItemForm form = ItemForm.builder().name("test-item").build();
 
         ResponseEntity<Item> response = restTemplate.postForEntity(ITEM_ENDPOINT, form, Item.class);
 
@@ -162,8 +161,7 @@ public class ItemRestControllerIntegrationTest {
     public void updateItem_updateaAndReturnsItem() {
         Item existingItem = itemRepository.save(Item.builder().name(TEST_ITEM_NAME).build());
 
-        ItemForm form = new ItemForm();
-        form.setName("updated-test-item");
+        ItemForm form = ItemForm.builder().name("updated-test-item").build();
 
         ResponseEntity<Item> response = restTemplate
                 .postForEntity(ITEM_ENDPOINT + existingItem.getId(), form, Item.class);
@@ -178,8 +176,7 @@ public class ItemRestControllerIntegrationTest {
 
     @Test
     public void updateItem_whenItemDoesNotExist_returnsError() {
-        ItemForm form = new ItemForm();
-        form.setName("updated-test-item");
+        ItemForm form = ItemForm.builder().name("updated-test-item").build();
 
         final ResponseEntity<Item> response = restTemplate
                 .postForEntity(ITEM_ENDPOINT + Long.valueOf(999L), form, Item.class);
