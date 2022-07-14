@@ -22,34 +22,26 @@ package org.interactiverobotics.grocery.rest;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.AllArgsConstructor;
 import org.interactiverobotics.grocery.domain.Visit;
 import org.interactiverobotics.grocery.service.VisitService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 /**
  * Visit REST controller.
  */
+@AllArgsConstructor
 @Api(value = "Visit")
 @RestController
 @RequestMapping(value = "/api/v1/visit")
 public class VisitRestController {
 
     private final VisitService visitService;
-
-    @Autowired
-    public VisitRestController(final VisitService visitService) {
-        this.visitService = visitService;
-    }
 
     @ApiOperation(value = "Get all Visit(s)", produces = MediaType.APPLICATION_JSON_VALUE)
     @RequestMapping(value = {"", "/"}, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

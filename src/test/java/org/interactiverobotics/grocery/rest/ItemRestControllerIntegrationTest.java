@@ -68,7 +68,7 @@ public class ItemRestControllerIntegrationTest {
     @Test
     public void getItems_returnsItems() {
         List<Item> existingItems = new ArrayList<>();
-        itemRepository.saveAll(List.of(new Item("test-item-1"), new Item("test-item-2")))
+        itemRepository.saveAll(List.of(Item.builder().name("test-item-1").build(), Item.builder().name("test-item-2").build()))
                 .forEach(item -> existingItems.add(item));
 
         ResponseEntity<Item[]> response = restTemplate.getForEntity(ITEM_ENDPOINT, Item[].class);
@@ -84,7 +84,7 @@ public class ItemRestControllerIntegrationTest {
     public void getItemsPage_returnsPageOfItems() {
         List<Item> existingItems = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
-            existingItems.add(itemRepository.save(new Item("test-item-" + i)));
+            existingItems.add(itemRepository.save(Item.builder().name("test-item-" + i).build()));
         }
 
         ParameterizedTypeReference<PageResponse<Item>> responseType =
@@ -103,7 +103,7 @@ public class ItemRestControllerIntegrationTest {
 
     @Test
     public void getItemById_returnsItem() {
-        Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
+        Item existingItem = itemRepository.save(Item.builder().name(TEST_ITEM_NAME).build());
 
         ResponseEntity<Item> response = restTemplate
                 .getForEntity(ITEM_ENDPOINT + existingItem.getId(), Item.class);
@@ -124,7 +124,7 @@ public class ItemRestControllerIntegrationTest {
 
     @Test
     public void getItemByName_returnsItem() {
-        Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
+        Item existingItem = itemRepository.save(Item.builder().name(TEST_ITEM_NAME).build());
 
         ResponseEntity<Item> response = restTemplate
                 .getForEntity(ITEM_ENDPOINT + "search?name=" + existingItem.getName(), Item.class);
@@ -145,8 +145,7 @@ public class ItemRestControllerIntegrationTest {
 
     @Test
     public void createItem_createsAndReturnsItem() {
-        ItemForm form = new ItemForm();
-        form.setName("test-item");
+        ItemForm form = ItemForm.builder().name("test-item").build();
 
         ResponseEntity<Item> response = restTemplate.postForEntity(ITEM_ENDPOINT, form, Item.class);
 
@@ -160,10 +159,9 @@ public class ItemRestControllerIntegrationTest {
 
     @Test
     public void updateItem_updateaAndReturnsItem() {
-        Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
+        Item existingItem = itemRepository.save(Item.builder().name(TEST_ITEM_NAME).build());
 
-        ItemForm form = new ItemForm();
-        form.setName("updated-test-item");
+        ItemForm form = ItemForm.builder().name("updated-test-item").build();
 
         ResponseEntity<Item> response = restTemplate
                 .postForEntity(ITEM_ENDPOINT + existingItem.getId(), form, Item.class);
@@ -178,8 +176,7 @@ public class ItemRestControllerIntegrationTest {
 
     @Test
     public void updateItem_whenItemDoesNotExist_returnsError() {
-        ItemForm form = new ItemForm();
-        form.setName("updated-test-item");
+        ItemForm form = ItemForm.builder().name("updated-test-item").build();
 
         final ResponseEntity<Item> response = restTemplate
                 .postForEntity(ITEM_ENDPOINT + Long.valueOf(999L), form, Item.class);
@@ -189,7 +186,7 @@ public class ItemRestControllerIntegrationTest {
 
     @Test
     public void deleteItem_deletesItem() {
-        Item existingItem = itemRepository.save(new Item(TEST_ITEM_NAME));
+        Item existingItem = itemRepository.save(Item.builder().name(TEST_ITEM_NAME).build());
 
         restTemplate.delete(ITEM_ENDPOINT + existingItem.getId());
 

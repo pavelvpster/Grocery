@@ -20,25 +20,20 @@
 
 package org.interactiverobotics.grocery.domain;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * ShoppingListItem domain class.
  */
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@EqualsAndHashCode
+@ToString
+@Builder
 @Entity
 @Table(name = "shopping_list_items")
 public class ShoppingListItem {
@@ -59,74 +54,4 @@ public class ShoppingListItem {
 
     @Column
     private Long quantity;
-
-    public ShoppingListItem() {
-    }
-
-    /**
-     * Parametrized constructor.
-     */
-    public ShoppingListItem(final ShoppingList shoppingList, final Item item, final Long quantity) {
-        this.shoppingList = shoppingList;
-        this.item = item;
-        this.quantity = quantity;
-    }
-
-    /**
-     * Parametrized constructor.
-     */
-    public ShoppingListItem(final Long id, final ShoppingList shoppingList, final Item item, final Long quantity) {
-        this.id = id;
-        this.shoppingList = shoppingList;
-        this.item = item;
-        this.quantity = quantity;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public ShoppingList getShoppingList() {
-        return shoppingList;
-    }
-
-    public void setShoppingList(ShoppingList shoppingList) {
-        this.shoppingList = shoppingList;
-    }
-
-    public Item getItem() {
-        return item;
-    }
-
-    public void setItem(Item item) {
-        this.item = item;
-    }
-
-    public Long getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Long quantity) {
-        this.quantity = quantity;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        return EqualsBuilder.reflectionEquals(this, object);
-    }
-
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this);
-    }
-
 }

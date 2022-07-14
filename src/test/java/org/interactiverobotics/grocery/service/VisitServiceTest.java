@@ -72,13 +72,15 @@ public class VisitServiceTest {
      */
     @BeforeEach
     public void setUp() {
-        shop = new Shop(1L, "test-shop");
+        shop = Shop.builder().id(1L).name("test-shop").build();
     }
 
 
     @Test
     public void getVisits_returnsVisits() {
-        List<Visit> existingVisits = List.of(new Visit(1L, shop), new Visit(2L, shop));
+        List<Visit> existingVisits = List.of(
+                Visit.builder().id(1L).shop(shop).build(),
+                Visit.builder().id(2L).shop(shop).build());
         when(visitRepository.findAll()).thenReturn(existingVisits);
 
         List<Visit> visits = visitService.getVisits();
@@ -90,7 +92,7 @@ public class VisitServiceTest {
     public void getVisits_givenPageRequest_returnsPageOfVisits() {
         List<Visit> existingVisits = new ArrayList<>();
         for (long i = 0; i < 100; i++) {
-            existingVisits.add(new Visit(i, shop));
+            existingVisits.add(Visit.builder().id(i).shop(shop).build());
         }
 
         when(visitRepository.findAll(any(Pageable.class))).thenAnswer(invocation -> {
@@ -107,7 +109,7 @@ public class VisitServiceTest {
 
     @Test
     public void getVisitById_returnsVisit() {
-        Visit existingVisit = new Visit(1L, shop);
+        Visit existingVisit = Visit.builder().id(1L).shop(shop).build();
         when(visitRepository.findById(existingVisit.getId())).thenReturn(Optional.of(existingVisit));
 
         Visit visit = visitService.getVisitById(existingVisit.getId());
@@ -126,7 +128,7 @@ public class VisitServiceTest {
 
     @Test
     public void getVisitsByShopId_returnsVisits() {
-        Visit existingVisit = new Visit(1L, shop);
+        Visit existingVisit = Visit.builder().id(1L).shop(shop).build();
         when(visitRepository.findAllByShop(shop)).thenReturn(Collections.singletonList(existingVisit));
 
         when(shopRepository.findById(shop.getId())).thenReturn(Optional.of(shop));
@@ -148,7 +150,7 @@ public class VisitServiceTest {
 
     @Test
     public void getVisitsByShopName_returnsVisits() {
-        Visit existingVisit = new Visit(1L, shop);
+        Visit existingVisit = Visit.builder().id(1L).shop(shop).build();
         when(visitRepository.findAllByShop(shop)).thenReturn(Collections.singletonList(existingVisit));
 
         when(shopRepository.findOneByName(shop.getName())).thenReturn(shop);
@@ -170,7 +172,7 @@ public class VisitServiceTest {
 
     @Test
     public void getVisitsByShop_returnsVisits() {
-        Visit existingVisit = new Visit(1L, shop);
+        Visit existingVisit = Visit.builder().id(1L).shop(shop).build();
         when(visitRepository.findAllByShop(shop)).thenReturn(Collections.singletonList(existingVisit));
 
         List<Visit> visits = visitService.getVisitsByShop(shop);
@@ -254,7 +256,7 @@ public class VisitServiceTest {
 
     @Test
     public void startVisit_startsAndReturnsVisit() {
-        Visit existingVisit = new Visit(1L, shop);
+        Visit existingVisit = Visit.builder().id(1L).shop(shop).build();
         when(visitRepository.findById(existingVisit.getId())).thenReturn(Optional.of(existingVisit));
 
         when(visitRepository.save(any(Visit.class))).then(invocation -> {
@@ -284,7 +286,7 @@ public class VisitServiceTest {
 
     @Test
     public void completeVisit_completesVisit() {
-        Visit existingVisit = new Visit(1L, shop);
+        Visit existingVisit = Visit.builder().id(1L).shop(shop).build();
         when(visitRepository.findById(existingVisit.getId())).thenReturn(Optional.of(existingVisit));
 
         when(visitRepository.save(any(Visit.class))).then(invocation -> {
@@ -314,7 +316,7 @@ public class VisitServiceTest {
 
     @Test
     public void deleteVisit_deletesVisit() {
-        Visit existingVisit = new Visit(1L, shop);
+        Visit existingVisit = Visit.builder().id(1L).shop(shop).build();
         when(visitRepository.findById(existingVisit.getId())).thenReturn(Optional.of(existingVisit));
 
         visitService.deleteVisit(existingVisit.getId());

@@ -63,8 +63,8 @@ public class ShoppingListServiceTest {
     @Test
     public void getShoppingLists_returnsShoppingList() {
         List<ShoppingList> existingShoppingLists = List.of(
-                new ShoppingList(1L, "test-shopping-list-1"),
-                new ShoppingList(2L, "test-shopping-list-2"));
+                ShoppingList.builder().id(1L).name("test-shopping-list-1").build(),
+                ShoppingList.builder().id(2L).name("test-shopping-list-2").build());
         when(shoppingListRepository.findAll()).thenReturn(existingShoppingLists);
 
         List<ShoppingList> shoppingLists = shoppingListService.getShoppingLists();
@@ -76,7 +76,7 @@ public class ShoppingListServiceTest {
     public void getShoppingLists_givenPageRequest_returnsPageOfShoppingLists() {
         List<ShoppingList> existingShoppingLists = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
-            existingShoppingLists.add(new ShoppingList(i, "test-shopping-list-" + i));
+            existingShoppingLists.add(ShoppingList.builder().id(i).name("test-shopping-list-" + i).build());
         }
 
         when(shoppingListRepository.findAll(any(Pageable.class))).thenAnswer(invocation -> {
@@ -93,7 +93,7 @@ public class ShoppingListServiceTest {
 
     @Test
     public void getShoppingListById_returnsShoppingList() {
-        ShoppingList existingShoppingList = new ShoppingList(1L, TEST_SHOPPING_LIST_NAME);
+        ShoppingList existingShoppingList = ShoppingList.builder().id(1L).name(TEST_SHOPPING_LIST_NAME).build();
         when(shoppingListRepository.findById(existingShoppingList.getId()))
                 .thenReturn(Optional.of(existingShoppingList));
 
@@ -113,7 +113,7 @@ public class ShoppingListServiceTest {
 
     @Test
     public void getShoppingListByName_returnsShoppingList() {
-        ShoppingList existingShoppingList = new ShoppingList(1L, TEST_SHOPPING_LIST_NAME);
+        ShoppingList existingShoppingList = ShoppingList.builder().id(1L).name(TEST_SHOPPING_LIST_NAME).build();
         when(shoppingListRepository.findOneByName(existingShoppingList.getName())).thenReturn(existingShoppingList);
 
         ShoppingList shoppingList = shoppingListService.getShoppingListByName(TEST_SHOPPING_LIST_NAME);
@@ -137,7 +137,7 @@ public class ShoppingListServiceTest {
             return invocation.getArgument(0);
         });
 
-        ShoppingListForm form = new ShoppingListForm(TEST_SHOPPING_LIST_NAME);
+        ShoppingListForm form = ShoppingListForm.builder().name(TEST_SHOPPING_LIST_NAME).build();
 
         ShoppingList shoppingList = shoppingListService.createShoppingList(form);
 
@@ -151,7 +151,7 @@ public class ShoppingListServiceTest {
 
     @Test
     public void updateShoppingList_updatesAndReturnsShoppingList() {
-        ShoppingList existingShoppingList = new ShoppingList(1L, TEST_SHOPPING_LIST_NAME);
+        ShoppingList existingShoppingList = ShoppingList.builder().id(1L).name(TEST_SHOPPING_LIST_NAME).build();
         when(shoppingListRepository.findById(existingShoppingList.getId()))
                 .thenReturn(Optional.of(existingShoppingList));
 
@@ -160,7 +160,7 @@ public class ShoppingListServiceTest {
             return invocation.getArgument(0);
         });
 
-        ShoppingListForm form = new ShoppingListForm("updated-test-shopping-list");
+        ShoppingListForm form = ShoppingListForm.builder().name("updated-test-shopping-list").build();
 
         ShoppingList shoppingList = shoppingListService.updateShoppingList(existingShoppingList.getId(), form);
 
@@ -177,7 +177,7 @@ public class ShoppingListServiceTest {
         assertThrows(ShoppingListNotFoundException.class, () -> {
             when(shoppingListRepository.findById(any())).thenReturn(Optional.empty());
 
-            ShoppingListForm form = new ShoppingListForm("updated-test-shopping-list");
+            ShoppingListForm form = ShoppingListForm.builder().name("updated-test-shopping-list").build();
 
             shoppingListService.updateShoppingList(999L, form);
         });
@@ -185,7 +185,7 @@ public class ShoppingListServiceTest {
 
     @Test
     public void deleteShoppingList_deletesShoppingList() {
-        ShoppingList existingShoppingList = new ShoppingList(1L, TEST_SHOPPING_LIST_NAME);
+        ShoppingList existingShoppingList = ShoppingList.builder().id(1L).name(TEST_SHOPPING_LIST_NAME).build();
         when(shoppingListRepository.findById(existingShoppingList.getId()))
                 .thenReturn(Optional.of(existingShoppingList));
 

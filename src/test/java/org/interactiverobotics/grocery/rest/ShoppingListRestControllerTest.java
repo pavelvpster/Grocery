@@ -72,7 +72,8 @@ public class ShoppingListRestControllerTest {
     @Test
     public void getShoppingLists_returnsShoppingLists() throws Exception {
         List<ShoppingList> existingShoppingList = List.of(
-                new ShoppingList(1L, "test-shopping-list-1"), new ShoppingList(2L, "test-shopping-list-2"));
+                ShoppingList.builder().id(1L).name("test-shopping-list-1").build(),
+                ShoppingList.builder().id(2L).name("test-shopping-list-2").build());
         when(shoppingListService.getShoppingLists()).thenReturn(existingShoppingList);
 
         mvc.perform(get(SHOPPING_LIST_ENDPOINT).accept(MediaType.APPLICATION_JSON))
@@ -89,7 +90,7 @@ public class ShoppingListRestControllerTest {
     public void getShoppingListsPage_returnsPageOfShoppingLists() throws Exception {
         List<ShoppingList> existingShoppingLists = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
-            existingShoppingLists.add(new ShoppingList(i, "test-shopping-list-" + i));
+            existingShoppingLists.add(ShoppingList.builder().id(i).name("test-shopping-list-" + i).build());
         }
 
         when(shoppingListService.getShoppingLists(any(Pageable.class))).thenAnswer(invocation -> {
@@ -108,7 +109,7 @@ public class ShoppingListRestControllerTest {
 
     @Test
     public void getShoppingListById_returnsShoppingList() throws Exception {
-        ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
+        ShoppingList existingShoppingList = ShoppingList.builder().id(1L).name("test-shopping-list").build();
         when(shoppingListService.getShoppingListById(existingShoppingList.getId())).thenReturn(existingShoppingList);
 
         mvc.perform(get(SHOPPING_LIST_ENDPOINT + existingShoppingList.getId())
@@ -130,7 +131,7 @@ public class ShoppingListRestControllerTest {
 
     @Test
     public void getShoppingListByName_returnsShoppingList() throws Exception {
-        ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
+        ShoppingList existingShoppingList = ShoppingList.builder().id(1L).name("test-shopping-list").build();
         when(shoppingListService.getShoppingListByName(existingShoppingList.getName()))
                 .thenReturn(existingShoppingList);
 
@@ -164,7 +165,7 @@ public class ShoppingListRestControllerTest {
         public ShoppingList answer(InvocationOnMock invocation) {
             assertEquals(1, invocation.getArguments().length);
             ShoppingListForm form = invocation.getArgument(0);
-            shoppingList = new ShoppingList(1L, form.getName());
+            shoppingList = ShoppingList.builder().id(1L).name(form.getName()).build();
             return shoppingList;
         }
     }
@@ -192,7 +193,7 @@ public class ShoppingListRestControllerTest {
 
         private final ShoppingList shoppingList;
 
-        public UpdateShoppingListAnswer(final ShoppingList shoppingList) {
+        public UpdateShoppingListAnswer(ShoppingList shoppingList) {
             this.shoppingList = shoppingList;
         }
 
@@ -217,7 +218,7 @@ public class ShoppingListRestControllerTest {
 
     @Test
     public void updateShoppingList_updatesAndReturnsShoppingList() throws Exception {
-        ShoppingList existingShoppingList = new ShoppingList(1L, "test-shopping-list");
+        ShoppingList existingShoppingList = ShoppingList.builder().id(1L).name("test-shopping-list").build();
         UpdateShoppingListAnswer updateShoppingListAnswer = new UpdateShoppingListAnswer(existingShoppingList);
         when(shoppingListService.updateShoppingList(eq(existingShoppingList.getId()), any(ShoppingListForm.class)))
                 .then(updateShoppingListAnswer);
@@ -260,7 +261,7 @@ public class ShoppingListRestControllerTest {
         assertThrows(Exception.class, () -> {
             doThrow(new ShoppingListNotFoundException(-1L)).when(shoppingListService).deleteShoppingList(any());
 
-            mvc.perform(delete(SHOPPING_LIST_ENDPOINT + new Long(999L)).accept(MediaType.APPLICATION_JSON));
+            mvc.perform(delete(SHOPPING_LIST_ENDPOINT + Long.valueOf(999L)).accept(MediaType.APPLICATION_JSON));
         });
     }
 }

@@ -80,10 +80,10 @@ public class PurchaseServiceTest {
      */
     @BeforeEach
     public void setUp() {
-        visit = new Visit(1L, new Shop(1L, "test-shop"));
+        visit = Visit.builder().id(1L).shop(Shop.builder().id(1L).name("test-shop").build()).build();
         lenient().when(visitRepository.findById(visit.getId())).thenReturn(Optional.of(visit));
 
-        item = new Item(1L, "test-item");
+        item = Item.builder().id(1L).name("test-item").build();
         lenient().when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
     }
 
@@ -91,8 +91,8 @@ public class PurchaseServiceTest {
     @Test
     public void getPurchases_givenVisitId_returnsPurchases() {
         List<Purchase> existingPurchases = List.of(
-                new Purchase(1L, visit, item, 1L, null),
-                new Purchase(2L, visit, item, 1L, null));
+                Purchase.builder().id(1L).visit(visit).item(item).quantity(1L).build(),
+                Purchase.builder().id(2L).visit(visit).item(item).quantity(1L).build());
         when(purchaseRepository.findAllByVisit(visit)).thenReturn(existingPurchases);
 
         List<Purchase> purchases = purchaseService.getPurchases(visit.getId());
@@ -103,8 +103,8 @@ public class PurchaseServiceTest {
     @Test
     public void getPurchases_givenVisit_returnsPurchases() {
         List<Purchase> existingPurchases = List.of(
-                new Purchase(1L, visit, item, 1L, null),
-                new Purchase(2L, visit, item, 1L, null));
+                Purchase.builder().id(1L).visit(visit).item(item).quantity(1L).build(),
+                Purchase.builder().id(2L).visit(visit).item(item).quantity(1L).build());
         when(purchaseRepository.findAllByVisit(visit)).thenReturn(existingPurchases);
 
         List<Purchase> purchases = purchaseService.getPurchases(visit);
@@ -114,11 +114,13 @@ public class PurchaseServiceTest {
 
     @Test
     public void getNotPurchasedItems_givenVisitId_returnsItems() {
-        List<Item> existingItems = List.of(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
+        List<Item> existingItems = List.of(
+                Item.builder().id(1L).name("test-item-1").build(),
+                Item.builder().id(2L).name("test-item-2").build());
         when(itemRepository.findAll()).thenReturn(existingItems);
 
         when(purchaseRepository.findOneByVisitAndItem(visit, existingItems.get(0)))
-                .thenReturn(new Purchase(visit, existingItems.get(0), 1L, null));
+                .thenReturn(Purchase.builder().visit(visit).item(existingItems.get(0)).quantity(1L).build());
 
         List<Item> items = purchaseService.getNotPurchasedItems(visit.getId());
 
@@ -128,11 +130,13 @@ public class PurchaseServiceTest {
 
     @Test
     public void getNotPurchasedItems_givenVisit_returnsItems() {
-        List<Item> existingItems = List.of(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
+        List<Item> existingItems = List.of(
+                Item.builder().id(1L).name("test-item-1").build(),
+                Item.builder().id(2L).name("test-item-2").build());
         when(itemRepository.findAll()).thenReturn(existingItems);
 
         when(purchaseRepository.findOneByVisitAndItem(visit, existingItems.get(0)))
-                .thenReturn(new Purchase(visit, existingItems.get(0), 1L, null));
+                .thenReturn(Purchase.builder().visit(visit).item(existingItems.get(0)).quantity(1L).build());
 
         List<Item> items = purchaseService.getNotPurchasedItems(visit);
 
@@ -144,7 +148,7 @@ public class PurchaseServiceTest {
     public void getPurchase_givenPageRequestAndVisitId_returnsPageOfPurchases() {
         List<Purchase> existingPurchases = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
-            existingPurchases.add(new Purchase(i, visit, item, 1L, null));
+            existingPurchases.add(Purchase.builder().id(i).visit(visit).item(item).quantity(1L).build());
         }
 
         when(purchaseRepository.findAllByVisit(any(Pageable.class), eq(visit))).then(invocation -> {
@@ -163,7 +167,7 @@ public class PurchaseServiceTest {
     public void getPurchase_givenPageRequestAndVisit_returnsPageOfPurchases() {
         List<Purchase> existingPurchases = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
-            existingPurchases.add(new Purchase(i, visit, item, 1L, null));
+            existingPurchases.add(Purchase.builder().id(i).visit(visit).item(item).quantity(1L).build());
         }
 
         when(purchaseRepository.findAllByVisit(any(Pageable.class), eq(visit))).then(invocation -> {
@@ -224,7 +228,7 @@ public class PurchaseServiceTest {
 
     @Test
     public void buyItem_increasesQuantityAndReturnsPurchase() {
-        Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
+        Purchase existingPurchase = Purchase.builder().id(1L).visit(visit).item(item).quantity(1L).build();
         when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
         when(purchaseRepository.save(any(Purchase.class))).then(invocation -> {
@@ -288,7 +292,7 @@ public class PurchaseServiceTest {
 
     @Test
     public void buyItem_whenPriceIsNull_setPriceForPurchase() {
-        Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
+        Purchase existingPurchase = Purchase.builder().id(1L).visit(visit).item(item).quantity(1L).build();
         when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
         when(purchaseRepository.save(any(Purchase.class))).then(invocation -> {
@@ -308,7 +312,7 @@ public class PurchaseServiceTest {
 
     @Test
     public void buyItem_updatesPriceOfPurchase() {
-        Purchase existingPurchase = new Purchase(1L, visit, item, 1L, BigDecimal.valueOf(10L));
+        Purchase existingPurchase = Purchase.builder().id(1L).visit(visit).item(item).quantity(1L).price(BigDecimal.valueOf(10L)).build();
         when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
         when(purchaseRepository.save(any(Purchase.class))).then(invocation -> {
@@ -328,7 +332,7 @@ public class PurchaseServiceTest {
 
     @Test
     public void returnItem_givenVisitIdAndItemId_decreasesQuantityAndReturnsPurchase() {
-        Purchase existingPurchase = new Purchase(1L, visit, item, 2L, null);
+        Purchase existingPurchase = Purchase.builder().id(1L).visit(visit).item(item).quantity(2L).build();
         when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
         when(purchaseRepository.save(any(Purchase.class))).then(invocation -> {
@@ -351,7 +355,7 @@ public class PurchaseServiceTest {
 
     @Test
     public void returnItem_givenVisitAndItem_decreasesQuantityAndReturnsPurchase() {
-        Purchase existingPurchase = new Purchase(1L, visit, item, 2L, null);
+        Purchase existingPurchase = Purchase.builder().id(1L).visit(visit).item(item).quantity(2L).build();
         when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
         when(purchaseRepository.save(any(Purchase.class))).then(invocation -> {
@@ -393,7 +397,7 @@ public class PurchaseServiceTest {
     @Test
     public void returnItem_whenQuantityLessOrEqualToZero_throwsException() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
+            Purchase existingPurchase = Purchase.builder().id(1L).visit(visit).item(item).quantity(1L).build();
             when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
             purchaseService.returnItem(visit, item, 0L);
@@ -403,7 +407,7 @@ public class PurchaseServiceTest {
     @Test
     public void returnItem_whenQuantityGreaterThanQuantityOfPurchase_throwsException() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
+            Purchase existingPurchase = Purchase.builder().id(1L).visit(visit).item(item).quantity(1L).build();
             when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
             purchaseService.returnItem(visit, item, 999L);
@@ -412,7 +416,7 @@ public class PurchaseServiceTest {
 
     @Test
     public void returnItem_whenQuantityDecreasesToZero_deletesPurchase() {
-        Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
+        Purchase existingPurchase = Purchase.builder().id(1L).visit(visit).item(item).quantity(1L).build();
         when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
         Purchase purchase = purchaseService.returnItem(visit, item, 1L);
@@ -424,7 +428,7 @@ public class PurchaseServiceTest {
 
     @Test
     public void updatePrice_givenVisitIdAndItemId_updatesPriceAndReturnsPurchase() {
-        Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
+        Purchase existingPurchase = Purchase.builder().id(1L).visit(visit).item(item).quantity(1L).build();
         when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
         when(purchaseRepository.save(any(Purchase.class))).then(invocation -> {
@@ -444,7 +448,7 @@ public class PurchaseServiceTest {
 
     @Test
     public void updatePrice_givenVisitAndItem_updatesPriceAndReturnsPurchase() {
-        Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
+        Purchase existingPurchase = Purchase.builder().id(1L).visit(visit).item(item).quantity(1L).build();
         when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
         when(purchaseRepository.save(any(Purchase.class))).then(invocation -> {
@@ -477,7 +481,7 @@ public class PurchaseServiceTest {
     @Test
     public void updatePrice_whenPriceLessOrEqualToZero_throwsException() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Purchase existingPurchase = new Purchase(1L, visit, item, 1L, null);
+            Purchase existingPurchase = Purchase.builder().id(1L).visit(visit).item(item).quantity(1L).build();
             when(purchaseRepository.findOneByVisitAndItem(visit, item)).thenReturn(existingPurchase);
 
             purchaseService.updatePrice(visit, item, BigDecimal.ZERO);

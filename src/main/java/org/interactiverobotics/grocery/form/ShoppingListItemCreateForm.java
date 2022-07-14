@@ -1,7 +1,7 @@
 /*
  * ShoppingListItemCreateForm.java
  *
- * Copyright (C) 2016 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,19 @@
 
 package org.interactiverobotics.grocery.form;
 
+import lombok.*;
+
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 /**
  * Form to create ShoppingListItem.
  */
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@Builder
 public class ShoppingListItemCreateForm {
 
     @NotNull
@@ -35,40 +42,4 @@ public class ShoppingListItemCreateForm {
     @NotNull
     @Min(1)
     private Long quantity;
-
-    public ShoppingListItemCreateForm() {
-    }
-
-    /**
-     * Parametrized constructor.
-     */
-    public ShoppingListItemCreateForm(final Long shoppingList, final Long item, final Long quantity) {
-        this.shoppingList = shoppingList;
-        this.item = item;
-        this.quantity = quantity;
-    }
-
-    public Long getShoppingList() {
-        return shoppingList;
-    }
-
-    public void setShoppingList(final Long shoppingList) {
-        this.shoppingList = shoppingList;
-    }
-
-    public Long getItem() {
-        return item;
-    }
-
-    public void setItem(final Long item) {
-        this.item = item;
-    }
-
-    public Long getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(final Long quantity) {
-        this.quantity = quantity;
-    }
 }

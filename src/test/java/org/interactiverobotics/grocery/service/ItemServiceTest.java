@@ -62,7 +62,9 @@ public class ItemServiceTest {
 
     @Test
     public void getItems_returnsItems() {
-        List<Item> existingItems = List.of(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
+        List<Item> existingItems = List.of(
+                Item.builder().id(1L).name("test-item-1").build(),
+                Item.builder().id(2L).name("test-item-2").build());
         when(itemRepository.findAll()).thenReturn(existingItems);
 
         List<Item> items = itemService.getItems();
@@ -73,8 +75,8 @@ public class ItemServiceTest {
     @Test
     public void getItems_givenPageRequest_returnsPageOfItems() {
         List<Item> existingItems = new ArrayList<>();
-        for (long i = 0; i < 100; i ++) {
-            existingItems.add(new Item(i, "test-item-" + i));
+        for (long i = 0; i < 100; i++) {
+            existingItems.add(Item.builder().id(i).name("test-item-" + i).build());
         }
 
         when(itemRepository.findAll(any(Pageable.class))).then(invocation -> {
@@ -91,7 +93,7 @@ public class ItemServiceTest {
 
     @Test
     public void getItemById_returnsItem() {
-        Item existingItem = new Item(1L, TEST_ITEM_NAME);
+        Item existingItem = Item.builder().id(1L).name(TEST_ITEM_NAME).build();
         when(itemRepository.findById(existingItem.getId())).thenReturn(Optional.of(existingItem));
 
         Item item = itemService.getItemById(existingItem.getId());
@@ -110,7 +112,7 @@ public class ItemServiceTest {
 
     @Test
     public void getItemByName_returnsItem() {
-        Item existingItem = new Item(1L, TEST_ITEM_NAME);
+        Item existingItem = Item.builder().id(1L).name(TEST_ITEM_NAME).build();
         when(itemRepository.findOneByName(existingItem.getName())).thenReturn(existingItem);
 
         Item item = itemService.getItemByName(TEST_ITEM_NAME);
@@ -134,7 +136,7 @@ public class ItemServiceTest {
             return invocation.getArgument(0);
         });
 
-        ItemForm form = new ItemForm(TEST_ITEM_NAME);
+        ItemForm form = ItemForm.builder().name(TEST_ITEM_NAME).build();
 
         Item item = itemService.createItem(form);
 
@@ -148,7 +150,7 @@ public class ItemServiceTest {
 
     @Test
     public void updateItem_updatesAndReturnsItem() {
-        Item existingItem = new Item(1L, TEST_ITEM_NAME);
+        Item existingItem = Item.builder().id(1L).name(TEST_ITEM_NAME).build();
         when(itemRepository.findById(existingItem.getId())).thenReturn(Optional.of(existingItem));
 
         when(itemRepository.save(any(Item.class))).then(invocation -> {
@@ -156,7 +158,7 @@ public class ItemServiceTest {
             return invocation.getArgument(0);
         });
 
-        ItemForm form = new ItemForm("updated-test-item");
+        ItemForm form = ItemForm.builder().name("updated-test-item").build();
 
         Item item = itemService.updateItem(existingItem.getId(), form);
 
@@ -173,7 +175,7 @@ public class ItemServiceTest {
         assertThrows(ItemNotFoundException.class, () -> {
             when(itemRepository.findById(any())).thenReturn(Optional.empty());
 
-            ItemForm form = new ItemForm("updated-test-item");
+            ItemForm form = ItemForm.builder().name("updated-test-item").build();
 
             itemService.updateItem(999L, form);
         });
@@ -181,7 +183,7 @@ public class ItemServiceTest {
 
     @Test
     public void deleteItem_deletesItem() {
-        Item existingItem = new Item(1L, TEST_ITEM_NAME);
+        Item existingItem = Item.builder().id(1L).name(TEST_ITEM_NAME).build();
         when(itemRepository.findById(existingItem.getId())).thenReturn(Optional.of(existingItem));
 
         itemService.deleteItem(existingItem.getId());

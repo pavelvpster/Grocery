@@ -84,14 +84,16 @@ public class PurchaseRestControllerTest {
      */
     @BeforeEach
     public void setUp() {
-        visit = new Visit(1L, new Shop(1L, "test-shop"));
-        item = new Item(1L, "test-item");
+        visit = Visit.builder().id(1L).shop(Shop.builder().id(1L).name("test-shop").build()).build();
+        item = Item.builder().id(1L).name("test-item").build();
     }
 
 
     @Test
     public void getNotPurchasedItems_returnsItems() throws Exception {
-        List<Item> notPurchasedItems = List.of(new Item(1L, "test-item-1"), new Item(2L, "test-item-2"));
+        List<Item> notPurchasedItems = List.of(
+                Item.builder().id(1L).name("test-item-1").build(),
+                Item.builder().id(2L).name("test-item-2").build());
         when(purchaseService.getNotPurchasedItems(visit.getId())).thenReturn(notPurchasedItems);
 
         mvc.perform(get(PURCHASE_ENDPOINT + visit.getId() + "/not_purchased_items")
@@ -119,7 +121,7 @@ public class PurchaseRestControllerTest {
     public void getPurchasesPage_returnsPageOfPurchases() throws Exception {
         List<Purchase> existingPurchases = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
-            existingPurchases.add(new Purchase(i, visit, item, 1L, null));
+            existingPurchases.add(Purchase.builder().id(i).visit(visit).item(item).quantity(1L).build());
         }
 
         when(purchaseService.getPurchases(any(Pageable.class), eq(visit.getId()))).thenAnswer(invocation -> {
@@ -144,7 +146,7 @@ public class PurchaseRestControllerTest {
 
         private final Item item;
 
-        public BuyItemAnswer(final Visit visit, final Item item) {
+        public BuyItemAnswer(Visit visit, Item item) {
             this.visit = visit;
             this.item = item;
         }
@@ -168,12 +170,13 @@ public class PurchaseRestControllerTest {
             Long quantity = invocation.getArgument(2);
             BigDecimal price = invocation.getArgument(3);
 
-            purchase = new Purchase();
-            purchase.setId(1L);
-            purchase.setVisit(visit);
-            purchase.setItem(item);
-            purchase.setQuantity(quantity);
-            purchase.setPrice(price);
+            purchase = Purchase.builder()
+                    .id(1L)
+                    .visit(visit)
+                    .item(item)
+                    .quantity(quantity)
+                    .price(price)
+                    .build();
             return purchase;
         }
     }
@@ -216,7 +219,7 @@ public class PurchaseRestControllerTest {
 
         private final Item item;
 
-        public ReturnItemAnswer(final Visit visit, final Item item) {
+        public ReturnItemAnswer(Visit visit, Item item) {
             this.visit = visit;
             this.item = item;
         }
@@ -239,11 +242,12 @@ public class PurchaseRestControllerTest {
 
             Long quantity = invocation.getArgument(2);
 
-            purchase = new Purchase();
-            purchase.setId(1L);
-            purchase.setVisit(visit);
-            purchase.setItem(item);
-            purchase.setQuantity(quantity);
+            purchase = Purchase.builder()
+                    .id(1L)
+                    .visit(visit)
+                    .item(item)
+                    .quantity(quantity)
+                    .build();
             return purchase;
         }
     }
@@ -283,7 +287,7 @@ public class PurchaseRestControllerTest {
 
         private final Purchase purchase;
 
-        public UpdatePriceAnswer(final Purchase purchase) {
+        public UpdatePriceAnswer(Purchase purchase) {
             this.purchase = purchase;
         }
 
@@ -311,7 +315,13 @@ public class PurchaseRestControllerTest {
 
     @Test
     public void updatePrice_updatesAndReturnsPurchase() throws Exception {
-        Purchase existingPurchase = new Purchase(1L, visit, item, 1L, BigDecimal.valueOf(10L));
+        Purchase existingPurchase = Purchase.builder()
+                .id(1L)
+                .visit(visit)
+                .item(item)
+                .quantity(1L)
+                .price(BigDecimal.valueOf(10L))
+                .build();
         UpdatePriceAnswer updatePriceAnswer = new UpdatePriceAnswer(existingPurchase);
         when(purchaseService.updatePrice(eq(visit.getId()), eq(item.getId()), any(BigDecimal.class)))
                 .thenAnswer(updatePriceAnswer);

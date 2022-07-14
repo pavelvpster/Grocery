@@ -22,36 +22,27 @@ package org.interactiverobotics.grocery.rest;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.AllArgsConstructor;
 import org.interactiverobotics.grocery.domain.Shop;
 import org.interactiverobotics.grocery.form.ShopForm;
 import org.interactiverobotics.grocery.service.ShopService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 /**
  * Shop REST controller.
  */
+@AllArgsConstructor
 @Api(value = "Shop")
 @RestController
 @RequestMapping(value = "/api/v1/shop")
 public class ShopRestController {
 
     private final ShopService shopService;
-
-    @Autowired
-    public ShopRestController(final ShopService shopService) {
-        this.shopService = shopService;
-    }
 
     @ApiOperation(value = "Get all Shop(s)", produces = MediaType.APPLICATION_JSON_VALUE)
     @RequestMapping(value = {"", "/"}, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

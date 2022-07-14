@@ -90,9 +90,9 @@ public class PurchaseRestControllerIntegrationTest {
     @BeforeEach
     public void setUp() {
         purchaseRepository.deleteAll();
-        shop = shopRepository.save(new Shop("test-shop"));
-        visit = visitRepository.save(new Visit(shop));
-        item = itemRepository.save(new Item("test-item"));
+        shop = shopRepository.save(Shop.builder().name("test-shop").build());
+        visit = visitRepository.save(Visit.builder().shop(shop).build());
+        item = itemRepository.save(Item.builder().name("test-item").build());
     }
 
     /**
@@ -109,10 +109,10 @@ public class PurchaseRestControllerIntegrationTest {
     @Test
     public void getNotPurchasedItems_returnsItems() {
         List<Item> existingItems = new ArrayList<>();
-        itemRepository.saveAll(List.of(new Item("test-item-1"), new Item("test-item-2")))
+        itemRepository.saveAll(List.of(Item.builder().name("test-item-1").build(), Item.builder().name("test-item-2").build()))
                 .forEach(item -> existingItems.add(item));
 
-        Purchase purchase = purchaseRepository.save(new Purchase(visit, existingItems.get(0), 1L, null));
+        Purchase purchase = purchaseRepository.save(Purchase.builder().visit(visit).item(existingItems.get(0)).quantity(1L).build());
 
         ResponseEntity<Item[]> response = restTemplate.getForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + "/not_purchased_items", Item[].class);
@@ -130,7 +130,7 @@ public class PurchaseRestControllerIntegrationTest {
     public void getPurchasesPage_returnsPageOfPurchases() {
         List<Purchase> existingPurchases = new ArrayList<>();
         for (long i = 0; i < 100; i ++) {
-            existingPurchases.add(purchaseRepository.save(new Purchase(visit, item, 1L, null)));
+            existingPurchases.add(purchaseRepository.save(Purchase.builder().visit(visit).item(item).quantity(1L).build()));
         }
 
         ParameterizedTypeReference<PageResponse<Purchase>> responseType =
@@ -164,7 +164,7 @@ public class PurchaseRestControllerIntegrationTest {
 
     @Test
     public void buyItem_whenPurchaseExists_updatesAndReturnsPurchase() {
-        Purchase existingPurchase = purchaseRepository.save(new Purchase(visit, item, 1L, null));
+        Purchase existingPurchase = purchaseRepository.save(Purchase.builder().visit(visit).item(item).quantity(1L).build());
 
         ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + BUY_ACTION + item.getId() + QUANTITY_1, null, Purchase.class);
@@ -225,7 +225,7 @@ public class PurchaseRestControllerIntegrationTest {
 
     @Test
     public void buyItem_whenPurchaseExists_updatesPriceAndReturnsPurchase() {
-        Purchase existingPurchase = purchaseRepository.save(new Purchase(visit, item, 1L, null));
+        Purchase existingPurchase = purchaseRepository.save(Purchase.builder().visit(visit).item(item).quantity(1L).build());
 
         ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + BUY_ACTION + item.getId() + "?quantity=1&price=10", null, Purchase.class);
@@ -240,7 +240,7 @@ public class PurchaseRestControllerIntegrationTest {
     @Test
     public void buyItem_whenPurchaseExistsAndPriceSet_updatesPrice() {
         Purchase existingPurchase = purchaseRepository
-                .save(new Purchase(visit, item, 1L, BigDecimal.valueOf(10L)));
+                .save(Purchase.builder().visit(visit).item(item).quantity(1L).price(BigDecimal.valueOf(10L)).build());
 
         ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + BUY_ACTION + item.getId() + "?quantity=1&price=20", null, Purchase.class);
@@ -254,7 +254,7 @@ public class PurchaseRestControllerIntegrationTest {
 
     @Test
     public void returnItem_updatesAndReturnsPurchase() {
-        Purchase existingPurchase = purchaseRepository.save(new Purchase(visit, item, 2L, null));
+        Purchase existingPurchase = purchaseRepository.save(Purchase.builder().visit(visit).item(item).quantity(2L).build());
 
         ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + RETURN_ACTION + item.getId() + QUANTITY_1, null, Purchase.class);
@@ -302,7 +302,7 @@ public class PurchaseRestControllerIntegrationTest {
 
     @Test
     public void returnItem_whenQuantityIsGreaterThanQuantityOfPurchase_returnsError() {
-        Purchase existingPurchase = purchaseRepository.save(new Purchase(visit, item, 1L, null));
+        Purchase existingPurchase = purchaseRepository.save(Purchase.builder().visit(visit).item(item).quantity(1L).build());
 
         ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + RETURN_ACTION + item.getId() + "?quantity=999", null, Purchase.class);
@@ -314,7 +314,7 @@ public class PurchaseRestControllerIntegrationTest {
 
     @Test
     public void returnItem_whenNewQuantityIsZero_deletesPurchase() {
-        Purchase existingPurchase = purchaseRepository.save(new Purchase(visit, item, 1L, null));
+        Purchase existingPurchase = purchaseRepository.save(Purchase.builder().visit(visit).item(item).quantity(1L).build());
 
         ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + RETURN_ACTION + item.getId() + QUANTITY_1, null, Purchase.class);
@@ -326,7 +326,7 @@ public class PurchaseRestControllerIntegrationTest {
 
     @Test
     public void updatePrice_updatesAndReturnsPurchase() {
-        Purchase existingPurchase = purchaseRepository.save(new Purchase(visit, item, 1L, null));
+        Purchase existingPurchase = purchaseRepository.save(Purchase.builder().visit(visit).item(item).quantity(1L).build());
 
         ResponseEntity<Purchase> response = restTemplate.postForEntity(PURCHASE_ENDPOINT + visit.getId()
                 + PRICE_ACTION + item.getId() + "?price=10", null, Purchase.class);

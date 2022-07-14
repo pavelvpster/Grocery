@@ -1,7 +1,7 @@
 /*
  * ItemService.java
  *
- * Copyright (C) 2016-2018 Pavel Prokhorov (pavelvpster@gmail.com)
+ * Copyright (C) 2016-2022 Pavel Prokhorov (pavelvpster@gmail.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,13 @@
 
 package org.interactiverobotics.grocery.service;
 
+import lombok.AllArgsConstructor;
 import org.interactiverobotics.grocery.domain.Item;
 import org.interactiverobotics.grocery.exception.ItemNotFoundException;
 import org.interactiverobotics.grocery.form.ItemForm;
 import org.interactiverobotics.grocery.repository.ItemRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -38,6 +38,7 @@ import java.util.Optional;
 /**
  * Item service.
  */
+@AllArgsConstructor
 @Service
 public class ItemService {
 
@@ -45,16 +46,11 @@ public class ItemService {
 
     private final ItemRepository itemRepository;
 
-    @Autowired
-    public ItemService(final ItemRepository itemRepository) {
-        this.itemRepository = itemRepository;
-    }
-
     /**
      * Returns Item(s).
      */
     public List<Item> getItems() {
-        final List<Item> items = new ArrayList<>();
+        List<Item> items = new ArrayList<>();
         itemRepository.findAll().forEach(item -> items.add(item));
         LOG.debug("{} Item(s) found", items.size());
         return items;
@@ -64,7 +60,7 @@ public class ItemService {
      * Returns page of Item(s).
      */
     public Page<Item> getItems(Pageable pageable) {
-        final Page<Item> items = itemRepository.findAll(pageable);
+        Page<Item> items = itemRepository.findAll(pageable);
         LOG.debug("{} Item(s) found for {}", items.getNumberOfElements(), pageable);
         return items;
     }
@@ -72,8 +68,8 @@ public class ItemService {
     /**
      * Returns Item by Id.
      */
-    public Item getItemById(final Long itemId) {
-        final Item item = itemRepository.findById(itemId)
+    public Item getItemById(Long itemId) {
+        Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException(itemId));
         LOG.debug("Item found by Id #{}", itemId);
         return item;
@@ -82,8 +78,8 @@ public class ItemService {
     /**
      * Returns Item by Name.
      */
-    public Item getItemByName(final String name) {
-        final Item item = Optional.ofNullable(itemRepository.findOneByName(name))
+    public Item getItemByName(String name) {
+        Item item = Optional.ofNullable(itemRepository.findOneByName(name))
                 .orElseThrow(() -> new ItemNotFoundException(-1L));
         LOG.debug("Item found by Name '{}'", name);
         return item;
@@ -92,8 +88,8 @@ public class ItemService {
     /**
      * Creates Item.
      */
-    public Item createItem(final ItemForm form) {
-        final Item item = itemRepository.save(new Item(form.getName()));
+    public Item createItem(ItemForm form) {
+        Item item = itemRepository.save(Item.builder().name(form.getName()).build());
         LOG.info("Item created: {}", item);
         return item;
     }
@@ -101,11 +97,11 @@ public class ItemService {
     /**
      * Updates Item.
      */
-    public Item updateItem(final Long itemId, final ItemForm form) {
-        final Item item = itemRepository.findById(itemId)
+    public Item updateItem(Long itemId, ItemForm form) {
+        Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException(itemId));
         item.setName(form.getName());
-        final Item updatedItem = itemRepository.save(item);
+        Item updatedItem = itemRepository.save(item);
         LOG.info("Item updated: {}", updatedItem);
         return updatedItem;
     }
@@ -113,8 +109,8 @@ public class ItemService {
     /**
      * Deletes Item.
      */
-    public void deleteItem(final Long itemId) {
-        final Item item = itemRepository.findById(itemId)
+    public void deleteItem(Long itemId) {
+        Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException(itemId));
         itemRepository.delete(item);
         LOG.info("Item deleted: {}", item);
